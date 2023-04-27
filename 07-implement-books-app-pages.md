@@ -1131,7 +1131,7 @@ test()
 # -- deco end --
 ```
 
-Pythonの関数は、[ファーストクラスオブジェクト](https://ja.wikipedia.org/wiki/%E7%AC%AC%E4%B8%80%E7%B4%9A%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88)であり、[高階関数](https://ja.wikipedia.org/wiki/%E9%AB%98%E9%9A%8E%E9%96%A2%E6%95%B0)でもあります。
+Pythonの関数は、[ファーストクラスオブジェクト（第1級オブジェクト）](https://ja.wikipedia.org/wiki/%E7%AC%AC%E4%B8%80%E7%B4%9A%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88)であり、[高階関数](https://ja.wikipedia.org/wiki/%E9%AB%98%E9%9A%8E%E9%96%A2%E6%95%B0)でもあります。
 この点において、C言語の関数はポインタであり、ファーストクラスオブジェクトでもなければ、高階関数でもありません。
 
 > **ファーストクラスオブジェクト（第1級オブジェクト）**

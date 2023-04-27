@@ -11,6 +11,7 @@
     "makemigrations",
     "mypy",
     "pathlib",
+    "pycache",
     "pyproject",
     "pysen",
     "queryset",

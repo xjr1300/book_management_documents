@@ -151,8 +151,8 @@ class ClassificationDetailListView(
     template_name = "books/classification_detail_list.html"
 ```
 
-`context_object_name`で書籍分類詳細リストが取得する書籍分類モデルインスタンスのリスト（クエリセット）のコンテキスト名を指定しています。
-`context_object_name`を指定しない場合、そのコンテキスト名は`classificationdetail_list`になります。
+`context_object_name`で書籍分類詳細リストが取得する書籍分類モデルインスタンスのQuerySetのコンテキスト名を指定しています。
+`context_object_name`を指定しない場合、そのコンテキスト名はモデル名を単純に小文字化した`classificationdetail_list`になります。
 
 `template_name`で書籍分類詳細リストページのテンプレートを指定しています。
 `template_name`を指定しない場合、`books/classificationdetail_list.html`になります。

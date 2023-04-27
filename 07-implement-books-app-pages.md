@@ -19,10 +19,10 @@
 
 ## ミックスインの整理
 
-`PageTitleMixin`及び`FormActionMixin`は、部署アプリのビューで再利用するため、`core`モジュールに移動します。
+部署アプリのビューを実装するときに定義した`PageTitleMixin`及び`FormActionMixin`は、部署アプリのビューで再利用するため、`core`モジュールに移動します。
 
 > 部署の`DivisionSingleObjectMixin`や`DivisionFormFieldMixin`も書籍分類モデルと同様な実装になりますが、部署と書籍分類が概念が異なるため、再利用することは`やり過ぎたDRY`になるアンチパターンです。
-> `PageTitleMixin`はページのタイトルを設定する、`FormActionMixin`は操作名を提供するミックスインで、どのビューにも共通で必要とされるため再利用します。
+> `PageTitleMixin`はHTMLの`head`要素の`title`要素のコンテンツを設定する、`FormActionMixin`は操作名を提供するミックスインで、ビュー共通の振る舞いを提供するため再利用します。
 
 `./core/mixins.py`ファイルを作成して、`PageTitleMixin`と`FormActionMixin`をそのファイルに移動します。
 
@@ -96,8 +96,8 @@ class FormActionMixin(generic.base.ContextMixin):
 部署アプリのすべてのビューが正常に動作することを確認したら、変更をリポジトリにコミットします。
 
 ```bash
-git add divisions/
-git add core/
+git add ./divisions/
+git add ./core/
 git commit -m 'ミックスインを整理'
 ```
 
@@ -117,6 +117,14 @@ git commit -m 'ミックスインを整理'
 - 書籍分類登録ページ: `/books/classifications/create/`
 - 書籍分類更新ページ: `/books/classifications/update/<code>`
 - 書籍分類削除ページ: `/books/classifications/delete/<code>`
+
+なお、`./books/urls.py`に次を追加することを忘れないでください。
+
+```python
+# ./books/urls.py
+
+app_name = "books"
+```
 
 > commit f411718d467d626b5b8c8998668c08a80777a9c8
 

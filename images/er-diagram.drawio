@@ -1,0 +1,61 @@
+<mxfile host="65bd71144e">
+    <diagram id="R2lEEEUBdFMjLlhIrx00" name="Page-1">
+        <mxGraphModel dx="512" dy="366" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ws7LzxoDOX4Ka8g1ggTv-1" target="ws7LzxoDOX4Ka8g1ggTv-2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-13" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fillColor=none;" parent="ws7LzxoDOX4Ka8g1ggTv-11" vertex="1" connectable="0">
+                    <mxGeometry x="-0.8" y="-2" relative="1" as="geometry">
+                        <mxPoint y="-12" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-14" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fillColor=none;" parent="ws7LzxoDOX4Ka8g1ggTv-11" vertex="1" connectable="0">
+                    <mxGeometry x="0.65" y="-1" relative="1" as="geometry">
+                        <mxPoint y="-11" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-1" value="書籍分類&lt;br&gt;(Classification)" style="whiteSpace=wrap;html=1;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="280" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ws7LzxoDOX4Ka8g1ggTv-2" target="ws7LzxoDOX4Ka8g1ggTv-4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-15" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fillColor=none;" parent="ws7LzxoDOX4Ka8g1ggTv-12" vertex="1" connectable="0">
+                    <mxGeometry x="-0.775" relative="1" as="geometry">
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-16" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fillColor=none;" parent="ws7LzxoDOX4Ka8g1ggTv-12" vertex="1" connectable="0">
+                    <mxGeometry x="0.7" y="2" relative="1" as="geometry">
+                        <mxPoint y="-8" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-2" value="書籍分類詳細&lt;br&gt;(ClassificationDetail)" style="whiteSpace=wrap;html=1;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="280" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="ws7LzxoDOX4Ka8g1ggTv-3" target="ws7LzxoDOX4Ka8g1ggTv-4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-17" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fillColor=none;" parent="ws7LzxoDOX4Ka8g1ggTv-10" vertex="1" connectable="0">
+                    <mxGeometry x="-0.8" y="1" relative="1" as="geometry">
+                        <mxPoint x="9" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-18" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fillColor=none;" parent="ws7LzxoDOX4Ka8g1ggTv-10" vertex="1" connectable="0">
+                    <mxGeometry x="0.6" relative="1" as="geometry">
+                        <mxPoint x="10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-3" value="部署&lt;br&gt;(Division)" style="whiteSpace=wrap;html=1;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="160" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws7LzxoDOX4Ka8g1ggTv-4" value="書籍&lt;br&gt;(Book)" style="whiteSpace=wrap;html=1;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="280" width="120" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

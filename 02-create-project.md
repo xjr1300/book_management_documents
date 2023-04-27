@@ -276,7 +276,7 @@ Changes to be committed:
 git commit -m '初期コミット'
 ```
 
-> commit ea8a4bd97d3342ae21f479f8512578a274a24735 (HEAD -> main, tag: 001-初期コミット)
+> commit ea8a4bd97d3342ae21f479f8512578a274a24735 (tag: 001-初期コミット)
 
 これで、リポジトリに最初のコミットが作成されました。
 これからの作業で、多くの変更をリポジトリにコミットします。
@@ -370,7 +370,7 @@ git log --oneline
 # b0f7b75 初期コミット
 ```
 
-> commit 5595a78d9eb8c2cf6b9717e37588c8483966e66b (HEAD -> main, tag: 002-プロジェクトを日本語化)
+> commit 5595a78d9eb8c2cf6b9717e37588c8483966e66b (tag: 002-プロジェクトを日本語化)
 
 ## データベースの準備
 
@@ -494,7 +494,7 @@ git add --all
 git commit -m 'Django Debug Toolbarをインストールして設定'
 ```
 
-> commit 27c9da7baf8bbce4a627870e36800f6efdad1204 (HEAD -> main, tag: 003-Django-Debug-Toolbarをインストールして設定)
+> commit 27c9da7baf8bbce4a627870e36800f6efdad1204 (tag: 003-Django-Debug-Toolbarをインストールして設定)
 
 ## requirements.txtファイルの生成
 
@@ -538,7 +538,7 @@ git add requirements.txt
 git commit -m 'requirements.txtを追加'
 ```
 
-> 1dbc4b00eadb11800f72c819cc2f2a19a425c2c2 (HEAD -> main, tag: 004-requirements.txtを追加)
+> commit 1dbc4b00eadb11800f72c819cc2f2a19a425c2c2 (tag: 004-requirements.txtを追加)
 
 ## まとめ
 

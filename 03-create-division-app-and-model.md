@@ -9,11 +9,11 @@
     - [リクエストの受付確認](#リクエストの受付確認)
   - [部署モデルの実装](#部署モデルの実装)
   - [部署アプリの有効化](#部署アプリの有効化)
-  - [Django APIの操作](#django-apiの操作)
+  - [DjangoクエリセットAPIの操作](#djangoクエリセットapiの操作)
     - [データベースAPIを使用した部署モデルの操作](#データベースapiを使用した部署モデルの操作)
   - [モデルインスタンスの出力の変更とメソッドの追加](#モデルインスタンスの出力の変更とメソッドの追加)
   - [管理サイト](#管理サイト)
-    - [管理者 (admin、superuser) ユーザーの作成](#管理者-adminsuperuser-ユーザーの作成)
+    - [スーパーユーザーユーザーの作成](#スーパーユーザーユーザーの作成)
   - [管理サイトの有効化](#管理サイトの有効化)
   - [管理サイトのカスタマイズ](#管理サイトのカスタマイズ)
   - [フィクスチャー（Fixture）](#フィクスチャーfixture)
@@ -24,7 +24,7 @@
 
 ## 部署アプリの追加
 
-プロジェクトに部署アプリ（`divisions`）を作成して追加するために、ターミナルに次を入力します。
+プロジェクトに部署アプリ（`divisions`）を追加するために、ターミナルに次を入力します。
 
 ```bash
 python manage.py startapp divisions
@@ -47,8 +47,8 @@ book_management/divisions/
 
 | 名前 | 説明 |
 | --- | --- |
-| __init__.py | `Djangoのインストールとプロジェクト構築`で説明したファイル |
-| admin.py | アプリで定義したモデルを`Djangoとは`で説明した`管理サイト`に表示する方法などを定義するファイル |
+| __init__.py | 省略 |
+| admin.py | アプリで定義したモデルを管理サイト登録して表示する方法などを定義するファイル |
 | apps.py | アプリケーションの設定を記述するファイル |
 | migrations/ | アプリのモデルをデータベースに反映する`マイグレーションファイル`を格納するディレクトリ |
 | models.py | アプリのモデルを定義するファイル |
@@ -59,7 +59,7 @@ book_management/divisions/
 
 ### 最初のビューの実装
 
-`./divisions/views.py`ファイルを開いて、次のコードにファイルの内容をすべて置き換えます。
+`./divisions/views.py`ファイルを開いて、次のコードでファイルの内容を置き換えます。
 この`index`関数は、Djangoにおける`関数ベースドビュー (function-based view、関数ビュー)`と呼ばれ、ビューを関数で実装したものです。
 
 > 本チュートリアルでは、`クラスベースドビュー (class-based view、クラスビュー)`で各アプリのビューを実装します。
@@ -67,11 +67,10 @@ book_management/divisions/
 
 ```python
 # ./divisions/views.py
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 
 
-
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     return HttpResponse("Hello, world. This is divisions app.")
 ```
 
@@ -98,10 +97,9 @@ urlpatterns = [
 ]
 ```
 
-`./divisions/urls.py`は`Djangoのインストールとプロジェクト構築`で説明したルートURLconfがインクルードする（に含められる）ファイルで、アプリに処理を移譲されたリクエストを受け取り、リクエストを処理するビューを割り当てる設定ファイルです。
+`./divisions/urls.py`は`Djangoのインストールとプロジェクト構築`で説明したルートURLconfがインクルードする（に含められる）ファイルで、リクエストURLを`ディスパッチ`するビューを定義するファイルです。
 
 `path`関数で、`http://<site>/divisions/`へのリクエストは、`./divisions/views.py`ファイルに定義した`index`ビューが処理するように設定しています。
-この、リクエストURLからそのリクエストを処理するビューを割り当てることを、`URLディスパッチ`と呼んでいます。
 
 また、`./divisions/views.py`である`views`モジュールを`from . import views`でインポートしています。
 これは同じディレクトリ(`.`)にある`views.py`ファイルを`views`モジュールとしてインポートすることを指示しています。
@@ -138,7 +136,7 @@ Djangoの開発用サーバーを起動して、ブラウザのURLに`http://127
 python manage.py runserver
 ```
 
-ブラウザが、`Hello, world. This is divisions app.`を表示した場合、正確にURLディスパッチとビューの実装ができています。
+ブラウザが、`Hello, world. This is divisions app.`を表示した場合、正確にビューが実装されて、リクエストがディスパッチされています。
 
 試行的に実装したビューが動作した場合は、次の通り変更をリポジトリにコミットします。
 
@@ -147,7 +145,7 @@ git add --all
 git commit -m '部署アプリを追加'
 ```
 
-> commit 1ddcf26fb24ca9fd6d002e9f193d4973dc44857f
+> commit 9081ca4a0765a7dda92fe6622751604e0932ae7e (tag: 005-部署アプリを追加)
 
 ## 部署モデルの実装
 
@@ -172,7 +170,6 @@ class Division(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # 更新日時
     updated_at = models.DateTimeField(auto_now=True)
-
 ```
 
 - Djangoのモデルは、直接的または間接的に`django.db.models.Model`を[継承](https://docs.python.org/ja/3.10/tutorial/classes.html#inheritance)する必要があります。
@@ -192,7 +189,7 @@ class Division(models.Model):
 > プライマリーキーは、Djangoにおけるモデルインスタンスや、データベースにおけるレコードを特定するために必要であり、プライマリーキーのないモデルやテーブルはほとんど存在しません。
 > 存在しても、おそらくモデルインスタンスやレコードを取り扱うことが煩雑になるでしょう。
 >
-> データベースでは複数のカラムでプライマリーキーを構成して`複合キー`にできますが、Djangoでは複数のモデルフィールドでプライマリーキーを構成できず、1つのモデルフィールドのみをプライマリーキーに指定できます。
+> データベースでは複数のカラムでプライマリーキーを構成して`複合キー`にできますが、Djangoでは複数のモデルフィールドでプライマリーキーを構成できず、1つのモデルフィールドのみプライマリーキーに指定できます。
 
 モデルについては、次を参照してください。
 
@@ -220,7 +217,7 @@ class Division(models.Model):
   ]
 ```
 
-上記により、Djangoはプロジェクトに部署アプリが存在することを認識するようになりました。
+上記により、Djangoはプロジェクトに部署アプリが存在することを認識するようになります。
 
 部署モデルをデータベースに反映するためのマイグレーションファイルを作成するために、次のコマンドを実行します。
 
@@ -238,7 +235,7 @@ Migrations for 'divisions':
 
 また、作成されたマイグレーションファイル`divisions/migrations/0001_initial.py`のファイルパスから、そのマイグレーションファイルが、`divisions`アプリの`0001`番のマイグレーションであることを識別できます。
 
-さらに、部署モデルをデータベースを反映するマイグレーションで、データベースにどのようなSQL文を発行するか、次のコマンドで確認できます。
+さらに、指定したマイグレーションが、データベースにどのようなSQL文を発行するか、次のコマンドで確認できます。
 
 ```bash
 python manage.py sqlmigrate divisions 0001
@@ -257,25 +254,26 @@ COMMIT;
 
 出力結果から、次の3つのSQL文が発行されていることがわかります。
 
-1. トランザクション開始
-2. `divisions_division`テーブル作成
-3. トランザクションコミット
+1. トランザクション開始（`BEGIN`）
+2. `divisions_division`テーブル作成（`CREATE TABLE "divisions_division" (...)`）
+3. トランザクションコミット（`COMMIT`）
 
 > **モデルが自動的に与えるテーブル名について**
 >
 > Djangoは、`<アプリ名>_<モデル名>`の書式のテーブル名でテーブルを作成します。
-> 部署モデルに対応するテーブルのテーブル名は、後で変更します。
+> なお、部署モデルに対応するテーブルのテーブル名は、後で変更します。
 >
 > **トランザクション**
 >
-> トランザクションは、トランザクションの開始から終了までの処理が、すべて成功して完了したか、まったく何もされなかったかを保証します。
+> トランザクションは、トランザクションの開始から終了までの処理が、すべて成功して完了したか、まったく何も処理されなかった（変更されなかった）かを保証します。
 > 銀行の口座振替では、自分の口座からお金が減り、相手の口座にお金が増えるように処理されます。
 > この処理がすべて完全に成功するか、まったく何もされないかを保証する必要があります。
-> もし、自分の口座からお金が減る処理が成功して、相手の口座にお金が増える処理が失敗した場合、これを無かったことにしないと（ロールバックしないと）、自分のお金がただ消滅してしまいます。
+> もし、自分の口座からお金が減る処理が成功して、相手の口座にお金が増える処理が失敗した場合、これを無かったことにしないと（ロールバックしないと）、自分のお金が消滅してしまいます。
 
 最後に、次のコマンドで部署モデルをデータベースに反映します（部署テーブルをデータベースに作成します）。
-2つのコマンドを示していますが、実行結果は同じです。
-最初のコマンドは、適用されていないマイグレーションファイルをすべてデータベースに反映します。2番目のコマンドは、`divisions`アプリの`0001`番目のマイグレーションをデータベースに反映します。
+2つのコマンドを提示していますが、実行結果は同じです。
+最初のコマンドは、適用されていないマイグレーションファイルをすべてデータベースに反映します。
+2番目のコマンドは、`divisions`アプリの`0001`番目のマイグレーションをデータベースに反映します。
 
 ```bash
 python manage.py migrate
@@ -301,30 +299,31 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-## Django APIの操作
+## DjangoクエリセットAPIの操作
 
 ### データベースAPIを使用した部署モデルの操作
 
-Djangoが提供する[データベースAPI](https://docs.djangoproject.com/en/4.2/topics/db/queries/)で部署モデルを操作します。
+Djangoが提供する[クエリセットAPI](https://docs.djangoproject.com/en/4.2/topics/db/queries/)で部署モデルを操作します。
 
-Pythonのインタラクティブシェルを実行するために、次のコマンドを実行します。
+Pythonのインタラクティブコンソールを実行するために、次のコマンドを実行します。
 
 ```bash
 python manage.py shell
 ```
 
-起動したインタラクティブシェルで、次を実行します。
-なお、発行するAPIは`>>>`から始まる行で、`>>>`の右にあるスペースより右側をシェルに入力してください。
-また、`#`から始まる行は説明のため、インタラクティブシェルに入力する必要はありません。
-出力結果は、シェルに入力したAPIの後に示しています。
+起動したインタラクティブコンソールで、次を実行します。
+なお、インタラクティブコンソールに表示された`>>>`は、入力プロンプトです。
+インタラクティブコンソールには、`#`で始まらない行を入力してください。
+また、コマンドの上の行の`#`から始まる行は説明のため、インタラクティブコンソールに入力する必要はありません。
+出力結果は、入力したコマンドの下の行の`#`です。
 
 ```python
 # シェルに部署モデルをインポート
->>> from divisions.models import Division
+from divisions.models import Division
 
 # すべての部署モデルインスタンスを取得（部署が登録されていないため結果は空）
->>> Division.objects.all()
-<QuerySet []>
+Division.objects.all()
+# <QuerySet []>
 
 # 部署モデルインスタンスを作成
 >>> ict = Division()
@@ -338,97 +337,99 @@ python manage.py shell
 
 # 登録した部署を確認
 # 作成日時と更新日時がプロジェクト設定ファイルで設定したタイムゾーンではなく、世界標準時であることに注意
->>> ict.code
-'58'
->>> ict.name
-'ICT開発室'
->>> ict.created_at
-datetime.datetime(2023, 4, 19, 2, 17, 41, 815016, tzinfo=datetime.timezone.utc)
->>> ict.updated_at
-datetime.datetime(2023, 4, 19, 2, 17, 41, 815042, tzinfo=datetime.timezone.utc)
+ict.code
+# '58'
+ict.name
+# 'ICT開発室'
+ict.created_at
+# datetime.datetime(2023, 4, 19, 2, 17, 41, 815016, tzinfo=datetime.timezone.utc)
+ict.updated_at
+# datetime.datetime(2023, 4, 19, 2, 17, 41, 815042, tzinfo=datetime.timezone.utc)
 
 # 道路第1Ｇを登録
->>> road1 = Division(code="51", name="道路第1Ｇ")
->>> road1.save()
+road1 = Division(code="51", name="道路第1Ｇ")
+road1.save()
 
 # 登録した道路第1Ｇを確認
->>> road1
-<Division: Division object (51)>
+road1
+# <Division: Division object (51)>
 
 # すべての部署モデルインスタンスを取得
->>> Division.objects.all()
-<QuerySet [<Division: Division object (58)>, <Division: Division object (51)>]>
+Division.objects.all()
+# <QuerySet [<Division: Division object (58)>, <Division: Division object (51)>]>
 
 # 登録されている部署を出力
->>> for d in Division.objects.all():
-...     print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
-...
-58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
-51: 道路第1Ｇ, 2023-04-19 02:18:57.961611+00:00, 2023-04-19 02:18:57.961641+00:00
+# printはTabキーを1回押下した後に入力
+# printの行の末尾でEnterキーを2回押下
+for d in Division.objects.all():
+    print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
+
+# 58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
+# 51: 道路第1Ｇ, 2023-04-19 02:18:57.961611+00:00, 2023-04-19 02:18:57.961641+00:00
 
 # road1変数を削除
->>> del road1
->>> road1
-Traceback (most recent call last):
-  File "<console>", line 1, in <module>
-NameError: name 'road1' is not defined
+del road1
+road1
+# Traceback (most recent call last):
+#   File "<console>", line 1, in <module>
+# NameError: name 'road1' is not defined
 
 # 登録した道路第1Ｇを取得
->>> road1 = Division.objects.get(pk="51")
->>> road1.name
-'道路第1Ｇ'
+road1 = Division.objects.get(pk="51")
+road1.name
+# '道路第1Ｇ'
 
 # 部署名を`道路第1Ｇ`から`道路第2Ｇ`に変更
->>> road1.name = "道路第2Ｇ"
->>> road1.save()
+#road1.name = "道路第2Ｇ"
+road1.save()
 
 # 登録されている部署を出力
 # 道路第2Ｇの作成日時と更新日時に着目してください。
->>> for d in Division.objects.all():
-...     print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
-...
-58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
-51: 道路第2Ｇ, 2023-04-19 02:18:57.961611+00:00, 2023-04-19 02:21:59.815208+00:00
+for d in Division.objects.all():
+    print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
+
+# 58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
+# 51: 道路第2Ｇ, 2023-04-19 02:18:57.961611+00:00, 2023-04-19 02:21:59.815208+00:00
 
 # django.utils.timezoneモジュールをインポートして、現在日時を取得
->>> from django.utils import timezone
->>> dt = timezone.now()
+from django.utils import timezone
+dt = timezone.now()
 
 # 部署コード51で道路第3Ｇを登録
 # プライマリーキーに同じ部署コードをもつ部署モデルインスタンスが存在するため、
 # 実際には、プライマリーキーが一致する部署モデルインスタンスが更新されます。
->>> road3 = Division(code="51", name="道路第3Ｇ", created_at=dt, updated_at=dt)
->>> road3.save()
+road3 = Division(code="51", name="道路第3Ｇ", created_at=dt, updated_at=dt)
+road3.save()
 
 # 登録されている部署を出力
 # 道路第3Ｇの作成日時と更新日時に注意してください。
->>> for d in Division.objects.all():
-...     print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
-...
-58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
-51: 道路第3Ｇ, 2023-04-19 02:24:11.447448+00:00, 2023-04-19 02:24:30.476103+00:00
+for d in Division.objects.all():
+    print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
+
+# 58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
+# 51: 道路第3Ｇ, 2023-04-19 02:24:11.447448+00:00, 2023-04-19 02:24:30.476103+00:00
 
 # 道路第3Ｇを削除
->>> Division.objects.filter(pk="51").delete()
-(1, {'divisions.Division': 1})
+Division.objects.filter(pk="51").delete()
+# (1, {'divisions.Division': 1})
 
 # 登録されている部署を出力
->>> for d in Division.objects.all():
-...     print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
-...
-58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
+for d in Division.objects.all():
+    print(f"{d.code}: {d.name}, {d.created_at}, {d.updated_at}")
 
-# インタラクティブシェルを終了
->>> exit()
+# 58: ICT開発室, 2023-04-19 02:17:41.815016+00:00, 2023-04-19 02:17:41.815042+00:00
+
+# インタラクティブコンソールを終了
+exit()
 ```
 
-> DjangoのデータベースAPIや[QuerySet API](https://docs.djangoproject.com/en/4.2/ref/models/querysets/)は[怠惰（`Lazy`）](https://docs.djangoproject.com/en/4.2/topics/db/queries/#querysets-are-lazy)で、例えば`<model>.objects.all()`した結果が**本当に必要になったとき**に、データベースにアクセスします。
-> ここで**本当に必要になったとき**とは、`<model>.objects.all()`で取得したモデルインスタンスの数を`len`関数で取得する場合です。
+> Djangoの[クエリセットAPI](https://docs.djangoproject.com/en/4.2/ref/models/querysets/)は[遅延評価（`lazy`）](https://docs.djangoproject.com/en/4.2/topics/db/queries/#querysets-are-lazy)で、例えば`<model>.objects.all()`した結果が**本当に必要になったとき**に、データベースにアクセスします。
+> ここで**本当に必要になったとき**とは、`<model>.objects.all()`で取得したモデルインスタンスの数を`len`関数で取得する場合などです。
 >
-> **QuerySetは怠惰です - Djangoドキュメント**
+> **クエリセットは遅延評価されます - Djangoドキュメント**
 >
-> QuerySetは怠惰です - QuerySetを作成する動作は任意のデータベース動作を巻き込みません。
-> QuerySetに対してフィルタ（`filter`）を何回も重ねることができ、実際にDjangoはQuerySetが評価されるまでクエリを実行しません。
+> クエリセットは遅延評価されます - クエリセットを作成する動作は任意のデータベース動作を巻き込みません。
+> クエリセットに対してフィルタ（`filter`）を何回も重ねることができ、実際にDjangoはクエリセットが評価されるまでクエリを実行しません。
 > 次の例を確認してください。
 >
 > ```python
@@ -439,20 +440,22 @@ NameError: name 'road1' is not defined
 > ```
 >
 > これは3回のデータベースアクセスをしているように見えますが、実際には1回のみデータベースにアクセスしており、それは最後の行の`print(q)`です。
-> 一般的に、QuerySetの結果は、それらを「尋ねる」までデータベースから取得されません。
-> QuerySetに「尋ねた」とき、QuerySetはデータベースにアクセスすることにより評価されます。
-> 評価される正確なタイミングの詳細は、[いつQuerySetが評価されるのか](https://docs.djangoproject.com/en/4.2/ref/models/querysets/#when-querysets-are-evaluated)を参照してください。
+> 一般的に、クエリセットの結果は、それらを「尋ねる」までデータベースから取得されません。
+> クエリセットに「尋ねた」とき、クエリセットはデータベースにアクセスすることにより評価されます。
+> 評価される正確なタイミングの詳細は、[いつクエリセットが評価されるのか](https://docs.djangoproject.com/en/4.2/ref/models/querysets/#when-querysets-are-evaluated)を参照してください。
 
 ## モデルインスタンスの出力の変更とメソッドの追加
 
 すべての部署モデルインスタンスを取得したとき、次の通り出力されました。
 
 ```python
->>> Division.objects.all()
-<QuerySet [<Division: Division object (58)>, <Division: Division object (51)>]>
+Division.objects.all()
+# <QuerySet [<Division: Division object (58)>, <Division: Division object (51)>]>
 ```
 
 部署モデルインスタンスが`print`されたとき、より意味のある文字列を出力するように、`Division`モデルに`__str__`メソッドを追加します。
+`__str__`メソッドは、Djangoがモデルインスタンスを出力する際に呼び出され、このメソッドが返却した文字列を出力します。
+
 また、部署コードと部署名を連結した文字を返却する`full_name`メソッドと、まったく意味がありませんが、部署名の文字数を返却する`name_len`メソッドを追加します。
 
 `./divisions/models.py`を次の通り変更します。
@@ -497,31 +500,30 @@ NameError: name 'road1' is not defined
 +             部署名の文字数。
 +         """
 +         return len(self.name)
-+
 ```
 
-次に、Pythonインタラクティブシェルを再起動して、部署モデルに実装したメソッドが機能するか確認します。
+次に、Pythonインタラクティブコンソールを再起動して、部署モデルに実装したメソッドが機能するか確認します。
 
-> 既存のPythonインタラクティブシェルでは、部署モデルの変更が反映されていないため機能しません。
-> 必ず、Pythonインタラクティブシェルを再起動してください。
+> 既存のPythonインタラクティブコンソールでは、部署モデルの変更が反映されていないため機能しません。
+> 必ず、Pythonインタラクティブコンソールを再起動してください。
 
 ```bash
 python manage.py shell
 ```
 
 ```python
->>> from divisions.models import Division
->>> Division.objects.all()
-<QuerySet [<Division: ICT開発室>]>
->>> ict = Division.objects.get(pk="58")
-<Division: ICT開発室>
->>> ict.full_name()
-'58: ICT開発室'
->>> ict.name_len()
-6
+from divisions.models import Division
+Division.objects.all()
+# <QuerySet [<Division: ICT開発室>]>
+ict = Division.objects.get(pk="58")
+# <Division: ICT開発室>
+ict.full_name()
+# '58: ICT開発室'
+ict.name_len()
+# 6
 ```
 
-Djangoが提供する`データベースAPI（ORM）`によって、`SQL`を理解しなくてもモデルインスタンスを`save`することで、モデルに対応するデータベースのテーブルを操作できるようになります。
+Djangoが提供するクエリセットAPI（≒`ORM`）によって、`SQL`を理解しなくてもモデルインスタンスを`save`することで、モデルに対応するデータベースのテーブルにレコードを登録または更新できます
 
 > **ORM (Object Relational Mapping)**
 >
@@ -540,29 +542,31 @@ git add --all
 git commit -m '部署モデルを実装'
 ```
 
-> commit 3789abc55d6d598c99cb28932d846dde77563161
+> commit 2278943d497ebbde5086a58c230f69addbb50370 (tag: 006-部署モデルを実装)
 
 ## 管理サイト
 
 Djangoは、定義したモデルを操作するWebサイトを`管理サイト (Admin Site)`として動的に作成して提供します。
 
-管理サイトは、自由にデータを参照または更新できるため、Webアプリケーションの管理者のみ使用して、一般ユーザーには公開しないでください。
+管理サイトは、自由にデータを参照または更新できるため、本プロジェクトのスーパーユーザーかスタッフのみ使用して、一般ユーザーには公開しないでください。
 
-### 管理者 (admin、superuser) ユーザーの作成
+> Djangoにおいてスーパーユーザーは、後で説明するユーザーモデルインスタンスの属性`is_superuser`が`True`に設定されているユーザーです。
+> また、同様にスタッフは`is_staff`が`True`に設定されています。
+
+### スーパーユーザーユーザーの作成
 
 管理サイトには、管理サイトにアクセスできる権限をもつユーザーしかアクセスできません。
 
-> 管理サイトには、管理者（adminユーザー）及びスタッフ（staffユーザー）のみアクセスできます。
-> 管理サイトで、ユーザーを管理者またはスタッフに変更できます。
+> 管理サイトには、スーパーユーザーまたはスタッフのみアクセスできます。
+> 管理サイトで、一般ユーザーをユーザーをスーパーユーザーまたはスタッフに変更できます。
 
-次のコマンドを実行して、管理者ユーザーを作成します。
+次のコマンドを実行して、スーパーユーザーを作成します。
+コマンドの後は、Djangoからの問い合わせを入力します。
 なお、入力したパスワードが短く、類推しやすい場合は警告が表示されます。
 上記警告が表示された場合は、本チュートリアルに限り、Djangoのパスワード検証を回避するために、`Bypass password validation and create user anyway?`で`y`と入力します。
 
 ```bash
 python manage.py createsuperuser
-
-# Djangoからの問い合わせに対して、管理者の属性を入力します。
 ユーザー名 (leave blank to use 'xjr1300'): django
 メールアドレス: xjr1300.04@gmail.com
 Password:
@@ -577,8 +581,8 @@ Superuser created successfully.
 > チュートリアルのため、Djangoのパスワード検証機能を回避していますが、推奨されません。
 
 Djangoのパスワード検証機能は、プロジェクト設定ファイルの`AUTH_PASSWORD_VALIDATORS`で設定されています。
-デフォルトで設定されている検証内容以外に、他にDjangoが提供、またサードパーティが提供する検証を利用できます。
-デフォルトでは次が検証されます。
+デフォルトで設定されている検証方法以外に、他にDjangoが提供、またサードパーティが提供する検証方法を利用できます。
+パスワードは、デフォルトで次が検証されます。
 
 - 短いパスワードを拒否（`MinimumLengthValidator`）
 - 一般的なパスワードを拒否（`CommonPasswordValidator`）
@@ -600,11 +604,11 @@ Djangoのパスワード検証機能は、プロジェクト設定ファイル�
 ```
 
 開発サーバーが起動していない場合は起動してください。
-そして、ブラウザで`http://127.0.0.1:8000/admin/`にアクセスしてください。
+そして、ブラウザで`http://localhost/admin/`にアクセスしてください。
 
 Djangoの管理サイトのログインページが表示されるため、`createsuperuser`コマンドで入力したユーザー名とパスワードを入力して`ログイン`ボタンをクリックしてください。
 
-本チュートリアルでは説明しませんが、管理サイトが部署モデルインスタンスを操作する機能が提供していることを確認できます。
+本チュートリアルでは説明しませんが、管理サイトが部署モデルインスタンスを操作する機能を提供していることが確認できます。
 
 ## 管理サイトのカスタマイズ
 
@@ -684,7 +688,7 @@ python manage.py migrate
 
 ブラウザで管理サイトを表示すると、部署アプリが`DIVISIONS`と表示されていましたが、`DivisionConfig.verbose_name`により、`部署アプリ`に変更されたことを確認できます。
 
-部署名は`Division`または`Division`と表示されていましたが、`Divisions.Meta.verbose_name`及び`verbose_name_plural`によって、`部署`に変更されたことを確認できます。
+部署モデルの名前は、`Division`または`Division`と表示されていましたが、`Divisions.Meta.verbose_name`及び`verbose_name_plural`によって、`部署`に変更されたことを確認できます。
 また、部署を表示するリストのヘッダーが、モデルフィールドに設定した文字列に変更されていることも確認できます。
 なお、`verbose_name_plural`は、モデルの複数形の名前を指定します。
 
@@ -692,14 +696,14 @@ python manage.py migrate
 
 さらに、部署モデルインスタンスを記録するテーブル名が`divisions_division`から`divisions`に変更されました。
 
-部署モデルを管理サイトに表示できたため、変更内容をリポジトリにコミットします。
+部署モデルを管理サイトに登録できたため、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add --all
-git commit -m '部署モデルを管理サイトに表示'
+git commit -m '部署モデルを管理サイトに登録'
 ```
 
-> commit b2a51b8213f0cc6ae0a11cf78591477960589593
+> commit 08242bb2724ecbda2a4768548ba2e6f22638713b (tag: 007-部署モデルを管理サイトに登録)
 
 管理サイトをカスタマイズする詳細な方法は、次を参照してください。
 
@@ -709,7 +713,7 @@ git commit -m '部署モデルを管理サイトに表示'
 ## フィクスチャー（Fixture）
 
 `フィクスチャー`とは、データベースに記録されているモデルインスタンスをファイルに記録したものです。
-フィクスチャーを利用することで、データベースにモデルインスタンスの初期データを登録し、データベースに記録されているモデルインスタンスの内容をファイルに出力できます。
+フィクスチャーを利用することで、データベースにモデルインスタンスの初期データを登録し、逆にデータベースに記録されているモデルインスタンスの内容をファイルに出力できます。
 
 本チュートリアルでは、フィクスチャーを[YAML](https://yaml.org/)形式のテキストファイルで扱います。
 Djangoはより一般的な[JSON](https://developer.mozilla.org/ja/docs/Learn/JavaScript/Objects/JSON)でフィクスチャーを管理できますが、JSONはコメントを記録できないためYAMLを使用します。
@@ -726,7 +730,7 @@ git add --all
 git commit -m 'PyYAMLパッケージをインストール'
 ```
 
-> commit b9ba925eb4ec456e3c6b2cce009d6c1add96e34d
+> commit bbcf0455bc88a2bbcf20521d69f2389da6c14a3d (tag: 008-PyYAMLパッケージをインストール)
 
 ### 部署モデルインスタンスをフィクスチャーに出力
 
@@ -776,15 +780,15 @@ python manage.py loaddata ./divisions/fixtures/divisions.yaml
 
 DjangoのデータベースAPIを使用して、部署モデルインスタンスが3つ登録されていること確認してください。
 
-```text
+```bash
 python manage.py shell
-Python 3.11.2 (main, Feb 16 2023, 02:55:59) [Clang 14.0.0 (clang-1400.0.29.202)] on darwin
-Type "help", "copyright", "credits" or "license" for more information.
-(InteractiveConsole)
->>> from divisions.models import Division
->>> Division.objects.all()
-<QuerySet [<Division: ICT開発室>, <Division: 道路第3Ｇ>, <Division: 東京本社営業部>]>
->>> exit()
+```
+
+```python
+from divisions.models import Division
+Division.objects.all()
+# <QuerySet [<Division: ICT開発室>, <Division: 道路第3Ｇ>, <Division: 東京本社営業部>]>
+exit()
 ```
 
 次の通り、部署フィクスチャーをリポジトリにコミットします。
@@ -794,12 +798,12 @@ git add --all
 git commit -m '部署フィクスチャーを追加'
 ```
 
-> commit 6e7516146f7554ab7d24e88cb538d2f757dfb29d
+> commit d85fbaedec571564dbfcc4cb1fe840715c5a869d (tag: 009-部署フィクスチャーを追加)
 
 ## まとめ
 
-本章では、プロジェクトに部署アプリを追加して、部署モデルを実行しました。
-また、管理サイトで部署モデルインスタンスを参照したり、データベースAPIを利用してモデルインスタンスを`CRUD`しました。
-さらに、部署モデルインスタンスをフィクスチャーに保存してたあと、フィクスチャーに部署モデルインスタンスを追加して、追加した部署モデルインスタンスをデータベースにロードしました。
+本章では、プロジェクトに部署アプリを追加して、部署モデルを実装しました。
+また、管理サイトで部署モデルインスタンスを参照したり、クエルセットAPIを利用してモデルインスタンスを`CRUD`しました。
+さらに、部署モデルインスタンスをフィクスチャーに保存した後、2つの部署を部署フィクスチャーに追加して、部署モデルインスタンスをデータベースに記録しました。
 
 次の章では、部署モデルインスタンスを操作する関数ビューを実装します。

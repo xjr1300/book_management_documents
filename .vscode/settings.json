@@ -2,11 +2,25 @@
   "cSpell.words": [
     "clickjacking",
     "contenttypes",
+    "createsuperuser",
+    "icontains",
     "isort",
+    "makemigrations",
     "mypy",
     "pyproject",
     "pysen",
+    "sqlmigrate",
+    "startapp",
+    "startswith",
     "staticfiles",
-    "urlconf"
-  ]
+    "Traceback",
+    "urlconf",
+    "urlpatterns",
+    "varchar"
+  ],
+  "markdownlint.config": {
+    "MD013": false,
+    "MD024": false,
+    "MD050": false
+  }
 }

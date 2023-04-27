@@ -189,6 +189,8 @@ code ./divisions/templates/divisions/division_list.html
 
 さらに、テンプレートに変数を出力するときは、`{{ variable }}`のように`{{`と`}}`で変数を囲みます。
 
+> Djangoがビルトインするテンプレートタグは、[ここ](https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#built-in-tag-reference)を参照してください。
+
 #### Djangoのテンプレート検索
 
 プロジェクト設定ファイル（`./<proj-name>/settings.py`）の`TEMPLATES`で、`APP_DIRS`を`True`に設定すると、Djangoは`<app-name>/templates/<app-name>`ディレクトリをテンプレートの検索対象に含めます。

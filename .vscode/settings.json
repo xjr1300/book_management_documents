@@ -10,6 +10,7 @@
     "kwargs",
     "makemigrations",
     "mypy",
+    "pathlib",
     "pyproject",
     "pysen",
     "queryset",

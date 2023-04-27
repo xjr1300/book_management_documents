@@ -516,8 +516,8 @@ git commit -m 'テンプレートをリファクタリング'
 部署一覧ページから部署詳細ページに遷移するリンクを次の通り設置します。
 
 `url`テンプレートタグは、ページのURLを逆引きして、実際のURLに置き換えます。
-`division-detail`や`division-list`は、`./divisions/urls.py`の`path`関数で指定したビューの名前です。
-部署詳細ページ（`division-detail`）のURLは、部署の部署コードを渡す必要があるため、それを`url`テンプレート構文に渡しています。
+`divisions:division-detail`や`divisions:division-list`は、`:`の前部分が`./divisions/urls.py`で設定する`app_name`の値に、後ろ部分が`./divisions/urls.py`の`path`関数で指定したビューの名前に対応します。
+部署詳細ページ（`divisions:division-detail`）のURLは、部署の部署コードが無いと生成できないため、部署コードを`url`テンプレートタグに渡しています。
 
 ```html
 <!-- ./divisions/templates/divisions/division_list.html -->

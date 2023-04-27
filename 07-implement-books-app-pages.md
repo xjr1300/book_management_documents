@@ -519,6 +519,8 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
 また、`yesno`は、左を`True`と評価された場合は右の文字列をカンマ（`,`）で区切ったときの最初の文字列、`False`と評価された場合は2番目の文字列を出力するテンプレートフィルタです。
 なお、オプションで`None`と評価された場合は3番目の文字列を出力します。
 
+> Djangoにビルトインされているテンプレートフィルタについては、[ここ](https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#built-in-filter-reference)を参照してください。
+
 書籍一覧リストビューをディスパッチするために、`./books/urls.py`に次を追加します。
 
 ```python

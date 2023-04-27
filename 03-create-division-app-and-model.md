@@ -145,7 +145,7 @@ git add --all
 git commit -m '部署アプリを追加'
 ```
 
-> commit 9081ca4a0765a7dda92fe6622751604e0932ae7e (tag: 005-部署アプリを追加)
+> 9081ca4 (tag: 005-add-division-app)
 
 ## 部署モデルの実装
 
@@ -542,7 +542,7 @@ git add --all
 git commit -m '部署モデルを実装'
 ```
 
-> commit 2278943d497ebbde5086a58c230f69addbb50370 (tag: 006-部署モデルを実装)
+> 2278943 (tag: 006-implement-division-models)
 
 ## 管理サイト
 
@@ -703,7 +703,7 @@ git add --all
 git commit -m '部署モデルを管理サイトに登録'
 ```
 
-> commit 08242bb2724ecbda2a4768548ba2e6f22638713b (tag: 007-部署モデルを管理サイトに登録)
+> 08242bb (tag: 007-register-division-models-to-admin-site)
 
 管理サイトをカスタマイズする詳細な方法は、次を参照してください。
 
@@ -730,7 +730,7 @@ git add --all
 git commit -m 'PyYAMLパッケージをインストール'
 ```
 
-> commit bbcf0455bc88a2bbcf20521d69f2389da6c14a3d (tag: 008-PyYAMLパッケージをインストール)
+> bbcf045 (tag: 008-install-pyyaml)
 
 ### 部署モデルインスタンスをフィクスチャーに出力
 
@@ -798,7 +798,7 @@ git add --all
 git commit -m '部署フィクスチャーを追加'
 ```
 
-> commit d85fbaedec571564dbfcc4cb1fe840715c5a869d (tag: 009-部署フィクスチャーを追加)
+> d85fbae (tag: 009-add-division-fixture)
 
 ## まとめ
 

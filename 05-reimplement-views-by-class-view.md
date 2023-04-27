@@ -125,7 +125,7 @@ git add --all
 git commit -m '部署一覧関数ビューを部署一覧クラスビューで再実装'
 ```
 
-> commit 52685bcad7f75cf8947affeb6f3f15a472db8e33 (tag: 018-部署一覧関数ビューを部署一覧クラスビューで再実装)
+> 52685bc (tag: 018-implement-division-list-class-view)
 
 ## 部署詳細関数ビューを部署詳細クラスビューで再実装
 
@@ -186,7 +186,7 @@ git add ./divisions/
 git commit -m '部署詳細関数ビューを部署詳細クラスビューで再実装'
 ```
 
-> commit 19f606c93c7c271df3408801f2732f296f13dc42 (tag: 019-部署詳細関数ビューを部署詳細クラスビューで再実装)
+> 19f606c (tag: 019-implement-division-detail-class-view)
 
 ## 部署登録関数ビューを部署登録クラスビューで再実装
 
@@ -268,7 +268,7 @@ git add --all
 git commit -m '部署登録関数ビューを部署登録クラスビューで再実装'
 ```
 
-> commit 20d60867cfbdb853ecc0d805b3c0a502bc13d793 (tag: 020-部署登録関数ビューを部署登録クラスビューで再実装)
+> 20d6086 (tag: 020-implement-division-create-class-view)
 
 ## 部署更新関数ビューを部署更新クラスビューで再実装
 
@@ -366,7 +366,7 @@ git add ./divisions/
 git commit -m '部署更新関数ビューを部署更新クラスビューで再実装'
 ```
 
-> commit 13b9086dd5e8a5a175ac6a64677985f73c5b04db (tag: 021-部署更新関数ビューを部署更新クラスビューで再実装)
+> 13b9086 (tag: 021-implement-division-update-class-view)
 
 ## 部署削除関数ビューを部署削除クラスビューで再実装
 
@@ -438,7 +438,7 @@ git add ./divisions
 git commit -m '部署削除関数ビューを部署削除クラスビューで再実装'
 ```
 
-> commit fc4130834fdcadc0b6446b0f79f905150527931a (tag: 022-部署削除関数ビューを部署削除クラスビューで再実装)
+> fc41308 (tag: 022-implement-division-delete-class-view)
 
 ## 部署アプリビューのリファクタリング
 
@@ -516,7 +516,7 @@ git add ./divisions/views.py
 git commit -m 'DivisionViewMixinで部署モデルを指定'
 ```
 
-> commit a1d264af515fcb4b0682e1fe37042bf1f0518332 (tag: 023-DivisionViewMixinで部署モデルを指定)
+> a1d264a (tag: 023-division-view-mixin)
 
 ### URLキーワードの設定
 
@@ -587,7 +587,7 @@ git add ./divisions/views.py
 git commit -m 'DivisionSingleObjectMixinでパスコンバーターのキーワードを設定'
 ```
 
-> commit 8bf99067d2f0bd2f6f9d0590e87180a444ad71e3 (tag: 024-DivisionSingleObjectMixinでパスコンバーターのキーワードを設定)
+> 8bf9906 (tag: 024-division-single-object-mixin)
 
 ### 部署フォームの設定
 
@@ -638,7 +638,7 @@ git add ./divisions/views.py
 git commit -m 'DivisionFormMixinで部署フォームを設定'
 ```
 
-> commit 230417362548e832188c61d2bae12a76729c44c7 (HEAD -> main, tag: 025-DivisionFormMixinで部署フォームを設定)
+> 2304173 (tag: 025-division-form-mixin)
 
 ### ページタイトルの設定
 
@@ -755,7 +755,7 @@ git add ./divisions/views.py
 git commit -m 'PageTitleMixinでページタイトルを設定'
 ```
 
-> commit c1fa78bd122756c927708e5d2124ef4eaf558bdb (HEAD -> main, tag: 026-PageTitleMixinでページタイトルを設定)
+> c1fa78b (tag: 026-page-title-mixin)
 
 ### 部署登録及び部署更新ページの操作名
 
@@ -846,7 +846,7 @@ git add ./divisions/views.py
 git commit -m 'FormActionMixinで操作名を設定'
 ```
 
-> 69c91a326e7a730e15684f6b0a15de3cfa243bcc (tag: 027-FormActionMixinで操作名を設定)
+> 69c91a3 (tag: 027-form-action-mixin)
 
 ## Pythonにおける多重継承のメソッド解決順序（Method Resolution Order: MRO）
 

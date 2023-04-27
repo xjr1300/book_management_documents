@@ -17,13 +17,13 @@
 
 ## 書籍（`books`）アプリの追加
 
-最初に、書籍（`books`）アプリをプロジェクトに作成します。
+書籍（`books`）アプリを次の通り作成します。
 
 ```bash
 python manage.py startapp books
 ```
 
-次に、プロジェクト設定ファイルの`INSTALLED_APP`に書籍アプリを追加します。
+次に、プロジェクト設定ファイルの`INSTALLED_APP`に書籍アプリを追加して、書籍アプリをプロジェクトに追加します。
 
 ```python
 # ./book_management/settings.py

@@ -258,7 +258,7 @@ git add --all
 git commit -m '部署一覧ページを実装'
 ```
 
-> commit 0c1d212d3db07d6431fcb02c85124f88b686ee7d (tag: 010-部署一覧ページを実装)
+> 0c1d212 (tag: 010-implement-division-list-page)
 
 ## 部署詳細ページの実装
 
@@ -352,7 +352,7 @@ git add ./divisions/
 git commit -m '部署詳細ページを実装'
 ```
 
-> commit d757b0555647357d55972472740e5bd549dba3b9 (tag: 011-部署詳細ページを実装)
+> d757b05 (tag: 011-implement-division-detail-page)
 
 ## テンプレートのリファクタリング
 
@@ -509,7 +509,7 @@ git add --all
 git commit -m 'テンプレートをリファクタリング'
 ```
 
-> commit 02b5bbfa3475430e2d6719d1de417176bc9dc947 (tag: 012-テンプレートをリファクタリング)
+> 02b5bbf (tag: 012-refactor-templates)
 
 ## 部署一覧と部署詳細ページの相互リンク設置
 
@@ -548,7 +548,7 @@ git add --all
 git commit -m '部署一覧ページと部署詳細ページに相互リンクを設置'
 ```
 
-> commit 5284379092d83487c53bc50dd71ae87c31e63705 (tag: 013-部署一覧ページと部署詳細ページに相互リンクを設置)
+> 5284379 (tag: 013-set-links-between-division-list-to-detail)
 
 ## 部署登録ページの実装
 
@@ -746,7 +746,7 @@ git add --all
 git commit -m '部署登録ページを実装'
 ```
 
-> commit 01e1be7c2a3e77222d7888abf6b010ac6a6483a6 (HEAD -> main, tag: 014-部署登録ページを実装)
+> 01e1be7 (tag: 014-implement-register-division-page)
 
 ## 部署更新ページの実装
 
@@ -869,7 +869,7 @@ git add ./divisions/
 git commit -m '部署更新ページを実装'
 ```
 
-> commit d5e30e87b2d39a81b355440528df60005d02175a (tag: 015-部署更新ページを実装)
+> d5e30e8 (tag: 015-implement-update-division-page)
 
 ## 部署削除ページの実装
 
@@ -986,7 +986,7 @@ git add --all
 git commit -m '部署削除ページを実装'
 ```
 
-> commit d6caf52df0fad4428767b96179589c2afabc9dbc (tag: 016-部署削除ページを実装)
+> d6caf52 (tag: 016-implement-delete-division-page)
 
 ## トランザクションの設定
 
@@ -1052,7 +1052,7 @@ git add ./divisions/views.py
 git commit -m '部署登録、更新及び削除ビューでトランザクションを開始'
 ```
 
-> commit 8e7ea2a2036821e5a47bcf5617e07cd928c9f182 (tag: 017-部署登録、更新及び削除ビューでトランザクションを開始)
+> 8e7ea2a (tag: 017-set-transaction-on-division-pages)
 
 本チュートリアルでは、データベースにデータが反映される`QuerySet API`のみをトランザクション内で実行するようにしました。
 ビュー全体の処理が、トランザクション内で実行されるようにするには、次の通り、関数ビューを`transaction.atomic`デコレーターで修飾します。

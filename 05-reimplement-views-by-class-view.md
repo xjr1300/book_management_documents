@@ -864,24 +864,24 @@ Pythonでは、直接メソッドが呼び出されたクラス、そのクラ�
 ```python
 class Base:
     def foo(self) -> None:
-        print("Base's foo called.")
+        print("Base's foo was called.")
 
 
 class A(Base):
     def foo(self) -> None:
-        print("A's foo called.")
+        print("A's foo was called.")
         super().foo()
 
 
 class B(Base):
     def foo(self) -> None:
-        print("B's foo called.")
+        print("B's foo was called.")
         super().foo()
 
 
 class C(A, B):
     def foo(self) -> None:
-        print("C's foo called.")
+        print("C's foo was called.")
         super().foo()
 ```
 
@@ -913,10 +913,10 @@ class 'object'
 
 ```python
 >>> C().foo()
-C's foo called.
-A's foo called.
-B's foo called.
-Base's foo called.
+C's foo was called.
+A's foo was called.
+B's foo was called.
+Base's foo was called.
 ```
 
 `A`と`B`は`super().foo()`を呼び出していますが、`Base`の`foo`メソッドは1回しか呼び出されていません。
@@ -931,24 +931,24 @@ Base's foo called.
 ```python
 class OtherBase:
     def foo(self) -> None:
-        print("OtherBase's foo called.")
+        print("OtherBase's foo was called.")
 
 
 class D(OtherBase):
     def foo(self) -> None:
-        print("D's foo called.")
+        print("D's foo was called.")
         super().foo()
 
 
 class E(C, D):
     def foo(self) -> None:
-        print("E's foo called.")
+        print("E's foo was called.")
         super().foo()
 
 
 class F(D, C):
     def foo(self) -> None:
-        print("F's foo called.")
+        print("F's foo was called.")
         super().foo()
 ```
 
@@ -983,16 +983,16 @@ class 'object'
 
 ```python
 >>> E().foo()
-E's foo called.
-C's foo called.
-A's foo called.
-B's foo called.
-Base's foo called.
+E's foo was called.
+C's foo was called.
+A's foo was called.
+B's foo was called.
+Base's foo was called.
 >>>
 >>> F().foo()
-F's foo called.
-D's foo called.
-OtherBase's foo called.
+F's foo was called.
+D's foo was called.
+OtherBase's foo was called.
 ```
 
 `F`で説明すると、MROは`Base`まで繋がっていますが、`OtherBase`で基本クラスの`foo`メソッドを呼び出していないため、出力された内容は当然の結果です。
@@ -1014,10 +1014,10 @@ class F(D, C):
 
 ```python
 >>> F().foo()
-C's foo called.
-A's foo called.
-B's foo called.
-Base's foo called.
+C's foo was called.
+A's foo was called.
+B's foo was called.
+Base's foo was called.
 ```
 
 ### `CreateDivisionViewのMROとメソッド呼び出し
@@ -1050,10 +1050,10 @@ class 'object'
 `ContextMixin`の`get_context_data`メソッドに`print`関数を追加して、部署登録ページを表示したときの開発サーバーの主要な出力を次に示します。
 
 ```text
-ContextMixin's get_context_data called.
+ContextMixin's get_context_data was called.
 [22/Apr/2023 15:41:20] "GET /divisions/create/ HTTP/1.1" 200 10256
 [22/Apr/2023 15:41:31] "POST /divisions/create/ HTTP/1.1" 302 0
-ContextMixin's get_context_data called.
+ContextMixin's get_context_data was called.
 [22/Apr/2023 15:41:31] "GET /divisions/98/ HTTP/1.1" 200 9916
 ```
 

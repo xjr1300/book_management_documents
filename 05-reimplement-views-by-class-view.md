@@ -3,8 +3,8 @@
 - [クラスビューによる部署アプリのビューの再実装](#クラスビューによる部署アプリのビューの再実装)
   - [部署一覧関数ビューを部署一覧クラスビューで再実装](#部署一覧関数ビューを部署一覧クラスビューで再実装)
     - [モデルの指定](#モデルの指定)
-    - [表示するモデルインスタンスリスト（クエリセット）の取得](#表示するモデルインスタンスリストクエリセットの取得)
-    - [テンプレートのパスとコンテキスト名の決定](#テンプレートのパスとコンテキスト名の決定)
+    - [表示するQuerySetの取得](#表示するquerysetの取得)
+    - [テンプレートのパスとコンテキスト名の指定](#テンプレートのパスとコンテキスト名の指定)
     - [get\_context\_dataメソッドのオーバーライド](#get_context_dataメソッドのオーバーライド)
   - [部署詳細関数ビューを部署詳細クラスビューで再実装](#部署詳細関数ビューを部署詳細クラスビューで再実装)
   - [部署登録関数ビューを部署登録クラスビューで再実装](#部署登録関数ビューを部署登録クラスビューで再実装)
@@ -13,9 +13,9 @@
   - [部署アプリビューのリファクタリング](#部署アプリビューのリファクタリング)
     - [モデルの指定](#モデルの指定-1)
     - [URLキーワードの設定](#urlキーワードの設定)
+    - [部署フォームの設定](#部署フォームの設定)
     - [ページタイトルの設定](#ページタイトルの設定)
-    - [部署登録及び部署更新ページのアクション名](#部署登録及び部署更新ページのアクション名)
-    - [部署フォームのフィールド設定](#部署フォームのフィールド設定)
+    - [部署登録及び部署更新ページの操作名](#部署登録及び部署更新ページの操作名)
   - [Pythonにおける多重継承のメソッド解決順序（Method Resolution Order: MRO）](#pythonにおける多重継承のメソッド解決順序method-resolution-order-mro)
     - [メソッド解決順序](#メソッド解決順序)
     - [実際のメソッドの呼び出し](#実際のメソッドの呼び出し)
@@ -39,14 +39,16 @@ Djangoが提供するクラスビューは、ジェリックでどのモデル�
 + from typing import Any, Dict
 +
   from django.db import transaction
-  from django.http.request import HttpRequest
-  from django.http.response import HttpResponse
+  from django.http import HttpRequest, HttpResponse
   from django.shortcuts import get_object_or_404, redirect, render
 + from django.views import generic
 
+  from .forms import DivisionForm
+  from .models import Division
+
 
 - def list(request: HttpRequest) -> HttpResponse:
--     """部署一覧ビュー"""
+-     """部署一覧関数ビュー"""
 -
 -     # すべての部署をデータベースから取得
 -     divisions = Division.objects.all()
@@ -59,7 +61,7 @@ Djangoが提供するクラスビューは、ジェリックでどのモデル�
 -     return render(request, "divisions/division_list.html", context)
 
 + class DivisionListView(generic.ListView):
-+     """部署一覧ビュー"""
++     """部署一覧クラスビュー"""
 +     model = Division
 +
 +     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -70,33 +72,33 @@ Djangoが提供するクラスビューは、ジェリックでどのモデル�
 
 ### モデルの指定
 
-部署一覧クラスビューでは、ビューが扱うモデルを部署であることを、クラス変数`model`で指定しています（`model = Division`）。
+部署一覧クラスビューでは、ビューが部署モデルを扱うことをクラス変数`model`で指定しています。
 
-### 表示するモデルインスタンスリスト（クエリセット）の取得
+### 表示するQuerySetの取得
 
-部署一覧クラスビューでは、部署をデータベースから取得する実装がありませんが、それは`ListViews`（正確には`BaseListView`）が`get`メソッド内で、次を処理しているからです。
+部署一覧クラスビューに部署をデータベースから取得する実装がありませんが、それは`ListViews`（正確には`BaseListView`）が`get`メソッド内で次を処理しているからです。
 
-- `MultipleObjectMixin`の`get_queryset`メソッドを呼び出して、表示するモデルインスタンスのリスト（正確にはクエリセット（`QuerySet`）を取得して、メンバ変数`object_list`に設定
-- `MultipleObjectMixin`の`get_context_data`メソッドを呼び出して、上記で取得したクエリセットを追加したコンテキストを取得
+- `MultipleObjectMixin`の`get_queryset`メソッドを呼び出して、表示するモデルインスタンスのQuerySetを取得して、メンバ変数`object_list`に設定します。
+- `MultipleObjectMixin`の`get_context_data`メソッドを呼び出して、上記で取得したQuerySetを追加したコンテキストを取得します。
 
-### テンプレートのパスとコンテキスト名の決定
+### テンプレートのパスとコンテキスト名の指定
 
-部署一覧関数ビューを実装するとき、テンプレートのパス、テンプレートで使用するコンテキスト名などは**意図的に決定**しました。
+実際のところ、部署一覧関数ビューを実装するとき、テンプレートのパス、テンプレートで使用するコンテキスト名などは**意図的に**指定しました。
 
-`MultipleObjectMixin`の`get_context_data`メソッドは、自身の`get_context_object_name`メソッドを呼び出して、上記クエリセット格納するコンテキスト名を取得します。
-この`get_context_object_name`メソッドは、`context_object_name`クラス変数が設定されていない場合、小文字に変換したモデル名の末尾に`_list`を追加した文字列（コンテキスト名）を返却します。
-この返却されるコンテキスト名は、部署一覧テンプレートで使用している`division_list`です。
+`MultipleObjectMixin`の`get_context_data`メソッドは、自身の`get_context_object_name`メソッドを呼び出して、上記QuerySetを格納するコンテキスト名を取得します。
+この`get_context_object_name`メソッドは、`context_object_name`クラス変数が設定されていない場合、小文字に変換したモデル名の末尾に`_list`を追加した文字列を返却して、その文字列がコンテキスト名になります。
+部署一覧テンプレートにおいて、そのコンテキスト名は`division_list`です。
 
-テンプレートのパスも、`MultipleObjectMixin`の`get_template_names`メソッドが`get_context_object_name`メソッドと同様な処理で`divisions/division_list.html`が設定されます。
+テンプレートのパスも、`MultipleObjectMixin`の`get_template_names`メソッドが、コンテキスト名と同様な処理で`divisions/division_list.html`になります。
 
 ### get_context_dataメソッドのオーバーライド
 
-ページのヘッダに設定したいタイトルは、本Webアプリケーション独自の仕様です。
-このため、部署一覧クラスビューで`get_context_data`メソッドをオーバーライド（上書き）して、`MultipleObjectMixin`の`get_context_data`メソッドを呼び出し（`super().get_context_data(**kwargs)`）てコンテキストを取得します。
+HTMLの`head`要素の`title`要素のコンテンツに設定したいタイトルは、本Webアプリケーション独自の仕様です。
+このため、部署一覧クラスビューで`get_context_data`メソッドをオーバーライドして、`MultipleObjectMixin`の`get_context_data`メソッドを呼び出し（`super().get_context_data(**kwargs)`）て、Djangoが作成したコンテキストを取得します。
 その後、取得したコンテキストに`title`という名前でタイトル名を追加しています。
 
 > クラスビューのデフォルトの振る舞いを確認したい場合は、次を参照してください。
-> 特に、`Classy Class-Based Views.`は確認しやすく、便利です。
+> 特に、`Classy Class-Based Views.`は確認しやすく、非常に便利です。
 > Djangoのソースコードを確認する場合は、クラスビューのベースクラスである`Mixin`クラスを参照してください。
 > Djangoのジェネリックビューの処理のほとんどは、`Mixin`クラスで実装されています。
 >
@@ -104,7 +106,7 @@ Djangoが提供するクラスビューは、ジェリックでどのモデル�
 > - [Django - Document](https://docs.djangoproject.com/en/4.2/ref/class-based-views/)
 > - [Django Generic View - GitHub](https://github.com/django/django/tree/main/django/views/generic)
 
-部署一覧クラスビューがディスパッチされるように、`./divisions/urls.py`を変更します。
+部署一覧クラスビューがディスパッチされるように、`./divisions/urls.py`を次の通り変更します。
 
 ```python
 # ./divisions/urls.py
@@ -123,17 +125,17 @@ git add --all
 git commit -m '部署一覧関数ビューを部署一覧クラスビューで再実装'
 ```
 
-> commit 8284753536fd48806a5c00abc011f778715438a9
+> commit 52685bcad7f75cf8947affeb6f3f15a472db8e33 (tag: 018-部署一覧関数ビューを部署一覧クラスビューで再実装)
 
 ## 部署詳細関数ビューを部署詳細クラスビューで再実装
 
-[DetailView](https://docs.djangoproject.com/en/4.2/ref/class-based-views/generic-display/#detailview)は、特定のモデルの特定のモデルインスタンスの属性を表示する機能を提供するクラスビューです。
+[DetailView](https://docs.djangoproject.com/en/4.2/ref/class-based-views/generic-display/#detailview)は、特定のモデルインスタンスの属性を表示する機能を提供するクラスビューです。
 部署詳細関数ビューを次の通り`DetailView`で再実装します。
 
 ```python
 # ./divisions/views.py
 - def detail(request: HttpResponse, code: str) -> HttpResponse:
--     """部署詳細ビュー
+-     """部署詳細関数ビュー
 -
 -     Args:
 -         code: 部署コード
@@ -180,11 +182,11 @@ git commit -m '部署一覧関数ビューを部署一覧クラスビューで�
 部署詳細ビューをクラスビューで再実装した結果を、次の通りリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./divisions/
 git commit -m '部署詳細関数ビューを部署詳細クラスビューで再実装'
 ```
 
-> commit 2ba8b0f2c4d494166655e823a7085abdfc28b803
+> commit 19f606c93c7c271df3408801f2732f296f13dc42 (tag: 019-部署詳細関数ビューを部署詳細クラスビューで再実装)
 
 ## 部署登録関数ビューを部署登録クラスビューで再実装
 
@@ -202,7 +204,7 @@ git commit -m '部署詳細関数ビューを部署詳細クラスビューで�
  (...省略...)
 
 - def create(request: HttpResponse) -> HttpResponse:
--     """部署登録ビュー"""
+-     """部署登録関数ビュー"""
 -
 -     if request.method == "POST":
 -         # POSTパラメーターから部署フォームを構築
@@ -220,6 +222,7 @@ git commit -m '部署詳細関数ビューを部署詳細クラスビューで�
 -         "divisions/division_form.html",
 -         {"title": "部署登録", "form": form, "action": "登録"},
 -     )
+
 +
 + class DivisionCreateView(generic.CreateView):
 +     """部署登録クラスビュー"""
@@ -235,14 +238,14 @@ git commit -m '部署詳細関数ビューを部署詳細クラスビューで�
 +         return ctx
 +
 +     def get_success_url(self) -> str:
-+         return reverse("division-detail", kwargs={"code": self.object.code})
++         return reverse("divisions:division-detail", kwargs={"code": self.object.code})
 ```
 
 部署登録クラスビューは、部署一覧クラスビューと同様に自動的にテンプレートやコンテキストを`CreateView`が解決します。
 また、部署登録ページに表示するフォームも`CreateView`のベースクラスである`ModelFromMixin`の`get_form_class`メソッドで解決します。
 
-`CreateView`は、フォームの検証に成功したとき`ModelFormMixin`の`form_valid`メソッドが呼び出されます（`ProcessFormView`の`post`メソッド）。
-`form_valid`メソッドでは、フォームから生成した部署モデルインスタンスをデータベースに登録して、登録した部署モデルインスタンスを、メンバ変数`object (self.object)`に設定します。
+`CreateView`は、`ProcessFormView`の`post`メソッド内で、フォームの検証に成功したとき`ModelFormMixin`の`form_valid`メソッドを呼び出します。
+`form_valid`メソッドでは、フォームから生成した部署モデルインスタンスをデータベースに登録して、登録した部署モデルインスタンスをメンバ変数`object (self.object)`に設定します。
 
 部署登録クラスビューの`get_success_url`メソッドは、上記で設定されたメンバ変数`object`を参照して、`reverse`関数でリダイレクト先のURLを構築しています。
 
@@ -265,11 +268,11 @@ git add --all
 git commit -m '部署登録関数ビューを部署登録クラスビューで再実装'
 ```
 
-> commit fad5ae64a0b18ab945b6a476ae5e8bfe8ac9a9fb
+> commit 20d60867cfbdb853ecc0d805b3c0a502bc13d793 (tag: 020-部署登録関数ビューを部署登録クラスビューで再実装)
 
 ## 部署更新関数ビューを部署更新クラスビューで再実装
 
-[UpdateView](https://docs.djangoproject.com/en/4.2/ref/class-based-views/generic-editing/#updateview)は、特定のモデルのモデルインスタンスを更新する機能を提供するクラスビューです。
+[UpdateView](https://docs.djangoproject.com/en/4.2/ref/class-based-views/generic-editing/#updateview)は、特定のモデルインスタンスを更新する機能を提供するクラスビューです。
 部署更新関数ビューを次の通り`UpdateView`で再実装します。
 
 ```python
@@ -336,7 +339,7 @@ git commit -m '部署登録関数ビューを部署登録クラスビューで�
 +         return form
 +
 +     def get_success_url(self) -> str:
-+         return reverse("division-detail", kwargs={"code": self.object.code})
++         return reverse("divisions:division-detail", kwargs={"code": self.object.code})
 ```
 
 部署更新クラスビューは、部署登録クラスビューと同様です。
@@ -359,15 +362,15 @@ git commit -m '部署登録関数ビューを部署登録クラスビューで�
 部署更新ビューをクラスビューで再実装した結果を、次の通りリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./divisions/
 git commit -m '部署更新関数ビューを部署更新クラスビューで再実装'
 ```
 
-> commit 112e9a1736078a80d3cc934f510f454dd74d3ef7
+> commit 13b9086dd5e8a5a175ac6a64677985f73c5b04db (tag: 021-部署更新関数ビューを部署更新クラスビューで再実装)
 
 ## 部署削除関数ビューを部署削除クラスビューで再実装
 
-[DeleteView](https://docs.djangoproject.com/en/4.2/ref/class-based-views/generic-editing/#django.views.generic.edit.DeleteView)は、特定のモデルのモデルインスタンスを削除する機能を提供するクラスビューです。
+[DeleteView](https://docs.djangoproject.com/en/4.2/ref/class-based-views/generic-editing/#django.views.generic.edit.DeleteView)は、特定のモデルインスタンスを削除する機能を提供するクラスビューです。
 部署削除関数ビューを次の通り`DeleteView`で再実装します。
 
 ```python
@@ -379,7 +382,9 @@ git commit -m '部署更新関数ビューを部署更新クラスビューで�
 - from django.shortcuts import get_object_or_404, redirect, render
   from django.urls import reverse, reverse_lazy
   from django.views import generic
+
   (...省略...)
+
 - def delete(request: HttpRequest, code: str) -> HttpResponse:
 -     """部署削除ビュー
 -
@@ -402,12 +407,12 @@ git commit -m '部署更新関数ビューを部署更新クラスビューで�
 +
 +     model = Division
 +     pk_url_kwarg = "code"
-+     success_url = reverse_lazy("division-list")
++     success_url = reverse_lazy("divisions:division-list")
 +
-+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-+        ctx = super().get_context_data(**kwargs)
-+        ctx["title"] = "部署削除"
-+        return ctx
++     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
++         ctx = super().get_context_data(**kwargs)
++         ctx["title"] = "部署削除"
++         return ctx
 ```
 
 `reverse_lazy`関数は、`reverse`関数の遅延評価バージョンで、クラスビューのクラス変数にURLを設定するなど、URLconfが読み込まれる前にURLパターン名からURLを逆引きしたい場合に`reverse`の代わりに使用します。
@@ -429,21 +434,21 @@ git commit -m '部署更新関数ビューを部署更新クラスビューで�
 部署削除ビューをクラスビューで再実装した結果を、次の通りリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./divisions
 git commit -m '部署削除関数ビューを部署削除クラスビューで再実装'
 ```
 
-> commit 61bc3c28f2f2f1890d8e90e9bc6fd4b55e7d30ec
+> commit fc4130834fdcadc0b6446b0f79f905150527931a (tag: 022-部署削除関数ビューを部署削除クラスビューで再実装)
 
 ## 部署アプリビューのリファクタリング
 
 `./divisions/views.py`を確認すると、それぞれのビューで実装が重複しています。
-`DRY`の精神に従って、重複しテイル実装をリファクタリングします。
+`DRY`の精神に従って、重複している実装をリファクタリングします。
 
 ### モデルの指定
 
 それぞれのビューに、`model = Division`という実装があります。
-これを[ミックスイン](https://ja.wikipedia.org/wiki/Mixin)と呼ばれる技法を使用してリファクタリングして、クラスビューが処理するモデルの定義を`DivisionViewMixin`にまとめます。
+これを[ミックスイン](https://ja.wikipedia.org/wiki/Mixin)と呼ばれる技法を使用して、クラスビューが処理するモデルの定義を`DivisionViewMixin`にまとめます。
 
 次の通り`./divisions/views.py`を変更します。
 
@@ -503,17 +508,19 @@ git commit -m '部署削除関数ビューを部署削除クラスビューで�
       success_url = reverse_lazy("division-list")
 ```
 
-部署一覧、部署詳細、部署登録、部署更新及び部署削除ページが正常に機能することを確認してください。
-正常に機能することが確認できたら、変更をリポジトリにコミットします。
+部署一覧、詳細、登録、更新及び削除ページが正常に機能することを確認してください。
+正常に機能することが確認できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./divisions/views.py
 git commit -m 'DivisionViewMixinで部署モデルを指定'
 ```
 
+> commit a1d264af515fcb4b0682e1fe37042bf1f0518332 (tag: 023-DivisionViewMixinで部署モデルを指定)
+
 ### URLキーワードの設定
 
-1つの部署モデルを扱うビューにおいて、`pk_url_kwarg = "code"`という実装が重複しています。
+部署詳細ビューや部署更新ビューなど、1つの部署モデルインスタンスを取り扱うビューについて、`pk_url_kwarg = "code"`という実装が重複しています。
 これは、部署の部署コード（`code`）がプライマリーキーで、URLconfのパスコンバーターで`<str:code>`を指定したため、Djangoのデフォルトの実装と違うため追加したコードでした。
 この実装を`DivisionSingleObjectMixin`に次の通りまとめます。
 
@@ -526,7 +533,7 @@ git commit -m 'DivisionViewMixinで部署モデルを指定'
 
 
 + class DivisionSingleObjectMixin:
-+     """部署ビューシングルオブジェクトミックスイン"""
++     """部署シングルオブジェクトミックスイン"""
 +
 +     pk_url_kwarg = "code"
 +
@@ -572,21 +579,71 @@ git commit -m 'DivisionViewMixinで部署モデルを指定'
       success_url = reverse_lazy("division-list")
 ```
 
-部署一覧、部署詳細、部署登録、部署更新及び部署削除ページが正常に機能することを確認してください。
-正常に機能することが確認できたら、変更をリポジトリにコミットします。
+部署一覧、詳細、登録、更新及び削除ページが正常に機能することを確認してください。
+正常に機能することが確認できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add --all
-git commit -m 'DivisionSingleObjectMixinでpk_url_kwargを設定'
+git add ./divisions/views.py
+git commit -m 'DivisionSingleObjectMixinでパスコンバーターのキーワードを設定'
 ```
 
-> commit ac59df601bc9012325d4556b7f763b307cbb49e5
+> commit 8bf99067d2f0bd2f6f9d0590e87180a444ad71e3 (tag: 024-DivisionSingleObjectMixinでパスコンバーターのキーワードを設定)
+
+### 部署フォームの設定
+
+フィールドなど部署フォームの設定を`DivisionFormMixin`にまとめます。
+
+```python
+# ./division/views.py
++ class DivisionFormMixin:
++     """部署フォームドミックスイン"""
++
++     fields = ("code", "name")
++
+
+  (...略...)
+
+- class DivisionCreateView(
+-     DivisionViewMixin, DivisionSingleObjectMixin, generic.CreateView
+- ):
++ class DivisionCreateView(
++     DivisionViewMixin, DivisionSingleObjectMixin, DivisionFormMixin, generic.CreateView
++ ):
+      """部署登録クラスビュー"""
+
+      title = "部署登録"
+-     fields = ("code", "name")
+      action = "登録"
+
+  (...略...)
+
+- class DivisionUpdateView(
+-     DivisionViewMixin, DivisionSingleObjectMixin, generic.UpdateView
+- ):
++ class DivisionUpdateView(
++     DivisionViewMixin, DivisionSingleObjectMixin, DivisionFormMixin, generic.UpdateView
++ ):
+      """部署更新クラスビュー"""
+
+      title = "部署更新"
+-     fields = ("code", "name")
+      action = "更新"
+```
+
+部署登録及び部署更新ページが正常に部署を登録、または更新できることを確認してください。
+正常に機能することが確認できたら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./divisions/views.py
+git commit -m 'DivisionFormMixinで部署フォームを設定'
+```
+
+> commit 230417362548e832188c61d2bae12a76729c44c7 (HEAD -> main, tag: 025-DivisionFormMixinで部署フォームを設定)
 
 ### ページタイトルの設定
 
-それぞれのビューの`get_context_data`メソッドで、ページのタイトルをコンテキストに設定します。
-この処理を、`PageTitleMixin`にまとめます。
-`PageTitleMixin`は、これをベースクラスとするビューから`get_context_data`メソッドが呼ばれるため、`get_context_data`を定義している`ContextMixin`から派生します。
+それぞれのビューの`get_context_data`メソッドで、ページのタイトルをコンテキストに設定するように`PageTitleMixin`にまとめます。
+`PageTitleMixin`は、`get_context_data`を実装する`ContextMixin`から派生します。
 
 ```python
 # ./division/views.py
@@ -628,15 +685,18 @@ git commit -m 'DivisionSingleObjectMixinでpk_url_kwargを設定'
 -         return ctx
 
 - class DivisionCreateView(
--     DivisionViewMixin, DivisionSingleObjectMixin, generic.CreateView
+-     DivisionViewMixin, DivisionSingleObjectMixin, DivisionFormMixin, generic.CreateView
 - ):
 + class DivisionCreateView(
-+     DivisionViewMixin, DivisionSingleObjectMixin, PageTitleMixin, generic.CreateView
++     DivisionViewMixin,
++     DivisionSingleObjectMixin,
++     DivisionFormMixin,
++     PageTitleMixin,
++     generic.CreateView,
 + ):
       """部署登録クラスビュー"""
 
 +     title = "部署登録"
-      fields = ("code", "name")
 
       def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
           ctx = super().get_context_data(**kwargs)
@@ -649,15 +709,18 @@ git commit -m 'DivisionSingleObjectMixinでpk_url_kwargを設定'
 
 
 - class DivisionUpdateView(
--     DivisionViewMixin, DivisionSingleObjectMixin, generic.UpdateView
+-     DivisionViewMixin, DivisionSingleObjectMixin, DivisionFormMixin, generic.UpdateView
 - ):
 + class DivisionUpdateView(
-+     DivisionViewMixin, DivisionSingleObjectMixin, PageTitleMixin, generic.UpdateView
++     DivisionViewMixin,
++     DivisionSingleObjectMixin,
++     DivisionFormMixin,
++     PageTitleMixin,
++     generic.UpdateView,
 + ):
       """部署更新クラスビュー"""
 
 +     title = "部署更新"
-      fields = ("code", "name")
 
       def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
           ctx = super().get_context_data(**kwargs)
@@ -688,35 +751,41 @@ git commit -m 'DivisionSingleObjectMixinでpk_url_kwargを設定'
 正常に表示することが確認できたら、変更をリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./divisions/views.py
 git commit -m 'PageTitleMixinでページタイトルを設定'
 ```
 
-> commit 4ed11d785b0d25b9f930d7c31c00a4acab61a944
+> commit c1fa78bd122756c927708e5d2124ef4eaf558bdb (HEAD -> main, tag: 026-PageTitleMixinでページタイトルを設定)
 
-### 部署登録及び部署更新ページのアクション名
+### 部署登録及び部署更新ページの操作名
 
-部署登録及び部署更新ページのアクション名を`FormActionMixin`にまとめます。
+部署登録及び部署更新ページの操作名を`FormActionMixin`にまとめます。
 
 ```python
 # ./divisions/views.py
-+ class FormAction(generic.base.ContextMixin):
++ class FormActionMixin(generic.base.ContextMixin):
 +     """フォームアクションミックスイン"""
-
++
 +     action = None
-
++
 +     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
 +         ctx = super().get_context_data(**kwargs)
 +         ctx["action"] = self.action
 +         return ctx
+
   (...省略...)
 
 - class DivisionCreateView(
--     DivisionViewMixin, DivisionSingleObjectMixin, PageTitleMixin, generic.CreateView
+-     DivisionViewMixin,
+-     DivisionSingleObjectMixin,
+-     DivisionFormMixin,
+-     PageTitleMixin,
+-     generic.CreateView,
 - ):
 + class DivisionCreateView(
 +     DivisionViewMixin,
 +     DivisionSingleObjectMixin,
++     DivisionFormMixin,
 +     PageTitleMixin,
 +     FormActionMixin,
 +     generic.CreateView,
@@ -724,7 +793,6 @@ git commit -m 'PageTitleMixinでページタイトルを設定'
     """部署登録クラスビュー"""
 
       title = "部署登録"
-      fields = ("code", "name")
 +     action = "登録"
 
 -     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -737,11 +805,16 @@ git commit -m 'PageTitleMixinでページタイトルを設定'
 
 
 - class DivisionUpdateView(
--     DivisionViewMixin, DivisionSingleObjectMixin, PageTitleMixin, generic.UpdateView
+-     DivisionViewMixin,
+-     DivisionSingleObjectMixin,
+-     DivisionFormMixin,
+-     PageTitleMixin,
+-     generic.UpdateView,
 - ):
 + class DivisionUpdateView(
 +     DivisionViewMixin,
 +     DivisionSingleObjectMixin,
++     DivisionFormMixin,
 +     PageTitleMixin,
 +     FormActionMixin,
 +     generic.UpdateView,
@@ -749,7 +822,6 @@ git commit -m 'PageTitleMixinでページタイトルを設定'
       """部署更新クラスビュー"""
 
       title = "部署更新"
-      fields = ("code", "name")
 +     action = "更新"
 
 -     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -770,97 +842,29 @@ git commit -m 'PageTitleMixinでページタイトルを設定'
 正常に表示することが確認できたら、変更をリポジトリにコミットします。
 
 ```bash
-git add --all
-git commit -m 'FormActionMixinでアクション名を設定'
+git add ./divisions/views.py
+git commit -m 'FormActionMixinで操作名を設定'
 ```
 
-> commit 23116eca804a77f11c11db29b01ebe34698bdb26
-
-### 部署フォームのフィールド設定
-
-部署フォームのフィールドの設定を`DivisionFormFieldsMixin`にまとめます。
-
-```python
-# ./division/views.py
-+ class DivisionFormFieldsMixin:
-+     """部署フォームフィールドミックスイン"""
-+
-+     fields = ("code", "name")
-+
-(...略...)
-
-- class DivisionCreateView(
--     DivisionViewMixin,
--     DivisionSingleObjectMixin,
--     PageTitleMixin,
--     FormActionMixin,
--     generic.CreateView,
-- ):
-+ class DivisionCreateView(
-+     DivisionViewMixin,
-+     DivisionFormFieldsMixin,
-+     DivisionSingleObjectMixin,
-+     PageTitleMixin,
-+     FormActionMixin,
-+     generic.CreateView,
-+ ):
-      """部署登録クラスビュー"""
-
-      title = "部署登録"
--     fields = ("code", "name")
-      action = "登録"
-
-  (...略...)
-
-- class DivisionUpdateView(
--     DivisionViewMixin,
--     DivisionSingleObjectMixin,
--     PageTitleMixin,
--     FormActionMixin,
--     generic.UpdateView,
-- ):
-+ class DivisionUpdateView(
-+     DivisionViewMixin,
-+     DivisionFormFieldsMixin,
-+     DivisionSingleObjectMixin,
-+     PageTitleMixin,
-+     FormActionMixin,
-+     generic.UpdateView,
-+ ):
-      """部署更新クラスビュー"""
-
-      title = "部署更新"
--     fields = ("code", "name")
-      action = "更新"
-```
-
-部署登録及び部署更新ページが正常に部署を登録、または部署を更新できることを確認してください。
-正常に機能することが確認できたら、変更をリポジトリにコミットします。
-
-```bash
-git add --all
-git commit -m 'DivisionFormFieldsMixinで部署フォームのフィールドを設定'
-```
-
-> commit db992bb85cb3ecfefd0eaeb815f544c3da561cbe
+> 69c91a326e7a730e15684f6b0a15de3cfa243bcc (tag: 027-FormActionMixinで操作名を設定)
 
 ## Pythonにおける多重継承のメソッド解決順序（Method Resolution Order: MRO）
 
 ### メソッド解決順序
 
-Pythonではクラスの多重継承を許しています。
-このとき、多重継承したクラスのメソッドがオーバーライドされている場合、どのクラスのメソッドを呼び出すかを解決する順番を`メソッド解決順序（Method Resolution Order: MRO）`と呼んでいます。
-Pythonでは、直接メソッドが呼び出されたクラス、そのクラスが継承しているクラスの宣言順、その継承しているクラスが継承しているクラスの宣言順・・・で、呼び出す候補となるメソッドが検索されます。
+Pythonではクラスの多重継承を許可しています。
+多重継承を許可しているプログラミング言語において、多重継承したクラスのメソッドがオーバーライドされている場合、どのクラスから呼び出すメソッドを検索するか決定する必要があります。
+この順番は、`メソッド解決順序（Method Resolution Order: MRO）`と呼ばれています。
+Pythonでは、直接メソッドが呼び出されたクラス、そのクラスが継承しているクラスの宣言順、その継承しているクラスが継承しているクラスの宣言順・・・で、呼び出すメソッドの順番が決まります。
 
 > 呼び出すメソッドを解決する順番で、実際に呼び出すわけではないことに注意してください。
 
-言葉で理解することが難しいため、次の例で説明します。
+言葉で説明することが難しいため、次の例で説明します。
 
 ```python
 class Base:
     def foo(self) -> None:
         print("Base's foo called.")
-
 
 
 class A(Base):
@@ -973,7 +977,7 @@ class 'object'
 
 先ほど、**継承された順番が優先**されると述べましたが、`E`と`F`では継承された順番でなく、`E`または`F`が継承したクラスが優先されています。
 
-この理由を調べましたが、よいドキュメントを見つけることができず理解できていませんが、`E`がオーバーライドしているメソッドの根源が`Base`の`foo`であり、`F`がオーバーライドしているメソッドの根元が`OtherBase`の`foo`であるからと理解しています。
+この理由を調べましたが、ドキュメントを見つけることができず理解できていませんが、`E`がオーバーライドしているメソッドの根源が`Base`の`foo`であり、`F`がオーバーライドしているメソッドの根元が`OtherBase`の`foo`であるからと考えています。
 
 `E`と`F`の`foo`メソッドを呼び出すと、次の通り出力されます。
 
@@ -1026,8 +1030,8 @@ Base's foo called.
 >>> DivisionCreateView.__mro__
 class 'divisions.views.DivisionCreateView'
 class 'divisions.views.DivisionViewMixin'
-class 'divisions.views.DivisionFormFieldMixin'
 class 'divisions.views.DivisionSingleObjectMixin'
+class 'divisions.views.DivisionFormMixin'
 class 'divisions.views.PageTitleMixin'
 class 'divisions.views.FormActionMixin'
 class 'django.views.generic.edit.CreateView'
@@ -1037,7 +1041,7 @@ class 'django.views.generic.edit.BaseCreateView'
 class 'django.views.generic.edit.ModelFormMixin'
 class 'django.views.generic.edit.FormMixin'
 class 'django.views.generic.detail.SingleObjectMixin'
-class 'django.views.generic.base.ContextMixin'        # ContextMixin
+class 'django.views.generic.base.ContextMixin'  # ContextMixin
 class 'django.views.generic.edit.ProcessFormView'
 class 'django.views.generic.base.View'
 class 'object'
@@ -1059,8 +1063,8 @@ ContextMixin's get_context_data called.
 
 ## まとめ
 
-前の章で部署のビューを関数ビューで実装しましたが、それらをクラスビューで再実装しました。
+前の章で部署アプリのビューを関数ビューで実装しましたが、それらをクラスビューで再実装しました。
 また、それぞれの部署クラスビューで重複する項目をミックスインでリファクタリングしました。
-クラスビューは関数ビューよりもDjangoからの支援を受けやすく、オブジェクト思考により実装内容が明確になります。
+クラスビューは関数ビューよりもDjangoからの支援を受けやすく、オブジェクト思考により実装内容がより明確になります。
 
-次の章以降では、書籍アプリを追加して、カテゴリ、カテゴリ詳細及び書籍モデルを実装して、それらを操作するクラスビューを実装します。
+次の章以降では、書籍アプリを追加して、書籍分類、書籍分類詳細及び書籍モデルを実装して、それらを操作するクラスビューを実装します。

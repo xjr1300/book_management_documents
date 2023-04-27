@@ -709,7 +709,9 @@ class BookForm(forms.ModelForm):
 ```
 
 書籍フォームテンプレートを次の通り実装します。
-コメントで記述した説明を確認してください。
+本チュートリアルではJavaScriptについて説明しません。
+書籍フォームテンプレートに実装されたJavaScriptのコードの説明は、コメントで確認してください。
+なお、次のJavaScriptコードの一部は、Djangoがレンダリングするようになっています。
 
 ```html
 <!-- ./books/templates/books/book_form.html -->

@@ -6,26 +6,26 @@
     - [Djangoのビューの役割と処理内容](#djangoのビューの役割と処理内容)
   - [部署アプリで実装するビュー](#部署アプリで実装するビュー)
   - [部署一覧ページの実装](#部署一覧ページの実装)
-    - [部署一覧ビュー関数の実装](#部署一覧ビュー関数の実装)
+    - [部署一覧関数ビューの実装](#部署一覧関数ビューの実装)
     - [部署一覧テンプレートの実装](#部署一覧テンプレートの実装)
       - [Djangoのテンプレート検索](#djangoのテンプレート検索)
     - [部署一覧ビューのディスパッチ](#部署一覧ビューのディスパッチ)
     - [部署一覧ページの表示](#部署一覧ページの表示)
   - [部署詳細ページの実装](#部署詳細ページの実装)
-    - [部署詳細ビュー関数の実装](#部署詳細ビュー関数の実装)
+    - [部署詳細関数ビューの実装](#部署詳細関数ビューの実装)
     - [部署詳細テンプレートの実装](#部署詳細テンプレートの実装)
     - [部署詳細ビューのディスパッチ](#部署詳細ビューのディスパッチ)
     - [部署詳細ページの表示](#部署詳細ページの表示)
   - [テンプレートのリファクタリング](#テンプレートのリファクタリング)
     - [ベーステンプレートの実装](#ベーステンプレートの実装)
-    - [部署一覧、部署詳細ビュー関数のリファクタリング](#部署一覧部署詳細ビュー関数のリファクタリング)
+    - [部署一覧、部署詳細関数ビューのリファクタリング](#部署一覧部署詳細関数ビューのリファクタリング)
     - [部署一覧、部署詳細テンプレートのリファクタリング](#部署一覧部署詳細テンプレートのリファクタリング)
     - [テンプレート検索ディレクトリの設定](#テンプレート検索ディレクトリの設定)
     - [テンプレートフィファクタリング結果の確認](#テンプレートフィファクタリング結果の確認)
   - [部署一覧と部署詳細ページの相互リンク設置](#部署一覧と部署詳細ページの相互リンク設置)
   - [部署登録ページの実装](#部署登録ページの実装)
     - [部署フォームの実装](#部署フォームの実装)
-    - [部署登録ビュー関数の実装](#部署登録ビュー関数の実装)
+    - [部署登録関数ビューの実装](#部署登録関数ビューの実装)
       - [HTTPリクエストがGETの場合](#httpリクエストがgetの場合)
       - [HTTPリクエストがPOSTの場合](#httpリクエストがpostの場合)
         - [部署フォームの検証に成功した場合](#部署フォームの検証に成功した場合)
@@ -37,15 +37,15 @@
     - [部署登録ページで文字数の多い部署コードを入力してみる](#部署登録ページで文字数の多い部署コードを入力してみる)
     - [部署一覧ページに部署登録ページに遷移するリンクを設置](#部署一覧ページに部署登録ページに遷移するリンクを設置)
   - [部署更新ページの実装](#部署更新ページの実装)
-    - [部署更新ビュー関数の実装](#部署更新ビュー関数の実装)
+    - [部署更新関数ビューの実装](#部署更新関数ビューの実装)
     - [部署フォームテンプレートの変更](#部署フォームテンプレートの変更)
-    - [部署更新ビューのディスパッチ](#部署更新ビューのディスパッチ)
     - [部署一覧、部署詳細ページに部署更新ページに遷移するリンクを設置](#部署一覧部署詳細ページに部署更新ページに遷移するリンクを設置)
+    - [部署更新ビューのディスパッチ](#部署更新ビューのディスパッチ)
   - [部署削除ページの実装](#部署削除ページの実装)
-    - [部署削除ビュー関数の実装](#部署削除ビュー関数の実装)
+    - [部署削除関数ビューの実装](#部署削除関数ビューの実装)
     - [部署削除テンプレートの実装](#部署削除テンプレートの実装)
-    - [部署削除ビューのディスパッチ](#部署削除ビューのディスパッチ)
     - [部署一覧、部署詳細、部署更新ページに部署削除ページへのリンクを設置](#部署一覧部署詳細部署更新ページに部署削除ページへのリンクを設置)
+    - [部署削除ビューのディスパッチ](#部署削除ビューのディスパッチ)
   - [トランザクションの設定](#トランザクションの設定)
   - [まとめ](#まとめ)
 
@@ -53,12 +53,12 @@
 
 ### DjangoがHTTPリクエストを処理する手順
 
-DjangoはHTTPリクエストを処理する手順は、次の通りです。
+DjangoがHTTPリクエストを処理する手順は、次の通りです。
 
 1. HTTPリクエストを受信します。
 2. [URLディスパッチャー](https://docs.djangoproject.com/en/4.2/topics/http/urls/#url-dispatcher)でリクエストURLのパターンを解析して、リクエストを処理するビューを特定します。
-3. HTTPリクエストを上記で特定したビューに渡して、リクエストを処理させてHTTPレスポンスを生成します。
-4. HTTPレスポンスを返却します。
+3. HTTPリクエストを上記で特定したビューに渡して、ビューがHTTPレスポンスを生成します。
+4. ビューが生成したHTTPレスポンスを返却します。
 
 ### Djangoのビューの役割と処理内容
 
@@ -66,68 +66,67 @@ Djangoのビューは、HTTPリクエストから[次など](https://docs.django
 
 - GETパラメーター
   - `https://www.google.com/search?q=python+django&oq=python+django`
-  - 上記`?`より後の文字列がGETパラメータで、`q`と`oq`を渡しています。
+  - 上記`?`より後がGETパラメーターで、`q`と`oq`がパラメーターです。
   - パラメーター`q`の値は`python+django`で、`oq`の値も`python+django`です。
 - POSTパラメーター
-  - HTTPリクエストボディに含められたデータで、Webアプリケーションにデータを渡すフォームデータなどを渡します。
+  - HTTPリクエストボディに含められたデータで、Webページのフォームに入力されたデータなどを渡します。
 - [パスコンバーター](https://docs.djangoproject.com/en/4.2/topics/http/urls/#path-converters)がリクエストURLから抽出したデータ
 - クッキー
-  - Webアプリケーションとブラウザ間で状態を管理するデータで、ユーザーの識別などに用いられます。
+  - Webアプリケーションとブラウザ間で状態を管理するために使用されるデータで、ユーザーの識別などに用いられます。
 - アップロードされたファイル
 
-> Djangoのパスコンバーターは、URLconfに指定されたURLのパターンから、特定のデータを抽出します。
+> パスコンバーターは、URLconfに指定されたURLのパターンから、特定のデータを抽出します。
 
-Djangoのビューは、HTTPリクエストを受け取ったら次のいずれかを実施します。
+ビューは、HTTPリクエストを受け取ると次のいずれかを実施する必要があります。
 
-- Djangoの[HttpRequest](https://docs.djangoproject.com/en/4.2/ref/request-response/#httprequest-objects)を受け取り、要求されたコンテンツを含んだ[HttpResponse](https://docs.djangoproject.com/en/4.2/ref/request-response/#django.http.HttpResponse)を返却します（正常系）。
-- リクエストを処理できない場合は、[Http404](https://docs.djangoproject.com/en/4.2/topics/http/views/#django.http.Http404)のような例外を投げます（異常系）。
+- [HttpRequest](https://docs.djangoproject.com/en/4.2/ref/request-response/#httprequest-objects)を受け取り、要求されたコンテンツを含んだ[HttpResponse](https://docs.djangoproject.com/en/4.2/ref/request-response/#django.http.HttpResponse)を返却します（正常系）。
+- エラーなど何らかの理由でリクエストを処理できない場合は、[Http404](https://docs.djangoproject.com/en/4.2/topics/http/views/#django.http.Http404)のような例外を投げます（異常系）。
 
-DjangoのビューでHTMLコンテンツを生成する基本的な手順を次に示します。
+ビューでHTMLコンテンツを生成する基本的な手順を次に示します。
 
 1. データベースから必要なデータを取得します。
 2. データベースから取得したデータ及びそれ以外のデータを`コンテキスト`にまとめて、そのコンテキストでHTMLの雛形であるテンプレート（`MVT`の`T`）をレンダリングすることで、HTMLコンテンツを生成します。
 
-ここで、コンテキストとは`辞書のような`インスタンスを示します。
-コンテキストして、Djangoが定義する[django.template.Context](https://docs.djangoproject.com/en/4.2/ref/templates/api/#django.template.Context)や、Pythonの辞書インスタンスを利用できます。
+コンテキストは、`辞書`のように振る舞います。
+コンテキストとして、[django.template.Context](https://docs.djangoproject.com/en/4.2/ref/templates/api/#django.template.Context)や、Pythonの辞書を利用できます。
 
 ## 部署アプリで実装するビュー
 
 部署アプリで実装するビューを次に示します。
-なお、部署アプリで処理するリクエストURLは、ルートURLconfにより、`/divisions/`で始まるリクエストURLになっています。
+なお、部署アプリで処理するリクエストURLは、ルートURLconfにより、`/divisions/`で始まります。
 また、リクエストURLの`<code>`は、パスコンバーターが抽出した、処理する部署モデルインスタンスを特定するときの部署コードです。
 
 例えば、 `http://<site>/divisions/`はすべての部署を部署一覧ページで表示して、`http://<site>/divisions/58/`はICT開発室を部署詳細ページで表示します。
 
-| リクエストURL | ページ名 |ビュー関数 | メソッド | 表示または処理内容 |
+| リクエストURL | ページ名 |関数ビュー | メソッド | 表示または処理内容 |
 | --- | --- | --- | --- | --- |
-| （なし） | 部署一覧ページ |`list` | `GET` | 部署一覧表示、部署詳細ページリンク表示、部署登録ページリンク表示 |
-| `<code>/` | 部署詳細ページ | `detail` | `GET` | 部署詳細表示、部署更新ページリンク表示、部署削除リンク表示、部署一覧ページリンク表示 |
-| `create/` | 部署登録ページ | `create` | `GET` | 部署フォーム表示、部署一覧ページリンク表示 |
-| `create/` | 部署登録ページ | `create` | `POST` | 部署モデルインスタンスを登録、登録後は部署詳細ページに遷移 |
-| `update/<code>/` | 部署更新ページ | `update` | `GET` | 部署フォーム表示、部署詳細ページリンク表示、部署削除リンク表示、部署一覧ページリンク表示 |
-| `update/<code>/` | 部署更新ページ | `update` | `POST` | 部署モデルインスタンスを更新、更新後は部署詳細ページに遷移 |
-| `delete/<code>/` | 部署削除ページ | `delete` | `GET` | 部署削除フォーム表示、部署詳細表示、部署詳細ページリンク表示、部署更新ページリンク表示、部署一覧ページリンク表示 |
-| `delete/<code>/` | 部署削除ページ | `delete` | `POST` | 部署モデルインスタンスを削除、削除後は部署一覧ページに遷移 |
+| （なし） | 部署一覧ページ |`list` | `GET` | 登録されている部署を一覧表示 |
+| `<code>/` | 部署詳細ページ | `detail` | `GET` | `code`で特定された部署の属性を表示 |
+| `create/` | 部署登録ページ | `create` | `GET` | 登録する部署を入力するフォームを表示 |
+| `create/` | 部署登録ページ | `create` | `POST` | 部署モデルインスタンスを登録して部署詳細ページに遷移 |
+| `update/<code>/` | 部署更新ページ | `update` | `GET` | `code`で特定された部署を更新するフォームを表示 |
+| `update/<code>/` | 部署更新ページ | `update` | `POST` | 部署モデルインスタンスを更新して部署詳細ページに遷移 |
+| `delete/<code>/` | 部署削除ページ | `delete` | `GET` | `code`で特定された部署を削除するフォームを表示 |
+| `delete/<code>/` | 部署削除ページ | `delete` | `POST` | 部署モデルインスタンスを削除して部署一覧ページに遷移 |
 
 本章では、部署アプリのビューを関数ビューで実装しますが、次の章でクラスビューで再実装します。
 
 ## 部署一覧ページの実装
 
-### 部署一覧ビュー関数の実装
+### 部署一覧関数ビューの実装
 
-`./divisions/views.py`の内容をすべて削除して、を次で置き換えます。
+`./divisions/views.py`の内容を次で置き換えます。
 
 ```python
 # ./divisions/views.py
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 from .models import Division
 
 
 def list(request: HttpRequest) -> HttpResponse:
-    """部署一覧ビュー"""
+    """部署一覧関数ビュー"""
 
     # すべての部署をデータベースから取得
     divisions = Division.objects.all()
@@ -138,13 +137,15 @@ def list(request: HttpRequest) -> HttpResponse:
 ```
 
 `部署一覧ビュー`関数は、最初にすべての部署をデータベースから取得します。
-なお、`division`の型は`QuerySet`で、 データベースからデータを取得するために柔軟で強力な方法を提供するクラスです。
+なお、`divisions`変数の型は`QuerySet`で、 データベースからデータを取得するために柔軟で強力な方法を提供するクラスです。
+よって、`divisions`は、すべての部署モデルインスタンスを格納した`QuerySet`です。
+
 `QuerySet`が提供する機能の詳細は[ここ](https://docs.djangoproject.com/en/4.2/ref/models/querysets/)を参照してください。
 
-次に、コンテキストとなる辞書に、`division_list`キーの値としてすべての部署を設定しています。
-この`division_list`は、次に説明するテンプレートでコンテキストで渡したデータを参照するために、識別子として使用されます。
+次に、コンテキストとなる辞書に、`division_list`キーの値としてすべての部署モデルインスタンスを格納した`QuerySet`を設定しています。
+この`division_list`は、次に説明するテンプレートをレンダリングするために、コンテキストの識別子として使用されます。
 
-最後に、[render](https://docs.djangoproject.com/en/4.2/topics/http/shortcuts/#django.shortcuts.render)関数は、コンテキストでテンプレートをレンダリングしてHTMLコンテンツを生成して、そのHTMLコンテンツを含んだ`HttpResponse`インスタンスを返却しています。
+次に、[render](https://docs.djangoproject.com/en/4.2/topics/http/shortcuts/#django.shortcuts.render)関数で、コンテキストを使用してテンプレートをレンダリングすることでHTMLコンテンツを生成して、それを含んだ`HttpResponse`インスタンスを返却しています。
 
 ### 部署一覧テンプレートの実装
 
@@ -152,39 +153,39 @@ def list(request: HttpRequest) -> HttpResponse:
 
 ```bash
 # 部署アプリテンプレートディレクトリの作成
-mkdir -p divisions/templates/divisions
+mkdir -p ./divisions/templates/divisions
 # 部署一覧テンプレートの作成
-code divisions/templates/divisions/division_list.html
+code ./divisions/templates/divisions/division_list.html
 ```
 
 その後、部署一覧テンプレートを次の通り実装します。
 
 ```html
-<!-- divisions/templates/divisions/division_list.html -->
+<!-- ./divisions/templates/divisions/division_list.html -->
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <title>部署一覧</title>
-  </head>
-  <body>
-    <h1>部署一覧</h1>
-    {% if division_list %}
-    <ul>
-      {% for division in division_list %}
+<head>
+  <meta charset="utf-8"/>
+  <title>部署一覧</title>
+</head>
+<body>
+<h1>部署一覧</h1>
+{% if division_list %}
+  <ul>
+    {% for division in division_list %}
       <li>{{ division.code }}: {{ division.name }}</li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>部署が存在しません。</p>
-    {% endif %}
-  </body>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>部署が存在しません。</p>
+{% endif %}
+</body>
 </html>
 ```
 
-テンプレートでは、コンテキストで渡した辞書の`division_list`キーがコンテキストの識別子として変数のように扱われ、`division_list`で部署一覧ビューで取得したすべての部署モデルインスアンスを参照しています。
+テンプレートでは、コンテキストで渡した辞書の`division_list`キーがコンテキストの識別子として変数のように扱われ、`division_list`で部署一覧ビューで取得したすべての部署モデルインスタンスを格納したクエリセットを参照します。
 
-また、`{% if ... %}`や`{% for ... %}`など`{%`と`%}`で囲まれたモノは、Djangoの[テンプレートタグ](https://docs.djangoproject.com/en/4.2/ref/templates/language/)で、それぞれ`if`文と`for`文のように振る舞います。
+また、`{% if ... %}`や`{% for ... %}`など`{%`と`%}`で囲まれた構文は、Djangoの[テンプレートタグ](https://docs.djangoproject.com/en/4.2/ref/templates/language/)で、それぞれ`if`文と`for`文のように振る舞います。
 
 さらに、テンプレートに変数を出力するときは、`{{ variable }}`のように`{{`と`}}`で変数を囲みます。
 
@@ -217,7 +218,10 @@ TEMPLATES = [
 ```
 
 `部署一覧ビュー`関数に実装した`render`関数で、テンプレートに`divisions/division_list.html`を指定しました。
-これは、上記設定により`./divisions/templates/divisions/division_list.html`ファイルがテンプレートとして特定されるようになります。
+上記設定により、それの`render`関数は`./divisions/templates/divisions/division_list.html`ファイルをテンプレートとして使用します。
+
+> Djangoがテンプレートを探す場所には優先順位があります。
+> 期待するテンプレートが使用されない場合は、テンプレートを検索する優先順位を確認してください。
 
 ### 部署一覧ビューのディスパッチ
 
@@ -229,19 +233,21 @@ from django.urls import path
 
 from . import views
 
+app_name = "divisions"
+
 urlpatterns = [
     # 部署一覧ページ(ex: /divisions/)
     path("", views.list, name="division-list"),
 ]
 ```
 
-[path](https://docs.djangoproject.com/en/4.2/ref/urls/#path)関数の第１引数で、第２引数で指定したビューが処理するリクエストURLのパターンを指定します。
-また、`path`関数の`name`キーワード引数は、第１引数で指定したリクエストURLのパターンに付ける名前で、[reverse](https://docs.djangoproject.com/en/4.2/ref/urlresolvers/#django.urls.reverse)関数でURLパターンに付けた名前から、URLパターンを逆引きして、実際のURLを生成するときに利用します。
+[path](https://docs.djangoproject.com/en/4.2/ref/urls/#path)関数の第1引数で、第2引数で指定したビューが処理するリクエストURLのパターンを指定します。
+また、`path`関数の`name`キーワード引数は、第1引数で指定したリクエストURLのパターンに付ける名前で、[reverse](https://docs.djangoproject.com/en/4.2/ref/urlresolvers/#django.urls.reverse)関数などでURLパターンに付けた名前から、URLパターンを逆引きして、実際のURLを生成するときに利用されます。
 
 ### 部署一覧ページの表示
 
 開発サーバーを起動していない場合は開発サーバーを起動します。
-そして、ブラウザで`http://127.0.0.1:8000/divisions/`にアクセスすると、部署の一覧が表示されるはずです。
+そして、ブラウザで`http://localhost:8000/divisions/`にアクセスすると、部署の一覧が表示されるはずです。
 
 部署一覧ページが正常に表示された場合は、次の通りリポジトリに変更をコミットします。
 
@@ -250,18 +256,17 @@ git add --all
 git commit -m '部署一覧ページを実装'
 ```
 
-> commit 59c2111ac7cbf3a25f05ffc59d81e42e7abc9082
+> commit 0c1d212d3db07d6431fcb02c85124f88b686ee7d (tag: 010-部署一覧ページを実装)
 
 ## 部署詳細ページの実装
 
-### 部署詳細ビュー関数の実装
+### 部署詳細関数ビューの実装
 
-`./divisions/views.py`を開いて、次を追加します。
+部署詳細関数ビューを次の通り実装します。
 
 ```python
 # ./divisions/views.py
-  from django.http.request import HttpRequest
-  from django.http.response import HttpResponse
+  from django.http.request import HttpRequest, HttpResponse
 - from django.shortcuts import render
 + from django.shortcuts import get_object_or_404, render
 
@@ -274,7 +279,7 @@ git commit -m '部署一覧ページを実装'
 +
 +
 + def detail(request: HttpResponse, code: str) -> HttpResponse:
-+     """部署詳細ビュー
++     """部署詳細関数ビュー
 +
 +     Args:
 +         code: 部署コード
@@ -286,10 +291,10 @@ git commit -m '部署一覧ページを実装'
 +     return render(request, "divisions/division_detail.html", {"division": division})
 ```
 
-[get_object_or_404](https://docs.djangoproject.com/en/4.2/topics/http/shortcuts/#django.shortcuts.get_object_or_404)関数は、キーワード引数で指定された条件（`pk=code`）で第１引数で指定したモデルのモデルインスタンスを検索して、モデルインスタンスが存在する場合はそのインスタンスを返却して、存在しない場合は`Http404`例外をスローします。
-なお、モデルインスタンスを検索する条件となるキーワード引数は、1つ以上指定できます。
+[get_object_or_404](https://docs.djangoproject.com/en/4.2/topics/http/shortcuts/#django.shortcuts.get_object_or_404)関数は、キーワード引数で指定された条件（`pk=code`）で第1引数で指定したモデルのモデルインスタンスを検索して、モデルインスタンスが存在する場合はそのインスタンスを返却して、存在しない場合は`Http404`例外をスローします。
+なお、モデルインスタンスを検索する条件となるキーワード引数は、コードで示した以外にも複数指定できます。
 
-部署詳細ビュー関数の`get_object_or_404`の部分は次のコードと等価で、特定のモデルインスタンスを取得するコードを容易に実装するために、Djangoが提供するショートカット関数です。
+部署詳細関数ビューの`get_object_or_404`の部分は次のコードと等価で、特定のモデルインスタンスを取得するコードを容易に実装するために、Djangoが提供するショートカット関数です。
 
 ```python
 # division = get_object_or_404(Division, pk=code)
@@ -301,27 +306,27 @@ except Division.DoesNotExist:
 
 ### 部署詳細テンプレートの実装
 
-`./divisions/templates/divisions/division_detail.html`ファイルに、次の通り部署詳細テンプレートを実装します。
+部署詳細テンプレートを次の通り実装します。
 
 ```html
 <!-- ./divisions/templates/divisions/division_detail.html -->
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <title>部署詳細</title>
-  </head>
-  <body>
-    <h1>部署詳細</h1>
-    <div>部署コード: {{ division.code}}</div>
-    <div>部署名: {{ division.name}}</div>
-  </body>
+<head>
+  <meta charset="utf-8"/>
+  <title>部署詳細</title>
+</head>
+<body>
+  <h1>部署詳細</h1>
+  <div>部署コード: {{ division.code }}</div>
+  <div>部署名: {{ division.name }}</div>
+</body>
 </html>
 ```
 
 ### 部署詳細ビューのディスパッチ
 
-`./divisions/urls.py`を次の通り変更して、部署詳細ビューが処理するリクエストのリクエストURLのパターンを設定します。
+`./divisions/urls.py`を次の通り変更して、部署詳細ビューが処理するリクエストURLのパターンを設定します。
 
 ```python
 # ./divisions/urls.py
@@ -336,22 +341,22 @@ except Division.DoesNotExist:
 ### 部署詳細ページの表示
 
 開発サーバーを起動していない場合は開発サーバーを起動します。
-そして、ブラウザで`http://127.0.0.1:8000/divisions/58/`にアクセスすると、ICT開発室が表示されるはずです。
+そして、ブラウザで`http://localhost:8000/divisions/58/`にアクセスすると、ICT開発室が表示されるはずです。
 
 部署詳細ページが正常に表示された場合は、次の通りリポジトリに変更をコミットします。
 
 ```bash
-git add --all
+git add ./divisions/
 git commit -m '部署詳細ページを実装'
 ```
 
-> commit a848ccf0642aa61456a46726689591fb842edde7
+> commit d757b0555647357d55972472740e5bd549dba3b9 (tag: 011-部署詳細ページを実装)
 
 ## テンプレートのリファクタリング
 
 `リファクタリング`とは、外部から見たときの動作を変えずに、プログラムの内部構造を整理することです。
-部署一覧テンプレートと部署詳細テンプレートには、HTMLヘッダなどに重複する実装があります。
-`DRY (Don't Repeat Yourself)`の精神に従って、テンプレートをリファクタリングします。
+部署一覧テンプレートと部署詳細テンプレートには、HTMLヘッダなど重複する実装があります。
+[DRY (Don't Repeat Yourself)](https://e-words.jp/w/DRY%E5%8E%9F%E5%89%87.html)の精神に従って、テンプレートをリファクタリングします。
 
 ### ベーステンプレートの実装
 
@@ -365,32 +370,33 @@ code ./templates/base.html
 `./templates/base.html`を次の通り実装します。
 
 ```html
+<!-- ./templates/base.html -->
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    {% block title %}
+<head>
+  <meta charset="utf-8"/>
+  {% block title %}
     <title>{{ title }}</title>
-    {% endblock title %}
-  </head>
-  <body>
-    {% block inner_body%}{% endblock inner_body %}
-  </body>
+  {% endblock title %}
+</head>
+<body>
+{% block inner_body %}{% endblock inner_body %}
+</body>
 </html>
 ```
 
-ページタイトルを描画する`title`は、コンテキストで渡します。
-基本テンプレートの`{% block inner_body%}{% endblock inner_body %}`の部分は、基本テンプレートを継承した部署一覧テンプレートなどの他のテンプレートで置き換えます。
-基本テンプレートを継承するテンプレートは、ブロックの名前（上記`title`や`inner_body`）を指定して、本テンプレートの当該箇所を置き換えるコンテンツを実装します。
+HTMLの`head`要素の`title`要素のコンテンツを、`title`コンテキストで渡します。
+基本テンプレートの`{% block inner_body%}{% endblock inner_body %}`の部分は、基本テンプレートを継承した部署一覧テンプレートなどの他のテンプレートで置き換えられます。
+基本テンプレートを継承するテンプレートは、ブロックの名前（上記`title`や`inner_body`）を指定して、ベーステンプレートのコンテンツを置き換えます。
 
-### 部署一覧、部署詳細ビュー関数のリファクタリング
+### 部署一覧、部署詳細関数ビューのリファクタリング
 
-部署一覧及び部署詳細ビュー関数を次の通り変更します。
+部署一覧及び部署詳細関数ビューを次の通り変更します。
 
 ```python
 # ./divisions/views.py
   def list(request: HttpRequest) -> HttpResponse:
-      """部署一覧ビュー"""
+      """部署一覧関数ビュー"""
 
       # すべての部署を取得
       divisions = Division.objects.all()
@@ -404,7 +410,7 @@ code ./templates/base.html
       return render(request, "divisions/division_list.html", context)
 
   def detail(request: HttpResponse, code: str) -> HttpResponse:
-      """部署詳細ビュー
+      """部署詳細関数ビュー
 
       Args:
           code: 部署コード
@@ -423,36 +429,38 @@ code ./templates/base.html
 
 ### 部署一覧、部署詳細テンプレートのリファクタリング
 
-部署一覧テンプレートを次で入れ替えます。
+部署一覧テンプレートを次で置き換えます。
+
+`extends`テンプレートタグで、ベーステンプレートを継承します。
 
 ```html
 <!-- ./divisions/templates/divisions/division_list.html -->
 {% extends 'base.html' %}
 
 {% block inner_body %}
-<h1>部署一覧</h1>
-{% if division_list %}
-<ul>
-  {% for division in division_list %}
-  <li>{{ division.code }}: {{ division.name }}</li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>部署が存在しません。</p>
-{% endif %}
+  <h1>部署一覧</h1>
+  {% if division_list %}
+    <ul>
+      {% for division in division_list %}
+        <li>{{ division.code }}: {{ division.name }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>部署が存在しません。</p>
+  {% endif %}
 {% endblock inner_body %}
 ```
 
-部署詳細テンプレートを次で入れ替えます。
+部署詳細テンプレートを次で置き換えます。
 
 ```html
 <!-- ./divisions/templates/divisions/division_list.html -->
 {% extends 'base.html' %}
 
 {% block inner_body %}
-<h1>部署詳細</h1>
-<div>部署コード: {{ division.code }}</div>
-<div>部署名: {{ division.name }}</div>
+  <h1>部署詳細</h1>
+  <div>部署コード: {{ division.code }}</div>
+  <div>部署名: {{ division.name }}</div>
 {% endblock inner_body %}
 ```
 
@@ -473,7 +481,7 @@ Djangoが`./templates`ディレクトリに格納したテンプレートを検�
       {
           "BACKEND": "django.template.backends.django.DjangoTemplates",
 -         "DIRS": [],
-+         "DIRS": [os.path.join(BASE_DIR, "templates")],
++         "DIRS": [os.path.join(BASE_DIR, "templates"),],
           "APP_DIRS": True,
           "OPTIONS": {
               "context_processors": [
@@ -499,7 +507,7 @@ git add --all
 git commit -m 'テンプレートをリファクタリング'
 ```
 
-> commit c0d47e3ec829ad7ba7576890066ef7932fae2425
+> commit 02b5bbfa3475430e2d6719d1de417176bc9dc947 (tag: 012-テンプレートをリファクタリング)
 
 ## 部署一覧と部署詳細ページの相互リンク設置
 
@@ -531,8 +539,6 @@ git commit -m 'テンプレートをリファクタリング'
   {% endblock inner_body %}
 ```
 
-これで、部署一覧ページと部署詳細ページを行き来できるようになりました。
-
 部署一覧ページと部署詳細ページに相互リンクが設置され、相互にページ遷移できた場合は、次の通りリポジトリに変更をコミットします。
 
 ```bash
@@ -540,7 +546,7 @@ git add --all
 git commit -m '部署一覧ページと部署詳細ページに相互リンクを設置'
 ```
 
-> commit 30c1844a481736163bf3d1c40c6b37f5beb2fe74
+> commit 5284379092d83487c53bc50dd71ae87c31e63705 (tag: 013-部署一覧ページと部署詳細ページに相互リンクを設置)
 
 ## 部署登録ページの実装
 
@@ -573,39 +579,38 @@ python manage.py shell
 ```
 
 ```python
->>> from divisions.forms import DivisionForm
->>> form = DivisionForm()
->>> form.as_p()
-'<p>\n    <label for="id_code">部署コード:</label>\n    <input type="text" name="code" maxlength="2" required id="id_code">\n    \n    \n  </p>\n\n  \n  <p>\n    <label for="id_name">部署名:</label>\n    <input type="text" name="name" maxlength="80" required id="id_name">\n    \n    \n      \n    \n  </p>'
->>> form.as_table()
-'<tr>\n    <th><label for="id_code">部署コード:</label></th>\n    <td>\n      \n      <input type="text" name="code" maxlength="2" required id="id_code">\n      \n      \n    </td>\n  </tr>\n\n  <tr>\n    <th><label for="id_name">部署名:</label></th>\n    <td>\n      \n      <input type="text" name="name" maxlength="80" required id="id_name">\n      \n      \n        \n      \n    </td>\n  </tr>'
+from divisions.forms import DivisionForm
+form = DivisionForm()
+form.as_p()
+# '<p>\n    <label for="id_code">部署コード:</label>\n    <input type="text" name="code" maxlength="2" required id="id_code">\n    \n    \n  </p>\n\n  \n  <p>\n    <label for="id_name">部署名:</label>\n    <input type="text" name="name" maxlength="80" required id="id_name">\n    \n    \n      \n    \n  </p>'
+form.as_table()
+# '<tr>\n    <th><label for="id_code">部署コード:</label></th>\n    <td>\n      \n      <input type="text" name="code" maxlength="2" required id="id_code">\n      \n      \n    </td>\n  </tr>\n\n  <tr>\n    <th><label for="id_name">部署名:</label></th>\n    <td>\n      \n      <input type="text" name="name" maxlength="80" required id="id_name">\n      \n      \n        \n      \n    </td>\n  </tr>'
 ```
 
-### 部署登録ビュー関数の実装
+### 部署登録関数ビューの実装
 
-`./divisions/views.py`に、次の通り部署登録ビュー関数を実装します。
+部署登録関数ビューを次の通り実装します。
 
 ```python
 # ./divisions/views.py
-  from django.http.request import HttpRequest
-  from django.http.response import HttpResponse
+  from django.http.request import HttpRequest, HttpResponse
 - from django.shortcuts import get_object_or_404, render
 + from django.shortcuts import get_object_or_404, redirect, render
 
 + from .forms import DivisionForm
   from .models import Division
 
-# 省略
+  (...省略...)
 
 + def create(request: HttpResponse) -> HttpResponse:
-+     """部署登録ビュー"""
++     """部署登録関数ビュー"""
 +
 +     if request.method == "POST":
 +         # POSTパラメーターから部署フォームを構築
 +         form = DivisionForm(request.POST)
 +         if form.is_valid():
 +             division = form.save()
-+             return redirect("division-detail", code=division.code)
++             return redirect("divisions:division-detail", code=division.code)
 +     else:  # request.method is "GET", maybe.
 +         # フォームを構築
 +         form = DivisionForm()
@@ -619,15 +624,16 @@ python manage.py shell
 
 #### HTTPリクエストがGETの場合
 
-部署登録ビュー関数で実装した`if`文の`else`ブロックが実行されます。
+部署登録関数ビューで実装した`if`文の`else`ブロックが実行されます。
 この`else`ブロックでは、部署フォームを構築するのみです。
 
-部署登録ビュー関数の最後の行の`render`関数は、タイトル、先に構築した部署フォーム及びボタンラベルをコンテキストとして、部署フォームテンプレート（`./divisions/templates/divisions/division_form.html`）をレンダリングしたHTMLコンテンツを含む`HttpResponse`を返却します。
+部署登録関数ビューの最後の行の`render`関数は、フォームテンプレートをタイトル、先に構築した部署フォーム及び操作名でレンダリングしたHTMLコンテンツを含む`HttpResponse`を返却します。
 
 #### HTTPリクエストがPOSTの場合
 
+部署登録関数ビューで実装した`if`文の`if`ブロックが実行されます。
 `request.POST`には、ブラウザから送信されたデータが含まれています。
-部署登録ビュー関数の`if`ブロックの最初で、`request.POST`から部署フォームを構築しています。
+部署登録関数ビューの`if`ブロックの最初で、`request.POST`から部署フォームを構築しています。
 
 次に、`ModelForm`の`is_valid`メソッドで、フォームに入力された内容を検証しています。
 `is_valid`メソッドは、フォームの検証に成功したときは`True`、失敗したときは`False`を返却します。
@@ -635,9 +641,9 @@ python manage.py shell
 ##### 部署フォームの検証に成功した場合
 
 部署フォームの検証に成功した場合は、`ModelFrom`の`save`メソッドで部署モデルインスタンスをデータベースに登録して、登録した部署モデルインスタンスを取得します。
-この部署モデルインスタンスには、登録日時と更新日時が記録されています。
+この部署モデルインスタンスには、登録日時と更新日時が自動で記録されます。
 
-最後に、部署詳細ビューのURLパターンに付けられた名前とデータベースに登録した部署モデルインスタンスの部署コードを`redirect`関数に渡して、その部署モデルインスタンスを表示する部署詳細ページに遷移させる[レスポンスステータスコード`301 Moved Permanently`](https://developer.mozilla.org/ja/docs/Web/HTTP/Redirections)をレスポンスヘッダに持つ`HttpResponse`を返却します。
+最後に、部署詳細ビューのURLパターンに付けられた名前とデータベースに登録した部署モデルインスタンスの部署コードを`redirect`関数に渡して、その部署モデルインスタンスを表示する部署詳細ページに遷移させる[`301 Moved Permanently`](https://developer.mozilla.org/ja/docs/Web/HTTP/Redirections)をレスポンスヘッダに持つ`HttpResponse`を返却します。
 
 ##### 部署フォームの検証に失敗した場合
 
@@ -645,28 +651,28 @@ python manage.py shell
 
 ### 部署フォームテンプレートの実装
 
-`./divisions/templates/divisions/division_form.html`ファイルを作成して、部署フォームテンプレートを次の通り実装します。
+部署フォームテンプレートを次の通り実装します。
 
 ```html
 <!-- ./divisions/templates/divisions/division_form.html -->
 {% extends 'base.html' %}
 
 {% block inner_body %}
-<h1>部署{{ action }}</h1>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">{{ action }}</button>
-</form>
-<div><a href="{% url 'divisions:division-list' %}">部署一覧</a></div>
+  <h1>部署{{ action }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{{ action }}</button>
+  </form>
+  <div><a href="{% url 'divisions:division-list' %}">部署一覧</a></div>
 {% endblock inner_body %}
 ```
 
-[csrf_token](https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#csrf-token)テンプレートタグは、[クロスサイト・リクエスト・フォージェリ (CSRF)](https://www.ipa.go.jp/security/vuln/websecurity/csrf.html)を防止するために、ブラウザに送信してWebアプリケションが受け取る、一時的なランダムな文字列を生成します。
+[csrf_token](https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#csrf-token)テンプレートタグは、[クロスサイト・リクエスト・フォージェリ (CSRF)](https://www.ipa.go.jp/security/vuln/websecurity/csrf.html)攻撃を防ぐために、Webアプリケーションがブラウザに送信して、ブラウザが何も加工せずにそれをWebアプリケーションに戻す、一時的なランダムな文字列を生成します。
 
-`{{ form.as_p }}`は、フォーム要素を`<p>`タグで囲んでHTMLに出力します。
+`{{ form.as_p }}`は、フォーム要素を`<p>`タグで囲んでHTMLを出力します。
 
-部署を登録するためにクリックするボタン（登録ボタン）の種類は`submit`で、そのボタンラベルはコンテキストで受け取っています。
+部署の登録を実行する登録ボタンの種類は`submit`で、そのボタンラベルはコンテキスト（`action`）で受け取っています。
 部署登録ページに部署コードと部署名を入力して、登録ボタンをクリックすると、現在のURLに（`form`要素の`action`属性を省略しているため）`POST`メソッドでフォームデータを送信します。
 
 ### 部署登録ビューのディスパッチ
@@ -687,24 +693,21 @@ python manage.py shell
 
 部署登録ビューをディスパッチする`path`関数の位置に注意してください。
 
-例えば、部署詳細ページの下に部署登録ビューの`path`関数を置くと、"create"が`<str:code>`にマッチして、部署詳細ビュー関数が、部署コードが"create"の部署を部署詳細ページで表示しようと試みます。
-このとき、部署詳細ビュー関数は、`Http404`例外をスローして、Djangoのエラーページが表示されるはずです。
+例えば、部署詳細ページの下に部署登録ビューの`path`関数を置くと、"create"が`<str:code>`にマッチして、部署詳細関数ビューが部署コード`create`の部署を部署詳細ページで表示しようと試みます。
+このとき、部署詳細関数ビューは、`Http404`例外をスローして、Djangoのエラーページが表示されるはずです（プロジェクト設定ファイルで`DEBUG = True`が指定されているため）。
 
 ### 部署登録ページの表示と部署の登録
 
 開発サーバーを起動していない場合は開発サーバーを起動します。
-ブラウザで`http://127.0.0.1:8000/divisions/create/`にアクセスして部署登録ページを表示します。
+ブラウザで`http://localhost:8000/divisions/create/`にアクセスして部署登録ページを表示します。
 
 表示された部署登録ページの部署コードに`54`、部署名に`橋梁構造第1Ｇ`を入力して、登録ボタンをクリックします。
 橋梁構造第1Ｇが登録されて、橋梁構造第1Ｇを表示する部署詳細ページにリダイレクトするはずです。
 
-部署登録ページで部署を登録できた場合は、次の通りリポジトリに変更をコミットします。
-
 ### 部署コードが一致する部署を登録してみる
 
 部署登録ページを表示して、部署コードに`58`、部署名に`ICT開発室（重複）`と入力して登録ボタンをクリックします。
-
-部署の登録に失敗して、登録しようとした部署の部署コードと同じ部署コードを持つ部署がすでに登録されていることを示した部署登録ページが表示されるはずです。
+部署の登録に失敗して、登録しようとした部署の部署コードと同じ部署コードを持つ部署がすでに登録されていることを示す部署登録ページが表示されるはずです。
 
 ### 部署登録ページで文字数の多い部署コードを入力してみる
 
@@ -713,7 +716,7 @@ python manage.py shell
 `DevTool`の`Elements`タブをクリックします。
 次に、`body`をマウスで右クリックして表示されるメニューから`Expand recursively`をクリックして、`body`要素を展開します。
 次に、`<input type="text" name="code" maxlength="2" required="" id="id_code">`の`maxlength="2"`の`2`の部分をダブルクリックして`4`に変更します。
-そして、変更を確定するために、`label`要素など他の要素を選択してください。
+その後、HTMLの変更を確定するために、`label`要素など他の要素を選択してください。
 
 ![DevToolによる部署コードのmaxlength属性の変更](./tutorial/../images/modify_maxlength.png)
 
@@ -732,29 +735,29 @@ python manage.py shell
   {% endblock inner_body %}
 ```
 
-これで、部署一覧ページと部署登録ページを行き来できるようになりました。
+これで、部署一覧ページと部署登録ページが相互リンクを持つようになりました。
 
-次の通り、変更をリポジトリにコミットしてください。
+部署登録ページで部署を登録でき、部署一覧ページと部署登録ページの相互リンクが機能した場合は、次の通りリポジトリに変更をコミットします。
 
 ```bash
 git add --all
 git commit -m '部署登録ページを実装'
 ```
 
-> commit 753ebea455c8c26004ba4656d0b88db3481c2a29
+> commit 01e1be7c2a3e77222d7888abf6b010ac6a6483a6 (HEAD -> main, tag: 014-部署登録ページを実装)
 
 ## 部署更新ページの実装
 
-部署更新ページは、部署登録ページと部署フォームと部署テンプレートを共有します。
+部署更新ページは、部署フォームと部署テンプレートを部署登録ページと共有します。
 
-### 部署更新ビュー関数の実装
+### 部署更新関数ビューの実装
 
-`./divisions/views.py`に、次の部署更新ビュー関数を追加します。
+部署更新関数ビューを次の通り実装します。
 
 ```python
 # ./divisions/views.py
 def update(request: HttpRequest, code: str) -> HttpResponse:
-    """部署更新ビュー
+    """部署更新関数ビュー
 
     Args:
         code: 部署コード
@@ -769,7 +772,7 @@ def update(request: HttpRequest, code: str) -> HttpResponse:
             division = form.save(commit=False)
             division.code = code
             division.save()
-            return redirect("division-detail", code=division.code)
+            return redirect("divisions:division-detail", code=division.code)
     else:  # request.method is "GET", maybe.
         # 部署モデルインスタンスから部署フォームを構築
         form = DivisionForm(instance=division)
@@ -781,18 +784,18 @@ def update(request: HttpRequest, code: str) -> HttpResponse:
     )
 ```
 
-部署更新ビュー関数は、部署登録ビュー関数とほとんど同じですが、次の違いがあります。
+部署更新関数ビューは、部署登録関数ビューとほとんど同じですが、次の違いがあります。
 
-- HTTPリクエストメソッドが`GET`の場合、部署モデルインスタンスから部署フォームを構築
-- HTTPリクエストメソッドが`POST`の場合、`request.POST`と部署モデルインスタンスから部署フォームを構築
-- 部署フォームに`save`メソッドを実行したとき、データベースに保存せずに（`commit=False`）、部署フォームから部署モデルインスタンスを取得
-  - 部署フォームから取得した部署モデルインスタンスの部署コードに、リクエストURLから取得した部署コードを強制的に設定
-  - 上記部署モデルインスタンスをデータベースに保存
+- HTTPリクエストメソッドが`GET`の場合、部署モデルインスタンスから部署フォームを構築します。
+- HTTPリクエストメソッドが`POST`の場合、`request.POST`と部署モデルインスタンスから部署フォームを構築します。
+- 部署フォームに`save`メソッドを実行したとき、データベースに保存せずに（`commit=False`）、部署フォームから部署モデルインスタンスを取得します。
+  - 部署フォームから取得した部署モデルインスタンスの部署コードに、リクエストURLから取得した部署コードを強制的に設定します。
+  - 上記部署モデルインスタンスをデータベースに保存します。
 - 部署フォームの部署コードフォームフィールドを読み取り専用に設定（`form.fields["code"].widget.attrs["readonly"] = True`）
 
 ### 部署フォームテンプレートの変更
 
-部署フォームテンプレート（`./divisions/templates/divisions/division_form.html`）に部署詳細ページへのリンクを設置します。
+部署フォームテンプレートに部署詳細ページへのリンクを設置します。
 部署フォームテンプレートは、部署登録ページと共有されているため、部署登録ページをレンダリングするときは、部署詳細ページへのリンクを表示しないようにします。
 
 ```html
@@ -800,20 +803,43 @@ def update(request: HttpRequest, code: str) -> HttpResponse:
   {% extends 'base.html' %}
 
   {% block inner_body %}
-  <h1>部署{{ action }}</h1>
-  <form method="post">
-    {% csrf_token %} {{ form.as_p }}
-    <button type="submit">{{ action }}</button>
-  </form>
-- <div><a href="{% url 'divisions:division-list' %}">部署一覧</a></div>
-+ <div>
-+   <a href="{% url 'divisions:division-list' %}">部署一覧</a>
-+   {% if action == "更新" %}
-+   <a href="{% url 'divisions:division-detail' form.instance.code %}">部署詳細</a>
-+   {% endif %}
-+ </div>
-{% endblock inner_body %}
+    <h1>部署{{ action }}</h1>
+    <form method="post">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">{{ action }}</button>
+    </form>
+-   <div><a href="{% url 'divisions:division-list' %}">部署一覧</a></div>
++   <div>
++     <a href="{% url 'divisions:division-list' %}">部署一覧</a>
++     {% if action == "更新" %}
++       <a href="{% url 'divisions:division-detail' form.instance.code %}">部署詳細</a>
++     {% endif %}
++   </div>
+  {% endblock inner_body %}
 
+```
+
+### 部署一覧、部署詳細ページに部署更新ページに遷移するリンクを設置
+
+部署一覧テンプレートを次の通り変更します。
+
+```html
+<!-- ./divisions/templates/divisions/division_list.html -->
+          <li>
+            {{ division.code }}: {{ division.name }}
+            <a href="{% url 'divisions:division-detail' division.code %}">詳細</a>
++           <a href="{% url 'divisions:division-update' division.code %}">更新</a>
+          </li>
+```
+
+部署詳細テンプレートを次の通り変更します。
+
+```html
+<!-- ./divisions/templates/divisions/division_detail.html -->
+    <div>
+      <a href="{% url 'divisions:division-list' %}">部署一覧</a>
++     <a href="{% url 'divisions:division-update' division.code %}">部署更新</a>
+    </div>
 ```
 
 ### 部署更新ビューのディスパッチ
@@ -834,48 +860,25 @@ def update(request: HttpRequest, code: str) -> HttpResponse:
   ]
 ```
 
-### 部署一覧、部署詳細ページに部署更新ページに遷移するリンクを設置
-
-部署一覧テンプレートを次の通り変更します。
-
-```html
-<!-- ./divisions/templates/divisions/division_list.html -->
-    <li>
-      {{ division.code }}: {{ division.name }}
-      <a href="{% url 'divisions:division-detail' division.code %}">詳細</a>
-+     <a href="{% url 'divisions:division-update' division.code %}">更新</a>
-    </li>
-```
-
-部署詳細テンプレートを次の通り変更します。
-
-```html
-<!-- ./divisions/templates/divisions/division_detail.html -->
-  <div>
-    <a href="{% url 'divisions:division-list' %}">部署一覧</a>
-+   <a href="{% url 'divisions:division-update' division.code %}">部署更新</a>
-  </div>
-```
-
 部署更新ページで部署を更新でき、各ページに設置したリンクが機能した場合は、次の通りリポジトリに変更をコミットします。
 
 ```bash
-git add --all
+git add ./divisions/
 git commit -m '部署更新ページを実装'
 ```
 
-> commit 425d46d0f41dc68eaf2f2deca5e2101ec329f712
+> commit d5e30e87b2d39a81b355440528df60005d02175a (tag: 015-部署更新ページを実装)
 
 ## 部署削除ページの実装
 
-### 部署削除ビュー関数の実装
+### 部署削除関数ビューの実装
 
-`./divisions/views.py`に次の部署削除ビューを追加します。
+部署削除関数ビューを次の通り実装します。
 
 ```python
 # ./divisions/views.py
 def delete(request: HttpRequest, code: str) -> HttpResponse:
-    """部署削除ビュー
+    """部署削除関数ビュー
 
     Args:
         code: 部署コード
@@ -885,7 +888,7 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
     division = get_object_or_404(Division, pk=code)
     if request.method == "POST":
         division.delete()
-        return redirect("division-list")
+        return redirect("divisions:division-list")
     return render(
         request, "divisions/division_confirm_delete.html", {"division": division}
     )
@@ -893,7 +896,7 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
 
 ### 部署削除テンプレートの実装
 
-部署削除テンプレートを、`./divisions/templates/divisions/division_confirm_delete.html`に次の通り実装します。
+部署削除テンプレートを次の通り実装します。
 
 ```html
 <!-- ./divisions/templates/divisions/division_confirm_delete.html -->
@@ -916,6 +919,44 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
 {% endblock inner_body %}
 ```
 
+### 部署一覧、部署詳細、部署更新ページに部署削除ページへのリンクを設置
+
+部署一覧テンプレートに部署削除ページへのリンクを次の通り設置します。
+
+```html
+<!-- divisions/templates/divisions/division_list.html -->
+          <li>
+            {{ division.code }}: {{ division.name }}
+            <a href="{% url 'divisions:division-detail' division.code %}">詳細</a>
+            <a href="{% url 'divisions:division-update' division.code %}">更新</a>
++           <a href="{% url 'divisions:division-delete' division.code %}">削除</a>
+          </li>
+```
+
+部署詳細テンプレートに部署削除ページへのリンクを次の通り設置します。
+
+```html
+<!-- divisions/templates/divisions/division_detail.html -->
+    <div>
+      <a href="{% url 'divisions:division-list' %}">部署一覧</a>
+      <a href="{% url 'divisions:division-update' division.code %}">部署更新</a>
++     <a href="{% url 'divisions:division-delete' division.code %}">部署削除</a>
+    </div>
+```
+
+部署フォームテンプレートに部署削除ページへのリンクを次の通り設置します。
+
+```html
+<!-- divisions/templates/divisions/division_form.html -->
+    <div>
+      <a href="{% url 'divisions:division-list' %}">部署一覧</a>
+      {% if action == "更新" %}
+        <a href="{% url 'divisions:division-detail' form.instance.code %}">部署詳細</a>
++       <a href="{% url 'divisions:division-delete' form.instance.code %}">部署削除</a>
+      {% endif %}
+    </div>
+```
+
 ### 部署削除ビューのディスパッチ
 
 `./divisions/urls.py`を次の通り変更して、部署削除ビューが処理するリクエストのリクエストURLのパターンを設定します。
@@ -936,65 +977,27 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
   ]
 ```
 
-### 部署一覧、部署詳細、部署更新ページに部署削除ページへのリンクを設置
-
-部署一覧テンプレートに部署削除ページへのリンクを次の通り設置します。
-
-```html
-<!-- divisions/templates/divisions/division_list.html -->
-    <li>
-      <a href="{% url 'divisions:division-detail' division.code %}">{{ division.code }}</a>:
-      {{ division.name }}
-      <a href="{% url 'divisions:division-update' division.code %}">更新</a>
-+     <a href="{% url 'divisions:division-delete' division.code %}">削除</a>
-    </li>
-```
-
-部署詳細テンプレートに部署削除ページへのリンクを次の通り設置します。
-
-```html
-<!-- divisions/templates/divisions/division_detail.html -->
-  <div>
-    <a href="{% url 'divisions:division-list' %}">部署一覧</a>
-    <a href="{% url 'divisions:division-update' division.code %}">部署更新</a>
-+   <a href="{% url 'divisions:division-delete' division.code %}">部署削除</a>
-  </div>
-```
-
-部署フォームテンプレートに部署削除ページへのリンクを次の通り設置します。
-
-```html
-<!-- divisions/templates/divisions/division_form.html -->
-  <div>
-    <a href="{% url 'divisions:division-list' %}">部署一覧</a>
-    {% if action == "更新" %}
-    <a href="{% url 'divisions:division-detail' form.instance.code %}">部署詳細</a>
-+   <a href="{% url 'divisions:division-delete' form.instance.code %}">部署削除</a>
-    {% endif %}
-  </div>
-```
-
-部署削除ページで部署を削除でき、各ページに設置してリンクが機能した場合は、次の通りリポジトリに変更をコミットします。
+部署削除ページで部署を削除でき、それぞれの部署ページに設置したリンクが機能した場合は、次の通りリポジトリに変更をコミットします。
 
 ```bash
 git add --all
 git commit -m '部署削除ページを実装'
 ```
 
-> commit 763abad4bac4df8286e04f6dbabf1f7a830c20db
+> commit d6caf52df0fad4428767b96179589c2afabc9dbc (tag: 016-部署削除ページを実装)
 
 ## トランザクションの設定
 
-Djangoはデフォルトで、トランザクション分離レベル`リードコミッティド`で、自動コミットモードで動作します。
+Djangoはデフォルトで、トランザクション分離レベル`リードコミット`で、自動コミットモードで動作します。
 なお、トランザクション分離レベルについては[PostgreSQL](https://www.postgresql.jp/document/14/html/transaction-iso.html)のドキュメントを参照してください。
 
 上記により、Djangoは、トランザクションが開始されていない限り、`Model.save`メソッドなどで発行されたクエリは、すぐにデータベースにコミット（反映）されます。
 
 本チュートリアルで、1つのリクエスト（ビューの処理）で、複数のモデルインスタンスを登録、更新及び削除することはありません。
 しかし、ビューで複数モデルをデータベースに反映する場合、それらの処理をアトミック（原子性）にする必要があります。
-それらをまとめた処理がアトミックでない場合、リクエストを処理するときに何らかの例外が発生したとき、あるモデルインスタンスはデータベースに反映され、あるモデルインスタンスは反映されないなど、データの一貫性を保証できない（データベースのデータ間で矛盾が発生する）場合があります。
+それらをまとめた処理がアトミックでない場合、リクエストを処理するときに何らかの例外が発生したとき、あるモデルインスタンスはデータベースに反映され、あるモデルインスタンスは反映されないなど、データの一貫性を保証できない（データ間で矛盾が発生する）場合があります。
 
-部署登録、部署更新、及び部署削除ビュー関数で、データベースにモデルインスタンスを反映する処理をアトミックにするために、それぞれのビューを次の通り変更します。
+部署登録、部署更新、及び部署削除関数ビューで、データベースにモデルインスタンスを反映する処理をアトミックにするために、それぞれのビューを次の通り変更します。
 
 > 繰り返しになりますが、それぞれのビューは、1つの部署モデルインスタンスをデータベースに登録、更新または削除するのみであるため、アトミックである必要はないのですが・・・。
 
@@ -1006,7 +1009,7 @@ Djangoはデフォルトで、トランザクション分離レベル`リード�
   from django.shortcuts import get_object_or_404, redirect, render
 
   (...省略...)
-  # createビュー関数内
+  # create関数ビュー内
           # POSTパラメーターから部署フォームを構築
           form = DivisionForm(request.POST)
           if form.is_valid():
@@ -1017,7 +1020,7 @@ Djangoはデフォルトで、トランザクション分離レベル`リード�
 
   (...省略...)
 
-  # updateビュー関数内
+  # update関数ビュー内
           if form.is_valid():
               division = form.save(commit=False)
               division.code = code
@@ -1028,7 +1031,7 @@ Djangoはデフォルトで、トランザクション分離レベル`リード�
 
   (...省略...)
 
-  # deleteビュー関数内
+  # delete関数ビュー内
       # 部署コードから部署モデルインスタンスを取得
       division = get_object_or_404(Division, pk=code)
       if request.method == "POST":
@@ -1038,19 +1041,19 @@ Djangoはデフォルトで、トランザクション分離レベル`リード�
           return redirect("division-list")
 ```
 
-`with transaction.atomic()`ブロック内の処理は、トランザクション内で実行されます。
+`with transaction.atomic()`ブロック内は、トランザクションが開始されてアトミックな処理になります。
 
-次の通り、変更をリポジトリにコミットします。
+次の通りリポジトリに変更をコミットします。
 
 ```bash
-git add --all
-git commit -m 'ビューでトランザクションを開始'
+git add ./divisions/views.py
+git commit -m '部署登録、更新及び削除ビューでトランザクションを開始'
 ```
 
-> commit 3001493f86764de286922e4345843725dd3b2bbc
+> commit 8e7ea2a2036821e5a47bcf5617e07cd928c9f182 (tag: 017-部署登録、更新及び削除ビューでトランザクションを開始)
 
-本チュートリアルでは、データベースにデータが反映される`Database API`のみをトランザクション内で実行するようにしました。
-ビュー全体の処理が、トランザクション内で実行されるようにするには、次の通り、ビュー関数を`transaction.atomic`デコレーターで修飾します。
+本チュートリアルでは、データベースにデータが反映される`QuerySet API`のみをトランザクション内で実行するようにしました。
+ビュー全体の処理が、トランザクション内で実行されるようにするには、次の通り、関数ビューを`transaction.atomic`デコレーターで修飾します。
 
 ```python
 from django.db import transaction
@@ -1064,8 +1067,6 @@ def foo(request):
 
 また、プロジェクト設定ファイルに次を追加することで、すべてのビューの処理がトランザクション内で実行されます。
 
-> `non_atomic_requests`デコレーターで修飾されたビューは、`ATOMIC_REQUEST = True`でもトランザクション内で処理されません。
-
 ```python
 # ./book_management/settings.py
   DATABASES = {
@@ -1077,29 +1078,31 @@ def foo(request):
   }
 ```
 
+ただし、`@non_atomic_requests`デコレーターで修飾されたビューは、`ATOMIC_REQUEST = True`でもトランザクション内で処理されません。
+
 > **HTTPリウエストでトランザクションを試みる - Djangoドキュメント**
 >
 > Webでトランザクションを処理する一般的な方法は、それぞれのリクエストをトランザクションでラップすることです。
-> この振る舞いを有効にし愛場合は、それぞれのデータベース設定の[ATOMIC_REQUESTS](https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-DATABASE-ATOMIC_REQUESTS)を**True**に設定します。
+> この振る舞いを有効にする場合は、それぞれのデータベース設定の[ATOMIC_REQUESTS](https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-DATABASE-ATOMIC_REQUESTS)を**True**に設定します。
 >
 > それは、次のように動作します。
-> Djangoは、ビュー関数を呼び出す前に、トランザクションを開始します。
+> Djangoは、関数ビューを呼び出す前に、トランザクションを開始します。
 > もし、問題なくレスポンスが生成された場合、Djangoはトランザクションをコミットします。
 > もし、ビューが例外をスローした場合、Djangoはトランザクションをロールバックします。
 >
-> 典型的に、[atomic()](https://docs.djangoproject.com/en/4.2/topics/db/transactions/#django.db.transaction.atomic)コンテキストマネージャーで、ビューのコードで、セーブポイントを使用してサブトランザクションを実行できます。
-> しかし、ビューの最後で**すべての変更**または**変更なし**のどちらかが、コミットされます。
+> 典型的に、[atomic()](https://docs.djangoproject.com/en/4.2/topics/db/transactions/#django.db.transaction.atomic)コンテキストマネージャーで、ビュー内でセーブポイントを使用してサブトランザクションを実行できます。
+> しかし、ビューの最後で**すべての変更**または**変更なし**のどちらかが確定します。
 >
 > ⚠️ **Warning**
 >
-> このトランザクションモデルの単純さは魅力的ですが、トランザクションが増加したとき非効率にもなります。
-> すべてのビューでトランザクションを開始することは、オーバーヘッドを持ちます。
+> このトランザクションモデルの単純さは魅力的ですが、トランザクションが増加したとき非効率になります。
+> すべてのビューでトランザクションを開始することは、オーバーヘッドが発生します。
 > パフォーマンスの影響はアプリケーションのクエリパターンと、どの程度データベースがロックをうまく処理するかに依存します。
 
 ## まとめ
 
-本章では、モデルインスタンスを`CRUD`する一連のページを実装しました。
+本章では、部署モデルインスタンスを`CRUD`する一連のページを実装しました。
 Webアプリケーションは、本チュートリアルで実施した通り、モデルインスタンスを一覧表示、詳細表示、登録、更新及び削除するページで構成されることがほとんどです。
 
 次の章では、Djangoのクラスビューで本章で実装した関数ビューをリファクタリングします。
-Djangoのクラスビューは、一覧表示、詳細表示、登録、更新及び削除するページに必要な機能を提供しており、本章で実装した多くのコードを省けます。
+Djangoのクラスビューは、一覧表示、詳細表示、登録、更新及び削除するページに必要な機能を提供しており、本章で実装した多くのコードを省略できます。

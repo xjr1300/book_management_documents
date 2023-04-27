@@ -286,7 +286,7 @@ class ClassificationDetailListView(
     classification: Optional[Classification] = None
 
     def get_queryset(self) -> QuerySet[ClassificationDetail]:
-        """書籍分類詳細一覧ページで表示する書籍分類詳細クエリセットを返却する。"""
+        """書籍分類詳細一覧ページで表示する書籍分類詳細QuerySetを返却する。"""
         self.classification = get_classification_from_param(self.request)
         if not self.classification:
             return ClassificationDetail.objects.all()
@@ -437,7 +437,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
     classification: Optional[Classification] = None
 
     def get_queryset(self) -> QuerySet[Book]:
-        """書籍一覧ページで表示する書籍クエリセットを返却する。"""
+        """書籍一覧ページで表示する書籍QuerySetを返却する。"""
         self.classification = get_classification_from_param(self.request)
         if not self.classification:
             return Book.objects.all()

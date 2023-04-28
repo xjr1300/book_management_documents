@@ -256,7 +256,7 @@ print(f"{classification.code}: {classification.name}")
 ```
 
 部署分類モデルフィールドに対応するテーブルのカラムには、部署分類コードが記録されます。
-このため、テーブルに作成されるカラムの名前を`db_column`で`classification_code`を指定してます。
+このため、テーブルに作成されるカラムの名前を`db_column`で`classification_code`を指定しています。
 なお、`db_column`でカラム名を指定しない場合、カラム名は`classification`になります。
 
 また、`on_delete = models.PROTECT`を指定することで、部署分類詳細が参照する部署分類が削除されないように保護します。
@@ -453,7 +453,7 @@ git commit -m '書籍モデルを実装'
 
 ## 書籍、書籍分類及び書籍分類詳細フィクスチャーの作成
 
-書籍、書籍分類及び書籍分類詳細フィクスチャーを`./books/fixtures/`ディレクトリに作成ます。
+書籍、書籍分類及び書籍分類詳細フィクスチャーを`./books/fixtures/`ディレクトリに作成します。
 
 ```bash
 mkdir ./books/fixtures
@@ -631,7 +631,7 @@ admin.site.register(Book, BookAdmin)
 書籍分類モデルアドミン（`ClassificationAdmin`）は、部署モデルアドミン（`DivisionAdmin`）と同様です。
 
 書籍分類詳細モデルアドミン（`ClassificationDetailAdmin`）は、`list_filter = ("classification",)`を設定しています。
-この設定により、管理サイトの書籍分類詳細一覧ページ（`http://localhost:8000/admin/books/classificationdetail/`）で書籍分類でフィルタして書籍分類詳細を表示できます。
+この設定により、管理サイトの書籍分類詳細一覧ページ（`http://localhost:8000/admin/books/classificationdetail/`）は、書籍分類でフィルタして書籍分類詳細を表示できます。
 
 書籍モデルアドミン（`BookAdmin`）も書籍分類詳細モデルアドミンと同様な設定をしており、管理サイトの書籍一覧ページ（`http://localhost:8000/admin/books/book/`）で書籍分類または管理部署でフィルタして書籍を表示できます。
 

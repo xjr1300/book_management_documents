@@ -99,7 +99,7 @@ urlpatterns = [
 
 `./divisions/urls.py`は`Djangoのインストールとプロジェクト構築`で説明したルートURLconfがインクルードする（に含められる）ファイルで、リクエストURLを`ディスパッチ`するビューを定義するファイルです。
 
-`path`関数で、`http://<site>/divisions/`へのリクエストは、`./divisions/views.py`ファイルに定義した`index`ビューが処理するように設定しています。
+`path`関数で、`http://<site>/divisions/`にきたリクエストは、`./divisions/views.py`ファイルに定義した`index`ビューが処理するように設定しています。
 
 また、`./divisions/views.py`である`views`モジュールを`from . import views`でインポートしています。
 これは同じディレクトリ(`.`)にある`views.py`ファイルを`views`モジュールとしてインポートすることを指示しています。

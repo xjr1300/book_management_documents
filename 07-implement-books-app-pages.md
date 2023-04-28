@@ -2,11 +2,16 @@
 
 - [書籍アプリページの実装](#書籍アプリページの実装)
   - [ミックスインの整理](#ミックスインの整理)
-  - [書籍分類及び書籍分類詳細ページの実装](#書籍分類及び書籍分類詳細ページの実装)
-    - [書籍分類ページの実装](#書籍分類ページの実装)
-    - [書籍分類詳細ページの実装](#書籍分類詳細ページの実装)
-  - [書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ表示](#書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ表示)
-  - [書籍フィクスチャーの作成と書籍の登録](#書籍フィクスチャーの作成と書籍の登録)
+  - [書籍分類ページの実装](#書籍分類ページの実装)
+  - [書籍分類詳細ページの実装](#書籍分類詳細ページの実装)
+    - [ClassificationDetailViewMixinの実装](#classificationdetailviewmixinの実装)
+    - [書籍分類詳細リストビューの実装](#書籍分類詳細リストビューの実装)
+    - [ClassificationDetailSingleObjectMixinの実装](#classificationdetailsingleobjectmixinの実装)
+    - [書籍分類詳細ビューの実装](#書籍分類詳細ビューの実装)
+    - [ClassificationDetailFormMixinの実装](#classificationdetailformmixinの実装)
+    - [書籍分類詳細登録、更新及び削除ビューの実装](#書籍分類詳細登録更新及び削除ビューの実装)
+    - [変更のコミット](#変更のコミット)
+  - [書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ](#書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ)
   - [書籍ページの実装](#書籍ページの実装)
     - [書籍一覧ページの実装](#書籍一覧ページの実装)
     - [書籍詳細ページの実装](#書籍詳細ページの実装)
@@ -22,7 +27,8 @@
 
 部署アプリのビューを実装するときに定義した`PageTitleMixin`及び`FormActionMixin`は、部署アプリのビューで再利用するため、`core`モジュールに移動します。
 
-> 部署の`DivisionSingleObjectMixin`や`DivisionFormFieldMixin`も書籍分類モデルと同様な実装になりますが、部署と書籍分類では概念が異なるため、再利用することは`やり過ぎたDRY`になるアンチパターンです。
+> 部署の`DivisionSingleObjectMixin`や`DivisionFormMixin`も書籍分類モデルと同様な実装になりますが、部署と書籍分類は概念が異なるため、再利用することは`やり過ぎたDRY`になるアンチパターンです。
+>
 > `PageTitleMixin`はHTMLの`head`要素の`title`要素のコンテンツを設定する、`FormActionMixin`は操作名を提供するミックスインで、ビュー共通の振る舞いを提供するため再利用します。
 
 `./core/mixins.py`ファイルを作成して、`PageTitleMixin`と`FormActionMixin`をそのファイルに移動します。
@@ -67,7 +73,7 @@ class FormActionMixin(generic.base.ContextMixin):
   from django.urls import reverse, reverse_lazy
   from django.views import generic
 
-+ from core.mixins import PageTitleMixin, FormActionMixin
++ from core.mixins import FormActionMixin, PageTitleMixin
 +
   from .models import Division
 
@@ -97,21 +103,18 @@ class FormActionMixin(generic.base.ContextMixin):
 部署アプリのすべてのビューが正常に動作することを確認したら、変更をリポジトリにコミットします。
 
 ```bash
-git add ./divisions/
-git add ./core/
+git add ./divisions/views.py
+git add ./core/mixins.py
 git commit -m 'ミックスインを整理'
 ```
 
-> commit 52e2d06319416182136fd3af04353b0cee750f55
+> 386b205 (tag: 036-arrange-mixins)
 
-## 書籍分類及び書籍分類詳細ページの実装
+## 書籍分類ページの実装
 
-書籍分類ビューを書籍アプリのビューを部署と同様なビューとURLパターンで実装します。
-本チュートリアルで説明しませんので、実装に挑戦してください。
-
-### 書籍分類ページの実装
-
-書籍分類ページへのリクエストURLを次の通りとします。
+書籍分類ページの実装方法を本チュートリアルで説明しません。
+書籍分類ページを部署アプリの部署ビューと同様に実装してください。
+書籍分類ページとリクエストURLの対応を次の通りとします。
 
 - 書籍分類一覧ページ: `/books/classifications/`
 - 書籍分類詳細ページ: `/books/classifications/<code>`
@@ -127,11 +130,13 @@ git commit -m 'ミックスインを整理'
 app_name = "books"
 ```
 
-> commit f411718d467d626b5b8c8998668c08a80777a9c8
+書籍分類ページを実装して、書籍分類ページが正常に機能することが確認できた後、変更をリポジトリにコミットしてください。
 
-### 書籍分類詳細ページの実装
+> c262a6f (tag: 037-implement-classification-page)
 
-書籍分類詳細ページへのリクエストURLを次の通りとします。
+## 書籍分類詳細ページの実装
+
+書籍分類詳細ページとリクエストURLの対応を次の通りとします。
 
 - 書籍分類詳細一覧ページ: `/books/classification-details/`
 - 書籍分類詳細詳細ページ: `/books/classification-details/<code>`
@@ -139,9 +144,17 @@ app_name = "books"
 - 書籍分類詳細更新ページ: `/books/classification-details/update/<code>`
 - 書籍分類詳細削除ページ: `/books/classification-details/delete/<code>`
 
-書籍分類詳細リストビュー（`ClassificationDetailListView`）は次の通り実装してください。
+### ClassificationDetailViewMixinの実装
+
+本チュートリアルでは、`ClassificationDetailViewMixin`の実装方法を説明しません。
+`ClassificationDetailViewMixin`を`ClassificationViewMixin`と同様に実装してください。
+
+### 書籍分類詳細リストビューの実装
+
+書籍分類詳細リストビュー（`ClassificationDetailListView`）を次の通り実装します。
 
 ```python
+# ./books/views.py
 class ClassificationDetailListView(
     ClassificationDetailViewMixin, PageTitleMixin, generic.ListView
 ):
@@ -152,48 +165,31 @@ class ClassificationDetailListView(
     template_name = "books/classification_detail_list.html"
 ```
 
-`context_object_name`で書籍分類詳細リストが取得する書籍分類モデルインスタンスのQuerySetのコンテキスト名を指定しています。
-`context_object_name`を指定しない場合、そのコンテキスト名はモデル名を単純に小文字化した`classificationdetail_list`になります。
+`context_object_name`で書籍分類詳細リストビューが取得する書籍分類詳細QuerySetのコンテキスト名を指定しています。
+`context_object_name`を指定しない場合、そのコンテキスト名はモデル名を単純に小文字化した文字列の末尾に`_list`を追加した`classificationdetail_list`になります。
 
-`template_name`で書籍分類詳細リストページのテンプレートを指定しています。
-`template_name`を指定しない場合、`books/classificationdetail_list.html`になります。
+`template_name`で書籍分類詳細リストビューのテンプレートを指定しています。
+`template_name`を指定しない場合、コンテキスト名と同様に`books/classificationdetail_list.html`になります。
 
-`ClassificationDetailSingleObjectMixin`は次の通り実装してください。
+### ClassificationDetailSingleObjectMixinの実装
+
+`ClassificationDetailSingleObjectMixin`を次の通り実装します。
 
 ```python
+# ./books/views.py
 class ClassificationDetailSingleObjectMixin:
-    """書籍分類詳細ビューシングルオブジェクトミックスイン"""
+    """書籍分類詳細シングルオブジェクトミックスイン"""
 
     pk_url_kwarg = "code"
     context_object_name = "classification_detail"
 ```
 
-`context_object_name`で特定の書籍分類詳細を表示するビュー（[SingleObjectMixin](https://docs.djangoproject.com/en/4.2/ref/class-based-views/mixins-single-object/#single-object-mixins)）が取得する書籍分類詳細モデルインスタンスのコンテキスト名を指定しています。
+`context_object_name`で特定の書籍分類詳細モデルインスタンスを表示するビューが取得する書籍分類詳細モデルインスタンスのコンテキスト名を指定しています。
 `context_object_name`を指定しない場合、そのコンテキスト名は`classificationdetail`になります。
 
-`ClassificationDetailFormFieldMixin`を`ClassificationDetailFormMixin`に名前を変更して、次の通り実装してください。
+### 書籍分類詳細ビューの実装
 
-```python
-class ClassificationDetailFormMixin(generic.edit.ModelFormMixin):
-    """書籍分類詳細フォームフィールドミックスイン"""
-
-    fields = ("code", "classification", "name")
-    template_name = "books/classification_detail_form.html"
-
-    def get_form(self, form_class: Optional[forms.Form] = None) -> forms.Form:
-        form = super().get_form(form_class)
-        form.fields["classification"].empty_label = None
-        return form
-```
-
-クラス名の変更は、フィールドのリストだけでなくフォームを設定するミックスインに変更したことが理由です。
-
-`template_name`の指定は書籍分類一覧ページと同様です。
-
-上記の通り`get_form`をオーバーライドしない場合、書籍分類ドロップダウンに書籍分類を選択していないことを示す`---------`を選択できます。
-書籍分類詳細モデルは、書籍分類を必ず入力する必要があるため、`---------`を選択候補から除くために`get_form`をオーバーライドしています。
-
-`ClassificationDetailDeleteView`は次の通り実装してください。
+書籍分類詳細詳細ビュー（`ClassificationDetailDeleteView`）を次の通り実装します。
 
 ```python
 class ClassificationDetailDeleteView(
@@ -209,62 +205,99 @@ class ClassificationDetailDeleteView(
     success_url = reverse_lazy("classification-detail-list")
 ```
 
-> commit 6a8f65f9e84be41ce7645d4f6bd4421042fc2263
+### ClassificationDetailFormMixinの実装
 
-書籍分類詳細ページを実装したら変更をリポジトリにコミットします。
+`ClassificationDetailFormMixin`を次の通り実装します。
+
+```python
+# ./books/views.py
+class ClassificationDetailFormMixin(generic.edit.ModelFormMixin):
+    """書籍分類詳細フォームフィールドミックスイン"""
+
+    fields = ("code", "classification", "name")
+    template_name = "books/classification_detail_form.html"
+
+    def get_form(self, form_class: Optional[forms.Form] = None) -> forms.Form:
+        form = super().get_form(form_class)
+        form.fields["classification"].empty_label = None
+        return form
+```
+
+上記の通り`get_form`をオーバーライドしない場合、書籍分類ドロップダウンで書籍分類を選択していないことを示す`---------`を選択できます。
+書籍分類詳細モデルインスタンスは、書籍分類詳細を必ず入力する必要があるため、`---------`を選択候補から除くために`get_form`をオーバーライドしています。
+
+### 書籍分類詳細登録、更新及び削除ビューの実装
+
+本チュートリアルでは、書籍分類詳細登録（`ClassificationDetailCreate`）、更新（`ClassificationDetailUpdate`）及び削除（`ClassificationDeleteView`）の実装方法を説明しません。
+書籍分類のそれぞれのビューを参考に実装してください。
+なお、実装上の注意点は、テンプレート名を適切に指定することです。
+
+### 変更のコミット
+
+書籍分類詳細ページを実装して、書籍分類詳細ページが正常に機能することが確認できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add --all
 git commit -m '書籍分類詳細ページを実装
 ```
 
-> commit 6a8f65f9e84be41ce7645d4f6bd4421042fc2263
+ 書籍分類詳細ページを実装
 
-## 書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ表示
+> e5d8a18 (HEAD -> main, tag: 038-implement-classification-detail-pages)
 
-書籍分類詳細一覧ページで、管理サイトと同様に、書籍分類詳細の一覧を書籍分類でフィルタ表示できるようにします。
+## 書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ
 
-次のようなリクエストURLを受信したら、書籍分類コードGETパラメーター（`category_code`がパラメーター名で、`code`が書籍分類コード）が一致する書籍分類詳細のみを一覧で表示します。
+書籍分類詳細一覧ページで、管理サイトと同様に、書籍分類詳細の一覧を書籍分類でフィルタできるようにします。
+
+次のようなリクエストURLを処理できるようにします。
 
 ```url
-http://localhost:8000/books/classification_details/?category_code=<code>
+http://localhost:8000/books/classification_details/?classification_code=<code>
 ```
 
-書籍分類コードGETパラメーターが指定されていないとき、または書籍分類コードがどの書籍分類にも一致しない場合は、すべての書籍分類を表示します。
+上記URLの`?`より右が`GETパラメーター`と呼ばれており、`<パラメーター>=<値>`という形式になっています。
+GETパラメーターは、`&`で繋げて複数設定できます。
+
+上記URLにおいて、本Webアプリケーションは、`classification_code=<code>`を書籍分類コードとして扱います。
+書籍分類詳細一覧ページでは、GETパラメーターで指定されあ書籍分類コードに一致する書籍分類コードの書籍のみを表示します。
+なお、書籍分類コードが指定されていないとき、または書籍分類コードがどの書籍分類にも一致しない場合は、すべての書籍分類詳細を表示します。
 
 `./books/views.py`のインポート文を次の通り変更します。
 
 ```python
 # ./books/views.py
 - from typing import Type, Optional
-+ from typing import Any, Dict, Optional, Type
++ from typing import Any, Dict, Optional
 
   from django import forms
 + from django.db.models import QuerySet
++ from django.http import HttpRequest
   from django.urls import reverse, reverse_lazy
   from django.views import generic
-+ from django.http import HttpRequest
 
   from core.mixins import FormActionMixin, PageTitleMixin
+
+  from .models import Classification, ClassificationDetail
 ```
 
-その後、次の通り`get_classification_from_param`関数を追加して、書籍分類詳細一覧リストビューの実装を置き換えます。
+その後、次の通り`get_classification_from_param`関数を追加して、書籍分類詳細リストビューの実装を置き換えます。
 
 ```python
 # ./books/views.py
 def get_classification_from_param(request: HttpRequest) -> Optional[Classification]:
-    """書籍分類コードGETパラメーターで指定された書籍分類コードから書籍分類モデルインスタンスを取得して返却する。
+    """GETパラメータで指定された書籍分類コードから書籍分類モデルインスタンスを取得して返却する。
 
     Args:
         request: HTTPリクエスト
 
     Returns
-        書籍分類モデルインスタンス。書籍分類コードGETパラメーターが指定されていない場合、またそのパラメータで指定された
-        書籍分類コードと一致する書籍分類が存在しない場合はNone。
+        書籍分類モデルインスタンス。
+        GETパラメーターに書籍分類コードが指定されていない場合、またそのパラメータで指定された書籍分類コードと
+        一致する書籍分類が存在しない場合はNone。
     """
-    # 書籍分類コードGETパラメーターの値を取得
+    # 書籍分類コードを取得
     code = request.GET.get("classification_code", None)
-    # 書籍分類コードGETパラメータが指定されていない場合はNoneを返却
+    # 書籍分類コードが指定されていない場合はNoneを返却
     if not code:
         return None
 
@@ -275,7 +308,6 @@ def get_classification_from_param(request: HttpRequest) -> Optional[Classificati
         # 書籍分類コードから書籍分類モデルインスタンスを取得できない場合はNoneを返却
         return None
 
-
 class ClassificationDetailListView(
     ClassificationDetailViewMixin, PageTitleMixin, generic.ListView
 ):
@@ -284,6 +316,7 @@ class ClassificationDetailListView(
     title = "書籍分類詳細一覧"
     context_object_name = "classification_detail_list"
     template_name = "books/classification_detail_list.html"
+    # 書籍分類詳細をフィルタする書籍分類
     classification: Optional[Classification] = None
 
     def get_queryset(self) -> QuerySet[ClassificationDetail]:
@@ -297,21 +330,24 @@ class ClassificationDetailListView(
             )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        """コンテキストを取得して、そのコンテキストにすべての書籍分類モデルインスタンスと現在表示している書籍分類を登録する。"""
+        """コンテキストを返却する。
+
+        コンテキストを取得して、コンテキストにすべての書籍分類詳細モデルインスタンスと、
+        書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録する。
+        """
+        # コンテキストを取得
         ctx = super().get_context_data(**kwargs)
+        # コンテキストにすべての書籍分類詳細モデルインスタンスを登録
         ctx["classification_list"] = Classification.objects.all()
+        # コンテキストに書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録
         ctx["current_classification"] = self.classification
         return ctx
 ````
 
-書籍分類詳細一覧ビューを実装したら、次のURLなどで書籍分類詳細が正しくフィルタされるか確認してください。
-
-- 総記: <http://localhost:8000/books/classification-details/?category_code=000>
-- 哲学: <http://localhost:8000/books/classification-details/?category_code=100>
-
-書籍分類詳細一覧ページにおいて書籍分類で書籍分類詳細をフィルタできるように`./books/templates/books/classification_detail_list.html`テンプレートを次で置き換えます。
+書籍分類詳細一覧ページでGETパラメーターで指定された書籍分類で書籍分類詳細をフィルタできるように、書籍分類詳細リストテンプレートを次で置き換えます。
 
 ```html
+<!-- ./books/templates/books/classification_detail_list.html -->
 {% extends 'base.html' %}
 
 {% block inner_body %}
@@ -336,7 +372,8 @@ class ClassificationDetailListView(
     <ul>
       {% for classification_detail in classification_detail_list %}
         <li>
-          {{ classification_detail.code }}: {{ classification_detail.classification }} > {{ classification_detail.name }}
+          {{ classification_detail.code }}: {{ classification_detail.classification }}
+          &gt; {{ classification_detail.name }}
           <a href="{% url 'books:classification-detail-detail' classification_detail.code %}">詳細</a>
           <a href="{% url 'books:classification-detail-update' classification_detail.code %}">更新</a>
           <a href="{% url 'books:classification-detail-delete' classification_detail.code %}">削除</a>
@@ -350,81 +387,42 @@ class ClassificationDetailListView(
 {% endblock inner_body %}
 ```
 
-書籍分類詳細一覧ページに書籍分類一覧を書籍分類でフィルタするリンクが表示されます。
-書籍分類フィルタリンクをクリックして、書籍分類詳細がその書籍分類でフィルタされることを確認できたら、次の通り変更をコミットします。
+書籍分類詳細一覧ページに書籍分類詳細を書籍分類でフィルタするリンクが表示されます。
+書籍分類リンクをクリックして、書籍分類詳細がその書籍分類でフィルタされることを確認できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
 git commit -m '書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタできるように実装'
 ```
 
-> commit 57587bb53b37a6adb74465feacc1444ec40d4fc9
-
-## 書籍フィクスチャーの作成と書籍の登録
-
-書籍ページの実装で使用するために、`./books/fixtures/books.yaml`に書籍フィクスチャーを記録します。
-
-<!-- cspell: disable -->
-```yaml
-# ./books/fixtures/books.yaml
-- model: books.book
-  pk: 01GYV46C5KXWDRKMB1WR3TW6RK
-  fields:
-    title: Fluent Python
-    classification_detail: "000"
-    authors: |-
-      （著）Luciano Ramalho
-      （監修）豊沢　聡、桑井　博之
-      （訳）梶原　玲子
-    isbn: ISBN978-4-87311-817-8
-    publisher: オライリー・ジャパン
-    published_at: 2017-10-11
-    division: "58"
-    disposed: false
-    disposed_at: null
-    created_at: 2023-04-25 00:00:00.000000+00:00
-    updated_at: 2023-04-25 00:00:00.000000+00:00
-- model: books.book
-  pk: 01GYV585X4JNDCSVA3BY93KN54
-  fields:
-    title: プログラミングRust
-    classification_detail: "000"
-    authors: |-
-      （著）Jim Blandy、Jason Orendorff
-      （訳）中田　秀基
-    isbn: ISBN978-4-87311-855-0
-    publisher: オライリー・ジャパン
-    published_at: 2018-08-08
-    division: "58"
-    disposed: false
-    disposed_at: null
-    created_at: 2023-04-25 00:00:00.000000+00:00
-    updated_at: 2023-04-25 00:00:00.000000+00:00
-```
-<!-- cspell: enable -->
-
-書籍フィクスチャーを次の通りデータベースに書籍を登録します。
-
-```bash
-python manage.py loaddata --format=yaml books/fixtures/books.yaml
-```
-
-書籍フィクスチャーで書籍をデータベースに登録できたら、変更をリポジトリにコミットします。
-
-```bash
-git add ./books/fixtures/books.yaml
-git commit -m '書籍フィクスチャーを作成
-```
-
-> commit 5f63ac11d59d8db377bf78c2d03ddeae98cb9fab
+> 960fcf7 (tag: 039-filter-classification-detail-by-classification)
 
 ## 書籍ページの実装
 
 ### 書籍一覧ページの実装
 
-`./books/views.py`に次の通り書籍一覧リストビューを実装します。
+書籍リストビュー（`BookListView`）を次の通り実装します。
+書式一覧ページも、書籍分類詳細一覧ページと同様に、書籍分類で書籍をフィルタできるようにします。
+なお、書籍分類をフィルタするリンクは、書籍分類詳細リストビューと共有します。
 
 ```python
+# ./books/views.py
+  from typing import Any, Dict, Optional
+
+  from django import forms
+  from django.db.models import QuerySet
+  from django.http import HttpRequest
+  from django.urls import reverse, reverse_lazy
+  from django.views import generic
+
+  from core.mixins import FormActionMixin, PageTitleMixin
+
+- from .models import Classification, ClassificationDetail
++ from .models import Book, Classification, ClassificationDetail
+```
+
+```python
+# ./books/views.py
 class BookViewMixin:
     """書籍ビューミックスイン"""
 
@@ -452,10 +450,34 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["classification_list"] = Classification.objects.all()
         ctx["current_classification"] = self.classification
+        # コンテキストに書籍一覧ページのURLを登録
+        ctx["list_page_url"] = reverse("books:book-list")
         return ctx
 ```
 
-書籍一覧テンプレートを`./books/templates/books/book_list.html`に次の通り実装します。
+書籍分類リンクテンプレートを次の通り実装します。
+
+```html
+<!-- ./books/templates/books/_classification_links.html -->
+<div>
+  {% for classification in classification_list %}
+    {% if classification.code != current_classification.code %}
+      <a href="{{ list_page_url }}?classification_code={{ classification.code }}">
+        {{ classification.name }}
+      </a>&thinsp;
+    {% else %}
+      {{ classification.name }}&thinsp;
+    {% endif %}
+  {% endfor %}
+  {% if current_classification %}
+    <a href="{{ list_page_url }}">すべて</a>
+  {% else %}
+    すべて
+  {% endif %}
+</div>
+```
+
+書籍一覧テンプレートを次の通り実装します。
 なお、書籍の一覧はHTMLの`table`要素で出力します。
 
 ```html
@@ -464,22 +486,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
 
 {% block inner_body %}
   <h1>書籍一覧</h1>
-  <div>
-    {% for classification in classification_list %}
-      {% if classification.code != current_classification.code %}
-        <a href="{% url 'books:book-list' %}?classification_code={{ classification.code }}">
-          {{ classification.name }}
-        </a>&thinsp;
-      {% else %}
-        {{ classification.name }}&thinsp;
-      {% endif %}
-    {% endfor %}
-    {% if current_classification %}
-      <a href="{% url 'books:book-list' %}">すべて</a>
-    {% else %}
-      すべて
-    {% endif %}
-  </div>
+  {% include 'books/_classification_links.html' %}
   {% if book_list %}
     <table>
       <thead>
@@ -491,7 +498,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
         <th>出版社</th>
         <th>管理部署</th>
         <th>廃棄</th>
-        <th />
+        <th/>
       </tr>
       </thead>
       <tbody>
@@ -504,7 +511,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
           <td>{{ book.publisher | default_if_none:"ー" }}</td>
           <td>{{ book.division }}</td>
           <td>{{ book.disposed | yesno:"済,ー" }}</td>
-          <td />
+          <td/>
         </tr>
       {% endfor %}
       </tbody>
@@ -522,7 +529,60 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
 
 > Djangoにビルトインされているテンプレートフィルタについては、[ここ](https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#built-in-filter-reference)を参照してください。
 
-書籍一覧リストビューをディスパッチするために、`./books/urls.py`に次を追加します。
+書籍分類詳細リストビューを次の通り変更します。
+
+```python
+  class ClassificationDetailListView(
+      ClassificationDetailViewMixin, PageTitleMixin, generic.ListView
+  ):
+      """書籍分類詳細一覧クラスビュー"""
+
+      (...省略...)
+
+      def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+          """コンテキストを返却する。
+
+          コンテキストを取得して、コンテキストにすべての書籍分類詳細モデルインスタンスと、
+          書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録する。
+          """
+          # コンテキストを取得
+          ctx = super().get_context_data(**kwargs)
+          # コンテキストにすべての書籍分類詳細モデルインスタンスを登録
+          ctx["classification_list"] = Classification.objects.all()
+          # コンテキストに書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録
+          ctx["current_classification"] = self.classification
++         # コンテキストに書籍分類詳細一覧ページのURLを登録
++         ctx["list_page_url"] = reverse("books:classification-detail-list")
+          return ctx
+```
+
+書籍分類詳細一覧テンプレートを次の通り変更します。
+
+```html
+<!-- ./books/templates/books/classification_detail_list.html -->
+  {% block inner_body %}
+    <h1>書籍分類詳細一覧</h1>
+-   <div>
+-     {% for classification in classification_list %}
+-       {% if classification.code != current_classification.code %}
+-         <a href="{% url 'books:classification-detail-list' %}?classification_code={{ classification.code }}">
+-           {{ classification.name }}
+-         </a>&thinsp;
+-       {% else %}
+-         {{ classification.name }}&thinsp;
+-       {% endif %}
+-     {% endfor %}
+-     {% if current_classification %}
+-       <a href="{% url 'books:classification-detail-list' %}">すべて</a>
+-     {% else %}
+-       すべて
+-     {% endif %}
+-   </div>
++   {% include 'books/_classification_links.html' %}
+    {% if classification_detail_list %}
+```
+
+書籍リストビューをディスパッチするために、`./books/urls.py`に次を追加します。
 
 ```python
 # ./books/urls.py
@@ -530,14 +590,14 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
     path("", views.BookListView.as_view(), name="book-list"),
 ```
 
-開発サーバーを起動後、ブラウザで`http://localhost:8000/books/`にアクセスして、書籍一覧ページが正常に表示されたら変更をリポジトリにコミットします。
+開発サーバーを起動後、書籍一覧ページと書籍分類詳細一覧ページが正常に表示され、書式分類によるフィルタが機能したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
 git commit -m '書籍一覧ページを実装'
 ```
 
-> commit cd09805fa6c6810291eb7252e60a9ee1d5972dcb
+> 74b4652 (tag: 040-implement-book-list-page) 書式一覧ページを実装
 
 ### 書籍詳細ページの実装
 

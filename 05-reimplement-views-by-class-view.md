@@ -278,7 +278,7 @@ git commit -m '部署登録関数ビューを部署登録クラスビューで�
 ```python
 # ./divisions/views.py
 - from typing import Any, Dict
-+ from typing import Any, Dict, Type
++ from typing import Any, Dict, Optional
 
 + from django import forms
   from django.db import transaction
@@ -333,7 +333,7 @@ git commit -m '部署登録関数ビューを部署登録クラスビューで�
 +         ctx["action"] = "更新"
 +         return ctx
 +
-+     def get_form(self, form_class: Type[forms.Form] | None = None) -> forms.Form:
++     def get_form(self, form_class: Optional[forms.Form] = None) -> forms.Form:
 +         form = super().get_form(form_class=form_class)
 +         form.fields["code"].widget.attrs["readonly"] = True
 +         return form
@@ -829,7 +829,7 @@ git commit -m 'PageTitleMixinでページタイトルを設定'
 -         ctx["action"] = "更新"
 -         return ctx
 -
-      def get_form(self, form_class: Type[forms.Form] | None = None) -> forms.Form:
+      def get_form(self, form_class: Optional[forms.Form] None) -> forms.Form:
           form = super().get_form(form_class=form_class)
           form.fields["code"].widget.attrs["readonly"] = True
           return form

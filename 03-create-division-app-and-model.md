@@ -145,7 +145,7 @@ git add --all
 git commit -m '部署アプリを追加'
 ```
 
-> 9081ca4 (tag: 005-add-division-app)
+> 9081ca4 (tag: 005-add-divisions-app)
 
 ## 部署モデルの実装
 

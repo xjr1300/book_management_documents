@@ -8,6 +8,7 @@
     "isort",
     "kwarg",
     "kwargs",
+    "loaddata",
     "makemigrations",
     "mypy",
     "pathlib",

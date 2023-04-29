@@ -1097,7 +1097,7 @@ git add ./books/
 git commit -m '書籍削除ページを実装'
 ```
 
-> af1e94d (tag: 044-implement-book-delete-page)
+> ab211ae (tag: 044-implement-book-delete-page)
 
 ## トランザクション
 
@@ -1158,7 +1158,7 @@ git add ./books/views.py
 git commit -m '書籍登録、更新及び削除ページにトランザクションを開始して、書籍の操作をアトミック化'
 ```
 
-> ebb2317 (tag: 045-set-transaction)
+> 7022f03 (tag: 045-set-transaction-at-book-pages)
 
 ### デコレーター
 

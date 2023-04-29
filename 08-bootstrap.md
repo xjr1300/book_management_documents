@@ -3,23 +3,26 @@
 - [Bootstrapで書籍ページの装飾とレイアウト](#bootstrapで書籍ページの装飾とレイアウト)
   - [django-bootstrap5のインストール](#django-bootstrap5のインストール)
   - [Bootstrap用のベーステンプレートの作成](#bootstrap用のベーステンプレートの作成)
+  - [書籍ベースページテンプレートの実装](#書籍ベースページテンプレートの実装)
+  - [書籍分類リンクテンプレートにBootstrapを適用](#書籍分類リンクテンプレートにbootstrapを適用)
   - [書籍一覧テンプレートにBootstrapを適用](#書籍一覧テンプレートにbootstrapを適用)
+  - [書籍詳細表示テンプレートにBootstrapを的章](#書籍詳細表示テンプレートにbootstrapを的章)
   - [書籍詳細テンプレートにBootstrapを適用](#書籍詳細テンプレートにbootstrapを適用)
   - [書籍フォームテンプレートにBootstrapを適用](#書籍フォームテンプレートにbootstrapを適用)
   - [書籍削除テンプレートにBootstrapを適用](#書籍削除テンプレートにbootstrapを適用)
   - [まとめ](#まとめ)
 
-[Bootstrap](https://getbootstrap.jp/docs/5.0/getting-started/introduction/)は、ウェブサイトやWebアプリケーションを作成するフロントエンドWebアプリケーションフレームワークです。
-タイポグラフィ、フォーム、ボタン、ナビゲーション、その他構成要素やJavaScript用拡張などが、HTMLおよびCSSベースのデザインテンプレートとして用意されています。
+[Bootstrap](https://getbootstrap.jp/docs/5.0/getting-started/introduction/)は、Twitter社（現X社）が開発した、ウェブサイトやWebアプリケーションを作成するフロントエンドWebアプリケーションフレームワークです。
+Bootstrapは、タイポグラフィ、フォーム、ボタン、ナビゲーションなどの部品を、HTML、CSS及びJavaScriptで提供しています。
 
-また、主にBootstrapのフォーム部品をDjangoで利用する[django-bootstrap5](https://django-bootstrap5.readthedocs.io/en/latest/index.html)パッケージがあります。
+また、主にBootstrapのフォーム部品をDjangoで利用することを支援する[django-bootstrap5](https://django-bootstrap5.readthedocs.io/en/latest/index.html)パッケージがあります。
 
 本章では、Bootstrap5とdjango-bootstrap5を使用して、書籍ページを装飾してレイアウトします。
 
 Bootstrapについての説明は[ここ](https://getbootstrap.jp/docs/5.0/getting-started/introduction/)を参照してください。
 また、django-bootstrap5についての説明は[ここ](https://django-bootstrap5.readthedocs.io/en/latest/index.html)を参照してください。
 
-> Bootstrapが提供するデフォルトの色やレイアウトなどを変更する場合、CSSを定義することで、要素に独自の装飾やレイアウトなどを設定できます。
+> Bootstrapが提供するデフォルトの色やレイアウトなどを変更したい場合、CSSでBootstrapのCSSを上書きするなどして、独自の装飾やレイアウトなどを設定できます。
 
 ## django-bootstrap5のインストール
 
@@ -51,14 +54,17 @@ pip freeze > requirements.txt
 次の通り変更をリポジトリにコミットします。
 
 ```bash
+git add ./book_management/settings.py
 git add requirements.txt
 git commit -m 'django-bootstrap5をインストール'
 ```
 
+> a758707 (tag: 046-install-django-bootstrap5)
+
 ## Bootstrap用のベーステンプレートの作成
 
 Bootstrap用のベーステンプレートを次の通り作成します。
-Bootstrap用のベーステンプレートは、`django_bootstrap5/bootstrap5.html`のタイトルを空にしています。
+なお、Bootstrap用のベーステンプレートは、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の`head`要素の`title`要素のコンテンツを空にしています。
 
 ```html
 <!-- templates/bootstrap_base.html -->
@@ -69,10 +75,16 @@ Bootstrap用のベーステンプレートは、`django_bootstrap5/bootstrap5.ht
 {% endblock %}
 ```
 
-なお、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の内容は次の通りです。
-基本的には、`bootstrap5_content`ブロックにページのコンテンツを、`bootstrap5_before_content`ブロックにページのヘッダー（HTMLの`head`要素ではありません）、`bootstrap5_after_content`にページのフッターを追加します。
+Bootstrap用のベーステンプレートを実装したら、次の通り変更をリポジトリにコミットします。
 
-Bootstrap5のCSSやJavaScriptは`django-bootstrap5`がこのテンプレートで導入してくれます。
+```bash
+git add ./templates/bootstrap_base.html
+git commit -m 'Bootstrap用のベーステンプレートを実装'
+```
+
+> a47fa54 (tag: 047-implement-bootstrap-base-template)
+
+なお、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の内容は次の通りです。
 
 ```html
 <!-- django_bootstrap5/bootstrap5.html （一部整形） -->
@@ -96,57 +108,100 @@ Bootstrap5のCSSやJavaScriptは`django-bootstrap5`がこのテンプレート�
   {% block bootstrap5_extra_head %}{% endblock %}
 </head>
 <body>
-{% block bootstrap5_before_content %}{% endblock %}
-{% block bootstrap5_content %} CONTENT {% endblock %}
-{% block bootstrap5_after_content %}{% endblock %}
-<!-- Bootstrap JavaScript if it is in body -->
-{% if not 'javascript_in_head'|bootstrap_setting %}
-  {% bootstrap_javascript %}
-{% endif %}
-{% block bootstrap5_extra_script %}{% endblock %}
+  <!-- 継承したレンプレートで、ページのヘッダを実装するブロック-->
+  {% block bootstrap6_before_content %}{% endblock %}
+  <!-- 継承したレンプレートで、ページのメインコンテンツを実装するブロック-->
+  {% block bootstrap5_content %} CONTENT {% endblock %}
+  <!-- 継承したレンプレートで、ページのフッターを実装するブロック-->
+  {% block bootstrap5_after_content %}{% endblock %}
+  <!-- Bootstrap JavaScript if it is in body -->
+  {% if not 'javascript_in_head'|bootstrap_setting %}
+    {% bootstrap_javascript %}
+  {% endif %}
+  {% block bootstrap5_extra_script %}{% endblock %}
 </body>
 </html>
 ```
 
-## 書籍一覧テンプレートにBootstrapを適用
+`django_bootstrap5/bootstrap5.html`は、`bootstrap5_content`ブロックにページのコンテンツを、`bootstrap5_before_content`ブロックにページのヘッダー（HTMLの`head`要素ではありません）、`bootstrap5_after_content`にページのフッターを追加します。
 
-書籍一覧テンプレートにBootstrapを次の通り変更します。
+また、Bootstrap5のCSSやJavaScriptは、このテンプレートが導入してくれます。
 
-<!-- cspell: disable -->
+## 書籍ベースページテンプレートの実装
+
+それぞれの書籍ページが継承する書籍ベースページテンプレートを次の通り実装します。
+
 ```html
-<!-- ./books/templates/books/book_list.html -->
+<!-- ./books/templates/books/book_base_page.html -->
 {% extends 'bootstrap_base.html' %}
 
 {% block bootstrap5_before_content %}
   <div class="container-fluid">
-    <h2>書籍一覧</h2>
+    <h2>{{ title }}</h2>
   </div>
 {% endblock bootstrap5_before_content %}
+```
+
+書籍ページベーステンプレートを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./books/templates/books/book_base_page.html
+git commit -m '書籍ベースページテンプレートを実装'
+```
+
+> d5fe309 (tag: 048-implement-book-base-page-template)
+
+## 書籍分類リンクテンプレートにBootstrapを適用
+
+書籍分類リンクテンプレートを次で入れ替えます。
+
+```html
+<!-- ./books/templates/books/_classification_links.html -->
+<div class="nav">
+  {% for classification in classification_list %}
+    <li class="nav-item">
+      {% if classification.code != current_classification.code %}
+        <a class="nav-link" href="{% url 'books:book-list' %}?classification_code={{ classification.code }}">
+          {{ classification.name }}
+        </a>
+      {% else %}
+        <a class="nav-link activ" aria-current="page" href="#">{{ classification.name }}</a>
+      {% endif %}
+    </li>
+  {% endfor %}
+  <li class="nav-item">
+    {% if current_classification %}
+      <a class="nav-link" href="{% url 'books:book-list' %}">すべて</a>
+    {% else %}
+      <a class="nav-link activ" aria-current="page" href="#">
+        すべて
+      </a>
+    {% endif %}
+  </li>
+</div>
+```
+
+書籍分類リンクテンプレートを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./books/templates/books/_classification_links.html
+git commit -m '書籍分類リンクテンプレートにBootstrapを適用'
+```
+
+> 382c038 (tag: 049-implement-classification-links-template)
+
+## 書籍一覧テンプレートにBootstrapを適用
+
+書籍一覧テンプレートを次で入れ替えます。
+
+<!-- cspell: disable -->
+```html
+<!-- ./books/templates/books/book_list.html -->
+{% extends 'books/book_base_page.html' %}
 
 {% block bootstrap5_content %}
   <div class="container-fluid">
-    <div class="nav">
-      {% for classification in classification_list %}
-        <li class="nav-item">
-          {% if classification.code != current_classification.code %}
-            <a class="nav-link" href="{% url 'books:book-list' %}?classification_code={{ classification.code }}">
-              {{ classification.name }}
-            </a>
-          {% else %}
-            <a class="nav-link activ" aria-current="page" href="#">{{ classification.name }}</a>
-          {% endif %}
-        </li>
-      {% endfor %}
-      <li class="nav-item">
-        {% if current_classification %}
-          <a class="nav-link" href="{% url 'books:book-list' %}">すべて</a>
-        {% else %}
-          <a class="nav-link activ" aria-current="page" href="#">
-            すべて
-          </a>
-        {% endif %}
-      </li>
-    </div>
+    {% include 'books/_classification_links.html' %}
     {% if book_list %}
       <table class="table table-striped table-hover table-sm ps-3">
         <thead class="table-dark">
@@ -191,12 +246,83 @@ Bootstrap5のCSSやJavaScriptは`django-bootstrap5`がこのテンプレート�
 ```
 <!-- cspell: enable -->
 
-開発サーバーを起動して、書籍一覧ページにアクセスしてBootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
+ブラウザで書籍一覧ページにアクセスして、Bootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add ./books/
+git add ./books/templates/books/book_list.html
 git commit -m '書籍一覧テンプレートにBootstrapを適用'
 ```
+
+> 3bcd989 (tag: 050-apply-bootstrap-to-book-list-template)
+
+## 書籍詳細表示テンプレートにBootstrapを的章
+
+書籍書斎表示テンプレートにBootstrapを次の通り適用します。
+
+```html
+<!-- ./books/templates/books/_book_detail.html -->
+<table class="table table-striped table-hover table-sm ps-3">
+  <tr>
+    <th class="table-dark text-end pe-3 pe-3">タイトル</th>
+    <td class="ps-3">{{ book.title }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">分類</th>
+    <td class="ps-3">{{ book.classification_detail.classification }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">分類詳細</th>
+    <td class="ps-3">{{ book.classification_detail }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">著者または訳者</th>
+    <td class="ps-3">{% if book.authors %}{{ book.authors }}{% else %}ー{% endif %}
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">ISBN</th>
+    <td class="ps-3">{{ book.isbn | default_if_none:"ー" }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3 text-end pe-3">出版社</th>
+    <td class="ps-3">{{ book.publisher | default_if_none:"ー" }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">発行日</th>
+    <td class="ps-3">{{ book.published_at | default_if_none:"ー" }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">管理部署</th>
+    <td class="ps-3">{{ book.division }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">廃棄</th>
+    <td class="ps-3">{{ book.disposed | yesno:"済,ー" }}</td>
+  </tr>
+  {% if book.disposed %}
+    <tr>
+      <th class="table-dark text-end pe-3">廃棄日</th>
+      <td class="ps-3">{{ book.disposed_at }}</td>
+    </tr>
+  {% endif %}
+  <tr>
+    <th class="table-dark text-end pe-3">登録日時</th>
+    <td class="ps-3">{{ book.created_at }}</td>
+  </tr>
+  <tr>
+    <th class="table-dark text-end pe-3">更新日時</th>
+    <td class="ps-3">{{ book.updated_at }}</td>
+  </tr>
+</table>
+```
+
+書籍詳細表示テンプレートにBootstrapを適用したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./books/templates/books/_book_detail.html
+git commit -m 'books/_book_detail.htmlにBootstrapを適用'
+```
+
+> c336607 (tag: 051-apply-bootstrap-to-_book_detail.html)
 
 ## 書籍詳細テンプレートにBootstrapを適用
 
@@ -204,13 +330,7 @@ git commit -m '書籍一覧テンプレートにBootstrapを適用'
 
 ```html
 <!-- ./books/templates/books/book_detail.html -->
-{% extends 'bootstrap_base.html' %}
-
-{% block bootstrap5_before_content %}
-  <div class="container-fluid">
-    <h2>書籍詳細</h2>
-  </div>
-{% endblock bootstrap5_before_content %}
+{% extends 'books/book_base_page.html' %}
 
 {% block bootstrap5_content %}
   <div class="container-fluid">
@@ -225,70 +345,14 @@ git commit -m '書籍一覧テンプレートにBootstrapを適用'
 {% endblock bootstrap5_content %}
 ```
 
-<!-- cspell: disable -->
-```html
-<!-- ./books/templates/books/_book_detail.html -->
-<table class="table table-striped table-hover table-sm ps-3">
-  <tr>
-    <th class="table-dark text-end pe-3 pe-3">タイトル</th>
-    <td class="ps-3">{{ book.title }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">分類</th>
-    <td class="ps-3">{{ book.classification_detail.classification }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">分類詳細</th>
-    <td class="ps-3">{{ book.classification_detail }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">著者または訳者</th>
-    <td class="ps-3">{% if book.authors %}{{ book.authors }}{% else %}ー{% endif %}
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">ISBN</th>
-    <td class="ps-3">{{ book.isbn | default_if_none:"ー" }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3 text-end pe-3">出版社</th>
-    <td class="ps-3">{{ book.publisher | default_if_none:"ー" }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">発行日</th>
-    <td class="ps-3">{{ book.published_at | default_if_none:"ー" }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">管理部署</th>
-    <td class="ps-3">{{ book.division }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">廃棄</th>
-    <td class="ps-3">{{ book.disposed | yesno:"済,ー" }}</td class="ps-3">
-  </tr>
-  {% if book.disposed %}
-    <tr>
-      <th class="table-dark text-end pe-3">廃棄日</th>
-      <td class="ps-3">{{ book.disposed_at }}</td class="ps-3">
-    </tr>
-  {% endif %}
-  <tr>
-    <th class="table-dark text-end pe-3">登録日時</th>
-    <td class="ps-3">{{ book.created_at }}</td class="ps-3">
-  </tr>
-  <tr>
-    <th class="table-dark text-end pe-3">更新日時</th>
-    <td class="ps-3">{{ book.updated_at }}</td class="ps-3">
-  </tr>
-</table>
-```
-<!-- cspell: enable -->
-
-開発サーバーを起動して、書籍詳細ページにアクセスしてBootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
+ブラウザで書籍詳細ページにアクセスして、Bootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add ./books/
+git add ./books/templates/books/book_detail.html
 git commit -m '書籍詳細テンプレートにBootstrapを適用'
 ```
+
+> 19c47b4 (tag: 052-apply-bootstrap-to-book-detail-template)
 
 ## 書籍フォームテンプレートにBootstrapを適用
 
@@ -307,7 +371,7 @@ git commit -m '書籍詳細テンプレートにBootstrapを適用'
 
 ```html
 <!-- ./books/templates/books/book_form.html -->
-{% extends 'bootstrap_base.html' %}
+{% extends 'books/book_base_page.html' %}
 {% load django_bootstrap5 %}
 
 {% block bootstrap5_extra_head %}
@@ -316,14 +380,8 @@ git commit -m '書籍詳細テンプレートにBootstrapを適用'
   </style>
 {% endblock %}
 
-{% block bootstrap5_before_content %}
-  <div class="container-fluid">
-    <h2>書籍{{ action }}</h2>
-  </div>
-{% endblock bootstrap5_before_content %}
-
 {% block bootstrap5_content %}
-  <div class="container-fluid">
+  <div class="container-fluid pb-3">
     <form method="post">
       {% csrf_token %}
       <div class="row">
@@ -433,14 +491,14 @@ git commit -m '書籍詳細テンプレートにBootstrapを適用'
 {% endblock bootstrap5_content %}
 ```
 
-開発サーバーを起動して、書籍登録及び更新ページにアクセスしてBootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
+ブラウザで書籍登録及び更新ページにアクセスして、Bootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
 git commit -m '書籍フォームテンプレートにBootstrapを適用'
 ```
 
-> commit d8489e525b8b294b0345001209b09ed33b7b34db
+> e63321a (tag: 053-apply-bootstrap-to-book-form-template)
 
 ## 書籍削除テンプレートにBootstrapを適用
 
@@ -448,7 +506,7 @@ git commit -m '書籍フォームテンプレートにBootstrapを適用'
 
 ```html
 <!-- ./books/templates/books/book_confirm_delete.html -->
-{% extends 'bootstrap_base.html' %}
+{% extends 'books/book_base_page.html' %}
 {% load django_bootstrap5 %}
 
 {% block bootstrap5_extra_head %}
@@ -456,12 +514,6 @@ git commit -m '書籍フォームテンプレートにBootstrapを適用'
     {% include 'books/_button_width.css' %}
   </style>
 {% endblock %}
-
-{% block bootstrap5_before_content %}
-  <div class="container-fluid">
-    <h2>書籍削除</h2>
-  </div>
-{% endblock bootstrap5_before_content %}
 
 {% block bootstrap5_content %}
   <div class="container-fluid">
@@ -484,14 +536,14 @@ git commit -m '書籍フォームテンプレートにBootstrapを適用'
 {% endblock bootstrap5_content %}
 ```
 
-開発サーバーを起動して、書籍削除ページにアクセスしてBootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
+ブラウザで書籍削除ページにアクセスして、Bootstrapで装飾及びレイアウトした結果を確認した後、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add ./books/
+git add ./books/templates/books/book_confirm_delete.html
 git commit -m '書籍削除テンプレートにBootstrapを適用'
 ```
 
-> commit 3cc58b7e6ae1b64a92d7f95c17e2e2bfac884578
+> 362e927 (tag: 054-apply-bootstrap-to-book-delete-template)
 
 ## まとめ
 

@@ -2,7 +2,7 @@
 
 - [認証](#認証)
   - [アカウントアプリの追加](#アカウントアプリの追加)
-  - [カスタムユーザーモデルの実装](#カスタムユーザーモデルの実装)
+  - [独自ユーザーモデルの実装](#独自ユーザーモデルの実装)
   - [ユーザーモデルを管理サイトに登録](#ユーザーモデルを管理サイトに登録)
   - [ログインページの実装](#ログインページの実装)
   - [ユーザーの表示とログアウト機能の実装](#ユーザーの表示とログアウト機能の実装)
@@ -13,16 +13,22 @@
   - [まとめ](#まとめ)
 
 Djangoは、`django.contrib.auth.models.User`でユーザーモデルを提供しています。
+Djangoが提供するユーザーモデルは、ユーザー名（`username`）モデルフィールドが含まれています。
+しかし、ユーザーの識別にEメールアドレスを使用するWebアプリケーションにとって、ユーザー名は必要ありません。
 
-カスタムなユーザーモデルを定義したい場合、上記Userモデルが派生する`django.contrib.auth.models.AbstractUser`または、`django.contrib.auth.models.AbstractBaseUser`から派生します。
+よって、本Webアプリケーションは、独自のユーザーモデルを定義します。
+
+Djangoが提供する機能を最大限に利用して独自にユーザーモデルを定義する場合、Userモデルが継承する`django.contrib.auth.models.AbstractUser`または、`django.contrib.auth.models.AbstractBaseUser`を継承してユーザーモデルを実装します。
 
 `AbstractBaseUser`は、認証機能を提供しており、`password`及び`last_login`モデルフィールドを持っています。
-なお、`password`という名前のモデルフィールドですが、Djangoはパスワードをそのままデータベースに記録しません。
-`ソルト（塩）`と呼ばれるランダムな文字列をパスワードに追加した文字列を数回ハッシュ化したハッシュ値を記録しています。
-これにより、データベースがハッキングされてもそのハッシュ値からパスワードを得ることが困難になっています。
+なお、名前が`password`となっていますが、Djangoはパスワードをそのままデータベースに記録しません。
+`password`フィールドは、`ソルト（塩）`と呼ばれるランダムな文字列をパスワードに追加した文字列を数回ハッシュ化したハッシュ値を記録しています。
+これにより、データベースがハッキングされても、そのハッシュ値からパスワードに戻すことを難しくしています。
 同様な理由で、システム管理者（`is_superuser = True`）は、ユーザーのパスワードを知ることができません。
 
-`AbstractUser`は、`AbstractBaseUser`の機能をもち、`AbstractBaseUser`が持つ属性に加えて、次の属性を持ちます。
+> たった1ビット`0`から`1`に変更してもハッシュ値は大きく異なる（そのような特性を持たなくてはならない）ため、総当たりでハッシュか前のデータを得ることも困難です。
+
+`AbstractUser`は`AbstractBaseUser`を継承しており、`AbstractBaseUser`が持つ属性に加えて次の属性を持ちます。
 
 - `username`
 - `first_name`
@@ -32,15 +38,17 @@ Djangoは、`django.contrib.auth.models.User`でユーザーモデルを提供�
 - `is_active`
 - `data_joined`
 
-`AbstractUser`が持つ属性とカスタムで追加する属性を持ち、ユーザー名とパスワードで認証するなど`AbstractUser`の機能を利用する場合は、`AbstractUser`から派生したカスタムユーザーモデルを定義します。
+`AbstractUser`が持つ属性に独自な属性を追加して、ユーザー名とパスワードで認証するなどする場合は、`AbstractUser`を継承した独自ユーザーモデルを実装します。
 
-たとえば、Eメールアドレスとパスワードで認証するなど`AbstractUser`が提供する機能以外を実装したい場合は、`AbstractBaseUser`から派生したカスタムユーザーモデルを定義します。
+たとえば、Eメールアドレスとパスワードで認証するなど`AbstractUser`が提供する機能以外を実装したい場合は、`AbstractBaseUser`を継承した独自ユーザーモデルを実装します。
 
-本アプリケーションでは、Eメールアドレスを使用してユーザー認証をしたいため、カスタムユーザーモデルを`AbstractBaseUser`から派生して定義します。
+本アプリケーションでは、Eメールアドレスを使用してユーザー認証をしたいため、`AbstractBaseUser`を継承したユーザーモデルを実装します。
+
+> 独自ユーザーモデルの実装は、[ここ](https://dev.to/joshwizzy/customizing-django-authentication-using-abstractbaseuser-llg)を参考にしています。
 
 ## アカウントアプリの追加
 
-カスタムユーザーモデルを実装するアカウントアプリを次の通り追加します。
+独自ユーザーモデルを実装するアカウントアプリを次の通り追加します。
 
 ```bash
 python manage.py startapp accounts
@@ -86,12 +94,12 @@ git add book_management/settings.py
 git commit -m 'アカウントアプリを追加'
 ```
 
-> commit 50a06bdf50d65d584e4bc2a5a14c22cf08a7395d
+> 14fd533 (tag: 055-add-accounts-app)
 
-## カスタムユーザーモデルの実装
+## 独自ユーザーモデルの実装
 
-カスタムユーザーモデル（`User`）を次の通り実装します。
-なお、以後、本Webアプリケーションで定義したカスタムユーザーモデルを単にユーザーモデルと呼びます。
+独自ユーザーモデル（`User`）を次の通り実装します。
+なお、以後、本Webアプリケーションで定義した独自ユーザーモデルを単にユーザーモデルと呼びます。
 
 <!-- cspell: disable -->
 ```python
@@ -218,6 +226,10 @@ Superuser created successfully.
 
 次の通り、Pythonインタラクティブシェルで、ユーザーを登録してパスワードをチェックできます。
 
+```bash
+python manage.py shell
+```
+
 <!-- cspell: disable -->
 ```python
 from accounts.models import User
@@ -234,9 +246,7 @@ check_password("django", user.password)
 ```
 <!-- cspell: enable -->
 
-上記で登録したユーザーのパスワードがデータベースに記録されている様子を次に示します。
-`password`カラムには、`<algorithm>$<iterations>$<salt>$<hash>`の形式で値が記録されています。
-上記2ユーザーは同じパスワードを設定ましたが、ソルトが異なっているため、ハッシュ値もことなっています。
+上記で登録したユーザーのパスワードが、データベースに記録されている様子を次に示します。
 
 <!-- cspell: disable -->
 ```bash
@@ -249,6 +259,9 @@ pbkdf2_sha256$600000$lbz4XHb2PQHFGKYvEoxDYO$FPpgoW8hjYESNhdjxoSKzH9FQp+ognOsLF5Q
 ```
 <!-- cspell: enable -->
 
+`password`カラムには、`<algorithm>$<iterations>$<salt>$<hash>`の形式で値が記録されています。
+上記、2ユーザーは同じパスワードを設定ましたが、ソルトが異なっているため、ハッシュ値も異なっています。
+
 次の通り変更をリポジトリにコミットします。
 
 ```bash
@@ -257,7 +270,7 @@ git add book_management/settings.py
 git commit -m 'ユーザーモデルを実装'
 ```
 
-> commit d8e98f7eba0cffdfa7d67355c8254f3223ec5ffd
+> 1bed130 (tag: 056-implement-user-model)
 
 ## ユーザーモデルを管理サイトに登録
 
@@ -334,7 +347,7 @@ admin.site.register(User, UserAdmin)
 <!-- cspell: enable -->
 
 管理サイトにアクセスして、ユーザーを登録または変更してください。
-なお、ユーザーを登録するとき、Eメールアドレスとパスワードを入力して`保存`ボタンを区クリックした後、次に名前を入力する画面が表示されるためユーザーの名前を入力した後で`保存`ボタンをクリックします。
+なお、ユーザーを登録するとき、Eメールアドレスとパスワードを入力して`保存`ボタンをクリックした後、次に表示されるページにユーザーの名前を入力して`保存`ボタンをクリックします。
 管理サイトでユーザーを登録及び変更できた場合は、次の通り変更をリポジトリにコミットします。
 
 ```bash
@@ -342,7 +355,7 @@ git add ./accounts/admin.py
 git commit -m 'ユーザーモデルを管理サイトに登録'
 ```
 
-> commit bc91a155045cb1b8445d991bcdfb18253a1bead1
+> d24c7da (tag: 057-register-user-model-to-admin-site)
 
 ## ログインページの実装
 

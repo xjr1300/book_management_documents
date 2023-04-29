@@ -543,7 +543,7 @@ git add ./books/templates/books/book_confirm_delete.html
 git commit -m '書籍削除テンプレートにBootstrapを適用'
 ```
 
-> 362e927 (tag: 054-apply-bootstrap-to-book-delete-template)
+> 9d79143 (tag: 054-apply-bootstrap-to-book-delete-template)
 
 ## まとめ
 

@@ -5,7 +5,7 @@
   - [書籍分類ページの実装](#書籍分類ページの実装)
   - [書籍分類詳細ページの実装](#書籍分類詳細ページの実装)
     - [ClassificationDetailViewMixinの実装](#classificationdetailviewmixinの実装)
-    - [書籍分類詳細リストビューの実装](#書籍分類詳細リストビューの実装)
+    - [書籍分類詳細一覧ビューの実装](#書籍分類詳細一覧ビューの実装)
     - [ClassificationDetailSingleObjectMixinの実装](#classificationdetailsingleobjectmixinの実装)
     - [書籍分類詳細ビューの実装](#書籍分類詳細ビューの実装)
     - [ClassificationDetailFormMixinの実装](#classificationdetailformmixinの実装)
@@ -20,7 +20,7 @@
     - [書籍更新ページの実装](#書籍更新ページの実装)
     - [書籍削除ページの実装](#書籍削除ページの実装)
   - [トランザクション](#トランザクション)
-    - [デコレーターについて](#デコレーターについて)
+    - [デコレーター](#デコレーター)
   - [まとめ](#まとめ)
 
 ## ミックスインの整理
@@ -149,9 +149,9 @@ app_name = "books"
 本チュートリアルでは、`ClassificationDetailViewMixin`の実装方法を説明しません。
 `ClassificationDetailViewMixin`を`ClassificationViewMixin`と同様に実装してください。
 
-### 書籍分類詳細リストビューの実装
+### 書籍分類詳細一覧ビューの実装
 
-書籍分類詳細リストビュー（`ClassificationDetailListView`）を次の通り実装します。
+書籍分類詳細一覧ビュー（`ClassificationDetailListView`）を次の通り実装します。
 
 ```python
 # ./books/views.py
@@ -165,10 +165,10 @@ class ClassificationDetailListView(
     template_name = "books/classification_detail_list.html"
 ```
 
-`context_object_name`で書籍分類詳細リストビューが取得する書籍分類詳細QuerySetのコンテキスト名を指定しています。
+`context_object_name`で書籍分類詳細一覧ビューが取得する書籍分類詳細QuerySetのコンテキスト名を指定しています。
 `context_object_name`を指定しない場合、そのコンテキスト名はモデル名を単純に小文字化した文字列の末尾に`_list`を追加した`classificationdetail_list`になります。
 
-`template_name`で書籍分類詳細リストビューのテンプレートを指定しています。
+`template_name`で書籍分類詳細一覧ビューのテンプレートを指定しています。
 `template_name`を指定しない場合、コンテキスト名と同様に`books/classificationdetail_list.html`になります。
 
 ### ClassificationDetailSingleObjectMixinの実装
@@ -280,7 +280,7 @@ GETパラメーターは、`&`で繋げて複数設定できます。
   from .models import Classification, ClassificationDetail
 ```
 
-その後、次の通り`get_classification_from_param`関数を追加して、書籍分類詳細リストビューの実装を置き換えます。
+その後、次の通り`get_classification_from_param`関数を追加して、書籍分類詳細一覧ビューの実装を置き換えます。
 
 ```python
 # ./books/views.py
@@ -401,9 +401,9 @@ git commit -m '書籍分類詳細一覧ページで書籍分類詳細を書籍�
 
 ### 書籍一覧ページの実装
 
-書籍リストビュー（`BookListView`）を次の通り実装します。
+書籍一覧ビュー（`BookListView`）を次の通り実装します。
 書式一覧ページも、書籍分類詳細一覧ページと同様に、書籍分類で書籍をフィルタできるようにします。
-なお、書籍分類をフィルタするリンクは、書籍分類詳細リストビューと共有します。
+なお、書籍分類のリンクを表示するテンプレートは、書籍分類詳細一覧ビューと共有します。
 
 ```python
 # ./books/views.py
@@ -455,7 +455,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
         return ctx
 ```
 
-書籍分類リンクテンプレートを次の通り実装します。
+書籍分類リンクテンプレートは、次の通り書籍分類詳細一覧レンプレートから切り取って実装します。
 
 ```html
 <!-- ./books/templates/books/_classification_links.html -->
@@ -529,7 +529,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
 
 > Djangoにビルトインされているテンプレートフィルタについては、[ここ](https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#built-in-filter-reference)を参照してください。
 
-書籍分類詳細リストビューを次の通り変更します。
+書籍分類詳細一覧ビューを次の通り変更します。
 
 ```python
   class ClassificationDetailListView(
@@ -537,18 +537,11 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
   ):
       """書籍分類詳細一覧クラスビュー"""
 
-      (...省略...)
+  (...省略...)
 
       def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-          """コンテキストを返却する。
 
-          コンテキストを取得して、コンテキストにすべての書籍分類詳細モデルインスタンスと、
-          書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録する。
-          """
-          # コンテキストを取得
-          ctx = super().get_context_data(**kwargs)
-          # コンテキストにすべての書籍分類詳細モデルインスタンスを登録
-          ctx["classification_list"] = Classification.objects.all()
+  (...省略...)
           # コンテキストに書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録
           ctx["current_classification"] = self.classification
 +         # コンテキストに書籍分類詳細一覧ページのURLを登録
@@ -582,7 +575,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
     {% if classification_detail_list %}
 ```
 
-書籍リストビューをディスパッチするために、`./books/urls.py`に次を追加します。
+書籍一覧ビューをディスパッチするために、`./books/urls.py`に次を追加します。
 
 ```python
 # ./books/urls.py
@@ -615,8 +608,8 @@ class BookDetailView(
     title = "書籍詳細"
 ```
 
-書籍詳細テンプレートにおいて、書籍の詳細を`table`要素で表示します。
-この書籍の詳細を表示する`table`要素は、後で実装する書籍削除テンプレートにも表示したいため、`./books/templates/books/_book_detail.html`テンプレートに実装してインクルード(`include`)します。
+書籍詳細ページでは、書籍の詳細を`table`要素で表示します。
+この`table`要素は、後で実装する書籍削除テンプレートにも表示するため、`./books/templates/books/_book_detail.html`テンプレートに実装してインクルード(`include`)します。
 
 ```html
 <!-- ./books/templates/books/_book_detail.html -->
@@ -717,14 +710,15 @@ class BookDetailView(
         {% endfor %}
 ```
 
-開発サーバーを起動後、ブラウザで`http://localhost:8000/books/`にアクセスして、書籍詳細ページへのリンクをクリックして、書籍詳細ページが正常に表示されたら変更をリポジトリにコミットします。
+開発サーバーを起動して、ブラウザで書籍一覧ページにアクセスした後、書籍詳細ページへのリンクをクリックして書籍詳細ページが正常に表示されるか確認します。
+書籍焼成ページが正常に表示されたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
 git commit -m '書籍詳細ページを実装'
 ```
 
-> commit 97dde10a459266f89f61080ffe1d072a18875f7b
+> f2f7f66 (tag: 041-implement-book-detail-page)
 
 ### 書籍フォームの実装
 
@@ -736,7 +730,7 @@ git commit -m '書籍詳細ページを実装'
 # ./books/forms.py
 from django import forms
 
-from .models import Book, Classification, ClassificationDetail
+from .models import Book, Classification
 
 
 class BookForm(forms.ModelForm):
@@ -766,13 +760,11 @@ class BookForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["classification_detail"].empty_label = None
         self.fields["division"].empty_label = None
-
 ```
 
 書籍フォームテンプレートを次の通り実装します。
-本チュートリアルではJavaScriptについて説明しません。
-書籍フォームテンプレートに実装されたJavaScriptのコードの説明は、コメントで確認してください。
-なお、次のJavaScriptコードの一部は、Djangoがレンダリングするようになっています。
+書籍フォームテンプレートに実装されたJavaScriptの実装内容については、コメントを確認してください。
+なお、JavaScriptの一部は、Djangoがレンダリングするようになっています。
 
 ```html
 <!-- ./books/templates/books/book_form.html -->
@@ -833,11 +825,17 @@ class BookForm(forms.ModelForm):
 {% endblock inner_body %}
 ```
 
-部署詳細ページのレンダリング結果は、ChromeのDevToolなどで確認してください。
-
 ### 書籍登録ページの実装
 
 書籍登録ビューを次の通り実装します。
+
+```python
+# ./books/views.py
+  from core.mixins import FormActionMixin, PageTitleMixin
+
++ from .forms import BookForm
+  from .models import Book, Classification, ClassificationDetail
+```
 
 ```python
 # ./books/views.py
@@ -861,7 +859,7 @@ class BookCreateView(
         return ctx
 
     def get_success_url(self) -> str:
-        return reverse("book-detail", kwargs={"pk": self.object.id})
+        return reverse("books:book-detail", kwargs={"pk": self.object.id})
 ```
 
 書籍一覧ページに書籍登録ページへのリンクを設置するために、書籍一覧テンプレートを次の通り変更します。
@@ -900,20 +898,23 @@ class BookCreateView(
       path("<str:pk>/", views.BookDetailView.as_view(), name="book-detail"),
 ```
 
-書籍登録ビューが正常に機能したら、次の通り変更をコミットします。
+> 書籍フォームテンプレートに実装したJavaScriptコードの`classificationDetails`変数のレンダリング結果を、ChromeのDevToolなどで確認してください。
+
+書籍登録ページで正常に書籍を登録できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./books/
 git commit -m '書籍登録ビューを実装'
 ```
 
-> commit 1ae1343726f9c7f8c5c0f98a5692831e9624735a
+> 123cc72 (tag: 042-implement-book-create-page)
 
 ### 書籍更新ページの実装
 
 書籍更新ビューを次の通り実装します。
 
 ```python
+
 class BookUpdateView(
     BookViewMixin,
     PageTitleMixin,
@@ -939,7 +940,7 @@ class BookUpdateView(
         return ctx
 
     def get_success_url(self) -> str:
-        return reverse("book-detail", kwargs={"pk": self.object.id})
+        return reverse("books:book-detail", kwargs={"pk": self.object.id})
 ```
 
 書籍フォームテンプレートを次の通り2箇所変更します。
@@ -995,14 +996,14 @@ class BookUpdateView(
     path("update/<str:pk>/", views.BookUpdateView.as_view(), name="book-update"),
 ```
 
-書籍更新ビューが正常に機能したら、次の通り変更をコミットします。
+書籍更新ページで正常に書籍を更新できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add --all
 git commit -m '書籍更新ページを実装'
 ```
 
-> commit 6ba5d64c530eb1aebff12f5c4e338a5ac1717e44
+> af3e106 (tag: 043-implement-book-update-page)
 
 ### 書籍削除ページの実装
 
@@ -1018,7 +1019,7 @@ class BookDeleteView(
     """書籍削除ビュー"""
 
     title = "書籍削除"
-    success_url = reverse_lazy("book-list")
+    success_url = reverse_lazy("books:book-list")
 ```
 
 書籍削除テンプレートを次の通り実装します。
@@ -1089,20 +1090,20 @@ class BookDeleteView(
   ]
 ```
 
-書籍削除ページで書籍が削除できること、またそれぞれの書籍ページに設置したリンクが機能することを確認できたら、次の通り変更をリポジトリにコミットします。
+書籍更新ページで正常に書籍を削除できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add --all
+git add ./books/
 git commit -m '書籍削除ページを実装'
 ```
 
-> commit 3c5c298cd616ae9eed54682b0976ac77b2d22736
+> af1e94d (tag: 044-implement-book-delete-page)
 
 ## トランザクション
 
 それぞれのモデルインスタンスの登録、更新及び削除をアトミックにするためにトランザクションを次の通り設定します。
 
-次は、書籍登録ビューでトランザクションを実行する例ですが、書籍更新及び書籍削除ビューでも、また、それぞれのモデルについても同様です。
+次は、書籍登録ビューでトランザクションを実行するコードですが、書籍更新及び書籍削除ビューでも同様に実装します。
 
 ```python
 # ./books/views.py
@@ -1148,26 +1149,20 @@ git commit -m '書籍削除ページを実装'
 `@transaction.atomic`は`デコレーター｀です。
 デコレーターは、関数やメソッドをラップ（`wrap`、覆って）、ラップした関数またはメソッドを実行する前または後で、何らかの処理を実行できます。
 
-上記では、`@transaction.atomic`デコレーターは、ラップした`post`メソッドを処理する前にトランザクションを開始して、処理した後にトランザクションをコミットまたはロールバックします。
+上記では、`@transaction.atomic`デコレーターは、ラップした`post`メソッドを実行する前にトランザクションを開始して、`post`メソッドの実行が終了した後にトランザクションをコミットまたはロールバックします。
 
-トランザクジョンを設定後、それぞれのモデルを登録、更新及び削除するページが正常に機能したら、次の通り変更をリポジトリにコミットします。
+トランザクジョンを設定後、書籍登録、更新及び削除ページが正常に機能したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
-git add books/views.py
-git add divisions/views.py
-git commit -m 'それぞれのビューでトランザクションを設定'
+git add ./books/views.py
+git commit -m '書籍登録、更新及び削除ページにトランザクションを開始して、書籍の操作をアトミック化'
 ```
 
-> commit 7eaa3a4bba336b1839d43c0c96c8d2e0846a5935
+> ebb2317 (tag: 045-set-transaction)
 
-### デコレーターについて
+### デコレーター
 
-次のコードにおいて、`deco`が関数を受け取り、受け取った関数を実行する前または後で処理をするデコレーターです。
-
-`deco`関数内で定義されている`wrapper`関数は、標準出力に`-- deco start --`を出力して、次に`deco`関数が受け取った関数を実行して、最後に標準出力に`-- deco end --`を出力する`関数`です。
-そして、`deco`関数はその関数を返却します。
-
-よって、`@deco`で修飾された関数全体が、`deco`関数が返却する関数に置き換わり、`test`関数の呼び出しはその関数の実行になります。
+次のコードにおいて、`deco`関数は、`func`仮引数で関数を受け取り、受け取った`func`を実行する前または後で標準出力に文字列を出力するデコレーターです。
 
 ```python
 def deco(func):
@@ -1182,6 +1177,10 @@ def test():
     print("Hello, decorator")
 ```
 
+`deco`関数内で定義されている`wrapper`関数は、標準出力に`-- deco start --`を出力して、次に`deco`関数が受け取った`func`を実行して、最後に標準出力に`-- deco end --`を出力する`関数`です。
+そして、`deco`関数は、その`wrapper`関数を返却します。
+
+よって、`@deco`で修飾された関数全体が、`deco`関数が返却する関数に置き換わり、`test`関数の呼び出しは`deco`関数内の`wrapper`関数の実行になります。
 `@deco`で修飾された`test`関数を呼び出すと、次が出力されます。
 
 ```python
@@ -1205,9 +1204,11 @@ Pythonの関数は、[ファーストクラスオブジェクト（第1級オブ
 > 関数を引数で受け取ったり、関数を返却したりする関数のことです。
 > `deco`関数は関数を引数で受け取り、関数を返却するため高階関数です。
 
+Pythonのデコレーターをより理解するために、[Pythonのデコレータを理解するための12Step](https://qiita.com/_rdtr/items/d3bc1a8d4b7eb375c368)を参照してください。
+
 ## まとめ
 
-本書では、書籍を一覧及び詳細表示して、書籍を登録、更新及び削除するページを実装しました。
-また、書籍を更新するページでは、トランザクションを開始することで、書籍の操作をアトミックにしました。
+本章では、書籍を一覧及び詳細表示するページと、書籍を登録、更新及び削除するページをクラスビューで実装しました。
+また、書籍を`CUD`するページでは、トランザクションを設定して、書籍の操作をアトミックにしました。
 
 次の章は、本章で実装した書籍ページを[Bootstrap](https://getbootstrap.jp/)を使用して装飾及びレイアウトします。

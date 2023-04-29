@@ -226,7 +226,7 @@ gitが追跡対象外とする（または追跡対象にする）ファイル�
 code .gitignore
 ```
 
-`./.gitingre`ファイルに次を入力して保存します。
+`./.gitignore`ファイルに次を入力して保存します。
 
 ```text
 __pycache__/

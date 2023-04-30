@@ -3,6 +3,7 @@
     "clickjacking",
     "contenttypes",
     "createsuperuser",
+    "djangorestframework",
     "endfor",
     "icontains",
     "isort",

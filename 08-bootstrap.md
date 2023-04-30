@@ -165,7 +165,7 @@ git commit -m '書籍ベースページテンプレートを実装'
           {{ classification.name }}
         </a>
       {% else %}
-        <a class="nav-link activ" aria-current="page" href="#">{{ classification.name }}</a>
+        <a class="nav-link active" aria-current="page" href="#">{{ classification.name }}</a>
       {% endif %}
     </li>
   {% endfor %}
@@ -173,7 +173,7 @@ git commit -m '書籍ベースページテンプレートを実装'
     {% if current_classification %}
       <a class="nav-link" href="{% url 'books:book-list' %}">すべて</a>
     {% else %}
-      <a class="nav-link activ" aria-current="page" href="#">
+      <a class="nav-link active" aria-current="page" href="#">
         すべて
       </a>
     {% endif %}
@@ -188,7 +188,7 @@ git add ./books/templates/books/_classification_links.html
 git commit -m '書籍分類リンクテンプレートにBootstrapを適用'
 ```
 
-> 382c038 (tag: 049-implement-classification-links-template)
+> 1e0bcb7 (tag: 049-implement-classification-links-template)
 
 ## 書籍一覧テンプレートにBootstrapを適用
 
@@ -253,7 +253,7 @@ git add ./books/templates/books/book_list.html
 git commit -m '書籍一覧テンプレートにBootstrapを適用'
 ```
 
-> 3bcd989 (tag: 050-apply-bootstrap-to-book-list-template)
+> f1df953 (tag: 050-apply-bootstrap-to-book-list-template)
 
 ## 書籍詳細表示テンプレートにBootstrapを的章
 
@@ -322,7 +322,7 @@ git add ./books/templates/books/_book_detail.html
 git commit -m 'books/_book_detail.htmlにBootstrapを適用'
 ```
 
-> c336607 (tag: 051-apply-bootstrap-to-_book_detail.html)
+> afea70c (tag: 051-apply-bootstrap-to-_book_detail.html)
 
 ## 書籍詳細テンプレートにBootstrapを適用
 
@@ -352,7 +352,7 @@ git add ./books/templates/books/book_detail.html
 git commit -m '書籍詳細テンプレートにBootstrapを適用'
 ```
 
-> 19c47b4 (tag: 052-apply-bootstrap-to-book-detail-template)
+> 0e39c1e (tag: 052-apply-bootstrap-to-book-detail-template)
 
 ## 書籍フォームテンプレートにBootstrapを適用
 
@@ -498,7 +498,7 @@ git add ./books/
 git commit -m '書籍フォームテンプレートにBootstrapを適用'
 ```
 
-> e63321a (tag: 053-apply-bootstrap-to-book-form-template)
+> bd21c4f (tag: 053-apply-bootstrap-to-book-form-template)
 
 ## 書籍削除テンプレートにBootstrapを適用
 
@@ -543,7 +543,7 @@ git add ./books/templates/books/book_confirm_delete.html
 git commit -m '書籍削除テンプレートにBootstrapを適用'
 ```
 
-> 9d79143 (tag: 054-apply-bootstrap-to-book-delete-template)
+> ab55f06 (tag: 054-apply-bootstrap-to-book-delete-template)
 
 ## まとめ
 

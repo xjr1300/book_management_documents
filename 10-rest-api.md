@@ -17,9 +17,20 @@
     - [書籍分類APIの呼び出し](#書籍分類apiの呼び出し)
       - [書籍分類一覧APIの呼び出し](#書籍分類一覧apiの呼び出し)
       - [書籍分類詳細APIの呼び出し](#書籍分類詳細apiの呼び出し)
-      - [書籍登録APIの呼び出し](#書籍登録apiの呼び出し)
+      - [書籍分類登録APIの呼び出し](#書籍分類登録apiの呼び出し)
       - [書籍分類更新APIの呼び出し](#書籍分類更新apiの呼び出し)
       - [書籍分類削除APIの呼び出し](#書籍分類削除apiの呼び出し)
+  - [書籍分類詳細APIの実装](#書籍分類詳細apiの実装)
+    - [書籍分類詳細更新用シリアライザーの実装](#書籍分類詳細更新用シリアライザーの実装)
+    - [書籍分類詳細シリアライザーの実装](#書籍分類詳細シリアライザーの実装)
+    - [書籍分類詳細APIビューの実装](#書籍分類詳細apiビューの実装)
+    - [書籍分類詳細APIビューのディスパッチ](#書籍分類詳細apiビューのディスパッチ)
+    - [書籍分類詳細APIの呼び出し](#書籍分類詳細apiの呼び出し-1)
+      - [書籍分類詳細一覧APIの呼び出し](#書籍分類詳細一覧apiの呼び出し)
+      - [書籍分類詳細詳細APIの呼び出し](#書籍分類詳細詳細apiの呼び出し)
+      - [書籍分類詳細登録APIの呼び出し](#書籍分類詳細登録apiの呼び出し)
+      - [書籍分類詳細更新APIの呼び出し](#書籍分類詳細更新apiの呼び出し)
+    - [書籍分類詳細削除APIの呼び出し](#書籍分類詳細削除apiの呼び出し)
 
 本章では、書籍分類、書籍分類詳細及び書籍を取得、登録、更新及び削除するWeb APIを`REST`形式で作成します。
 
@@ -88,9 +99,11 @@ DRFは次の通りリクエストを処理します。
 
 次の通りDRFをインストールします。
 
+<!-- cspell: disable -->
 ```bash
 pip install djangorestframework
 ```
+<!-- cspell: enable -->
 
 プロジェクト設定ファイルの`INSTALLED_APP`に`rest_framework`を次の通り追加します。
 
@@ -205,6 +218,10 @@ class ClassificationSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=3)
     # 書籍分類名
     name = serializers.CharField(max_length=80)
+    # 作成日時
+    created_at = serializers.DateTimeField(read_only=True)
+    # 更新日時
+    updated_at = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data: Any) -> Classification:
         """
@@ -235,6 +252,7 @@ class ClassificationSerializer(serializers.Serializer):
         return instance
 ```
 
+書籍分類シリアライザーの作成日時フィールドと更新日時は、本アプリケーションが自動的に設定するため、読み込み専用（`read_only=True`）にしています。
 書籍分類シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
@@ -242,7 +260,7 @@ git add ./api1/books/
 git commit -m '書籍分類シリアライザーを実装'
 ```
 
-> b738fd2 (tag: 066-implement-classification-serializer)
+> d6e4e58 (tag: 066-implement-classification-serializer)
 
 ### 書籍分類APIビューの実装
 
@@ -333,7 +351,7 @@ def classification_detail(request: Request, code: str) -> Response:
 
 `rest_framework.request.Request`は、`django.http.HttpRequest`をDRFが拡張したクラスです。
 
-`ClassificationSerializer`は、書籍分類モデルインスタンスをJSON形式に変換（`シリアライズ`）したり、受け取った`POST`データを書籍分類モデルインスタンスに変換（`デシリアライズ`したリします。
+`ClassificationSerializer`は、書籍分類モデルインスタンスをJSON形式に変換（`シリアライズ`）して、また受け取った`POST`データを書籍分類モデルインスタンスに変換（`デシリアライズ`）します。
 
 書籍分類APIビューを実装したら、次の通り変更をリポジトリにコミットします。
 
@@ -342,7 +360,7 @@ git add ./api1/books/views.py
 git commit -m '書籍分類APIビューを実装`
 ```
 
-> 85994e3 (tag: 067-implement-classification-views)
+> ac8e845 (tag: 067-implement-classification-views)
 
 ### 書籍分類APIビューのディスパッチ
 
@@ -381,7 +399,7 @@ git add ./book_management/urls.py
 git commit -m '書籍分類APIを実装'
 ```
 
-> e30dab6 (tag: 068-implement-classification-api)
+> dd540f7 (tag: 068-implement-classification-api)
 
 ### 書籍分類APIの呼び出し
 
@@ -421,62 +439,79 @@ sudo apt -y install jq
 
 <!-- cspell: disable -->
 ```bash
-curl http://localhost:8000/api1/books/classifications/ | jq .
-#   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-#                                  Dload  Upload   Total   Spent    Left  Speed
-# 100   323  100   323    0     0  19365      0 --:--:-- --:--:-- --:--:-- 24846
-# [
-#   {
-#     "code": "000",
-#     "name": "総記"
-#   },
-#   {
-#     "code": "100",
-#     "name": "哲学"
-#   },
-#   {
-#     "code": "200",
-#     "name": "歴史"
-#   },
-#   {
-#     "code": "300",
-#     "name": "社会科学"
-#   },
-#   {
-#     "code": "400",
-#     "name": "自然科学"
-#   },
-#   {
-#     "code": "500",
-#     "name": "技術"
-#   },
-#   {
-#     "code": "600",
-#     "name": "産業"
-#   },
-#   {
-#     "code": "700",
-#     "name": "芸術"
-#   },
-#   {
-#     "code": "800",
-#     "name": "言語"
-#   },
-#   {
-#     "code": "900",
-#     "name": "文学"
-#   }
-# ]
+curl -s http://localhost:8000/api1/books/classifications/ | jq .
+[
+  {
+    "code": "000",
+    "name": "総記",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "100",
+    "name": "哲学",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "200",
+    "name": "歴史",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "300",
+    "name": "社会科学",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "400",
+    "name": "自然科学",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "500",
+    "name": "技術",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "600",
+    "name": "産業",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "700",
+    "name": "芸術",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "800",
+    "name": "言語",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  },
+  {
+    "code": "900",
+    "name": "文学",
+    "created_at": "2023-04-24T09:00:00+09:00",
+    "updated_at": "2023-04-24T09:00:00+09:00"
+  }
+]
 ```
 <!-- cspell: enable -->
 
+なお、`curl`コマンドで指定した`-s`は、サイレントモードを示しており、リクエストを発行してレスポンスを受け取るまでの経過時間などを表示しないオプションです。
+
 ちなみに、書籍一覧APIを許可されていない｀PUT`メソッドで呼び出した場合、`405 Method Not Allowed`が返却されます。
-なお、`curl`に指定した`-X`は、HTTPメソッドを指定するオプションで、ここでは`PUT`メソッドを指定しています。
-また、`-i`は、レスポンスに加えて、レスポンスヘッダを出力するオプションです。
 
 <!-- cspell: disable -->
 ```bash
-curl -X PUT -i http://localhost:8000/api1/books/classifications/
+curl -X PUT -i -s http://localhost:8000/api1/books/classifications/
 # HTTP/1.1 405 Method Not Allowed
 # Date: Tue, 02 May 2023 02:09:16 GMT
 # Server: WSGIServer/0.2 CPython/3.11.2
@@ -495,29 +530,40 @@ curl -X PUT -i http://localhost:8000/api1/books/classifications/
 ```
 <!-- cspell: enable -->
 
+なお、`curl`コマンドで指定した`-X`は、HTTPメソッドを指定するオプションで、ここでは`PUT`メソッドを指定しています。
+また、`-i`は、レスポンスに加えて、レスポンスヘッダを出力するオプションです。
+
 #### 書籍分類詳細APIの呼び出し
 
 書籍分類詳細APIを次の通り呼び出します。
 
 <!-- cspell: disable -->
 ```bash
-curl http://localhost:8000/api1/books/classifications/100/
-# {"code":"100","name":"哲学"}
+curl -s http://localhost:8000/api1/books/classifications/100/ | jq .
+# {
+#   "code": "100",
+#   "name": "哲学",
+#   "created_at": "2023-04-24T09:00:00+09:00",
+#   "updated_at": "2023-04-24T09:00:00+09:00"
+# }
 ```
 <!-- cspell: enable -->
 
-#### 書籍登録APIの呼び出し
+#### 書籍分類登録APIの呼び出し
 
 書籍分類登録APIを次の通り呼び出します。
 次のコマンドでは、コード`999`及び名前`ダミー書籍分類`の書式分類を登録します。
 なお、`curl`コマンドの`-H`は、リクエストヘッダに独自のヘッダを追加するオプションで、ここでは`POST`するデータが`JSON`であることを、`Content-Type: application/json`で指定しています。
 また、`-d`は、`POST`データを指定するオプションで、登録する書籍分類をJSONで表現しています。
-さらに、`-s`は、サイレントモードを示しており、リクエストを発行してレスポンスを受け取るまでの経過時間などを表示しないオプションです。
-
 <!-- cspell: disable -->
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"code": "999", "name": "ダミー書籍分類"}' -s http://localhost:8000/api1/books/classifications/
-# {"code":"999","name":"ダミー書籍分類"}
+curl -X POST -H "Content-Type: application/json" -d '{"code": "999", "name": "ダミー書籍分類"}' -s http://localhost:8000/api1/books/classifications/ | jq .
+# {
+#   "code": "999",
+#   "name": "ダミー書籍分類",
+#   "created_at": "2023-05-02T14:08:30.530657+09:00",
+#   "updated_at": "2023-05-02T14:08:30.530686+09:00"
+# }
 ```
 <!-- cspell: enable -->
 
@@ -525,8 +571,8 @@ curl -X POST -H "Content-Type: application/json" -d '{"code": "999", "name": "�
 
 <!-- cspell: disable -->
 ```bash
-curl http://localhost:8000/api1/books/classifications/999/
-# {"code":"999","name":"ダミー書籍分類"}
+curl -s http://localhost:8000/api1/books/classifications/999/
+# {"code":"999","name":"ダミー書籍分類","created_at":"2023-05-02T14:08:30.530657+09:00","updated_at":"2023-05-02T14:08:30.530686+09:00"}
 ```
 <!-- cspell: enable -->
 
@@ -536,16 +582,26 @@ curl http://localhost:8000/api1/books/classifications/999/
 次のコマンドでは、書籍分類コード`999`の書籍分類名を`ダミー書籍分類（更新後）`に変更します。
 
 ```bash
-curl -X PUT -H "Content-Type: application/json" -d '{"code": "999", "name": "ダミー書籍分類（更新後）"}' -s http://localhost:8000/api1/books/classifications/999/
-# {"code":"999","name":"ダミー書籍分類（更新後）"}
+curl -X PUT -H "Content-Type: application/json" -s -d '{"code": "999", "name": "ダミー書籍分類（更新後）"}' -s http://localhost:8000/api1/books/classifications/999/ | jq .
+# {
+#   "code": "999",
+#   "name": "ダミー書籍分類（更新後）",
+#   "created_at": "2023-05-02T14:08:30.530657+09:00",
+#   "updated_at": "2023-05-02T14:11:27.625771+09:00"
+# }
 ```
 
 更新した書籍分類が、実際に更新されているか確認します。
 
 <!-- cspell: disable -->
 ```bash
-curl http://localhost:8000/api1/books/classifications/999/
-# {"code":"999","name":"ダミー書籍分類（更新後）"}
+curl -s http://localhost:8000/api1/books/classifications/999/ | jq .
+# {
+#   "code": "999",
+#   "name": "ダミー書籍分類（更新後）",
+#   "created_at": "2023-05-02T14:08:30.530657+09:00",
+#   "updated_at": "2023-05-02T14:11:27.625771+09:00"
+# }
 ```
 <!-- cspell: enable -->
 
@@ -556,14 +612,14 @@ curl http://localhost:8000/api1/books/classifications/999/
 
 <!-- cspell: disable -->
 ```bash
-curl -X DELETE -i http://localhost:8000/api1/books/classifications/999/
+curl -X DELETE -i -s http://localhost:8000/api1/books/classifications/999/
 # HTTP/1.1 204 No Content
-# Date: Tue, 02 May 2023 02:35:52 GMT
+# Date: Tue, 02 May 2023 05:13:39 GMT
 # Server: WSGIServer/0.2 CPython/3.11.2
 # Vary: Accept, Cookie
-# Allow: PUT, OPTIONS, DELETE, GET
-# djdt-store-id: a72f283bd08d41ad85280e7b715d2f44
-# Server-Timing: TimerPanel_utime;dur=11.161000000001309;desc="User CPU time", TimerPanel_stime;dur=3.0420000000006553;desc="System CPU time", TimerPanel_total;dur=14.203000000001964;desc="Total CPU time", TimerPanel_total_time;dur=15.965938568115234;desc="Elapsed time", SQLPanel_sql_time;dur=0.8637905120849609;desc="SQL 4 queries", CachePanel_total_time;dur=0;desc="Cache 0 Calls"
+# Allow: DELETE, OPTIONS, GET, PUT
+# djdt-store-id: 72b8ad62f8434b328300ad57c71c3287
+# Server-Timing: TimerPanel_utime;dur=8.587999999999596;desc="User CPU time", TimerPanel_stime;dur=2.523000000000053;desc="System CPU time", TimerPanel_total;dur=11.110999999999649;desc="Total CPU time", TimerPanel_total_time;dur=12.850046157836914;desc="Elapsed time", SQLPanel_sql_time;dur=0.6101131439208984;desc="SQL 4 queries", CachePanel_total_time;dur=0;desc="Cache 0 Calls"
 # X-Frame-Options: DENY
 # Content-Length: 0
 # X-Content-Type-Options: nosniff
@@ -583,3 +639,370 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
 <!-- cspell: enable -->
 
 レスポンスステータスコードが`404 Not Found`であるため、書籍分類コード`999`の書籍分類が削除されていることを確認できました。
+
+## 書籍分類詳細APIの実装
+
+書籍分類シリアライザーは、`rest_framework.serializers.Serializer`を継承して実装しました。
+また、書籍分類ビューは関数ビューとして実装しました。
+
+書籍分類詳細APIの実装は、モデルからシリアライザーを実装する[rest_framework.serializers.ModelSerializer](https://www.django-rest-framework.org/api-guide/serializers/#modelserializer)と、[ジェネリックなクラスビュー](https://www.django-rest-framework.org/api-guide/generic-views/)で実装します。
+なお、書籍分類詳細コードを変更できないようにするため、更新用のシリアライザーとそれ以外のシリアライザーに分けて書籍分類詳細シリアライザーを実装します。
+
+### 書籍分類詳細更新用シリアライザーの実装
+
+書籍分類詳細更新用シリアライザーを次の通り実装します。
+
+```python
+# ./api1/books/serializers.py
+- from rest_framework import serializers
++ from rest_framework import exceptions, serializers
+
+- from books.models import Classification
++ from books.models import Classification, ClassificationDetail
+
+  (...省略...)
+
++ class ClassificationDetailUpdateSerializer(serializers.ModelSerializer):
++     """書籍分類詳細更新用シリアライザー"""
++
++     # 書籍分類コード
++     classification_code = serializers.CharField(
++         max_length=3, source="classification.code", label="書籍分類コード"
++     )
++
++     class Meta:
++         model = ClassificationDetail
++         fields = [
++             "classification_code",
++             "name",
++         ]
++
++     def _get_classification(self, classification_code: str) -> Classification:
++         """書籍分類コードから書籍分類モデルインスタンスを取得する。
++
++         Args:
++             classification_code: 書籍分類コード。
++         Returns:
++             書籍分類モデルインスタンス。
++         Exceptions:
++             rest_framework.exceptions.NotFound: 書籍分類が見つからない場合。
++         """
++         try:
++             return Classification.objects.get(code=classification_code)
++         except Classification.DoesNotExist:
++             raise exceptions.NotFound(detail="classification doesn't found")
++
++     def update(
++         self, instance: ClassificationDetail, validated_data: Any
++     ) -> ClassificationDetail:
++         """書籍分類詳細を更新する。
++
++         Args:
++             validated_data: 書籍分類詳細シリアライザーが検証したデータ。
++         Returns:
++             更新した書籍分類詳細モデルインスタンス。
++         Exceptions:
++             rest_framework.exceptions.NotFound: 書籍分類が見つからない場合。
++         """
++         classification = self._get_classification(
++             validated_data["classification"]["code"]
++         )
++         validated_data["classification"] = classification
++         return super().update(instance, validated_data)
+```
+
+書籍分類詳細更新用シリアライザーは、`ModelSerializer`を継承しています。
+
+`ModelSerializer`は、`Meta`の`model`にモデルを指定する必要があります。
+また、`fields`にシリアライザーに持たせるフィールドを指定する必要があります。
+モデルのすべてのフィールドを指定したい場合は、`fields = "__all__"`を指定します。
+
+書籍分類詳細は書籍分類名モデルフィールド（`name`）を持つため、書籍分類詳細更新用シリアライザーに`name`フィールドを追加する必要はありません。
+代わりに、単に`fields`に`name`を追加します。
+
+書籍分類詳細は書籍分類モデルフィールド（`classification`）を持つため、`fields`にそのフィールドを指定できます。
+しかし、フィールド名を`classification`ではなく`classification_code`にしたいため、`fields`に指定していません。
+代わりに、書籍分類詳細更新用シリアライザーに、`classification_code`フィールドを定義して、`fields`に追加しています。
+なお、`ModelSerializer`で定義したフィールドは、必ず`fields`に追加する必要があります。
+
+`ModelSerializer`は、ジェネリックにモデルを更新する`update`メソッドを実装していますが、書籍分類モデルフィールドにない`classification_code`を`fields`に追加したため、オリジナルな実装をオーバーライドして、`PUT`された`classification_code`から書籍分類モデルインスタンスを取得して、シリアライザーが検証したデータに追加しています。
+
+書籍分類詳細更新用シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/serializers.py
+git commit -m `書籍分類詳細更新用シリアライザーを実装'
+```
+
+> d00ead3 (tag: 069-implement-classification-detail-serializer-for-update)
+
+### 書籍分類詳細シリアライザーの実装
+
+書籍分類詳細一覧、詳細、登録及び削除用のシリアライザーを次の通り実装します。
+
+```python
+# ./api1/books/serializers.py
+class ClassificationDetailSerializer(ClassificationDetailUpdateSerializer):
+    """書籍分類詳細シリアライザー"""
+
+    # 書籍分類名
+    classification_name = serializers.SerializerMethodField(
+        "_get_classification_name", label="書籍分類名"
+    )
+    # 作成日時
+    created_at = serializers.DateTimeField(read_only=True)
+    # 更新日時
+    updated_at = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = ClassificationDetail
+        fields = [
+            "code",
+            "classification_code",
+            "classification_name",
+            "name",
+            "created_at",
+            "updated_at",
+        ]
+
+    def _get_classification_name(self, obj: ClassificationDetail) -> str:
+        """書籍分類名を返却する。
+
+        Args:
+            obj: 書籍分類詳細モデルインスタンス。
+        Returns:
+            書籍分類名。
+        """
+        return obj.classification.name
+
+    def create(self, validated_data: Any) -> ClassificationDetail:
+        """書籍分類詳細を登録する。
+
+        Args:
+            validated_data: 書籍分類詳細シリアライザーが検証したデータ。
+        Returns:
+            作成した書籍分類詳細モデルインスタンス。
+        Exceptions:
+            rest_framework.exceptions.NotFound: 書籍分類が見つからない場合。
+        """
+        classification = self._get_classification(
+            validated_data["classification"]["code"]
+        )
+        validated_data["classification"] = classification
+        return super().create(validated_data)
+```
+
+通常の書籍分類詳細シリアライザーは、書籍分類名（`classification_name`）、作成日時（`created_at`）及び更新日時（`updated_at`）フィールドを追加しています。
+
+書籍分類詳細名フィールドは、書籍分類詳細コードが示す書籍分類詳細名を示すために追加しています。
+書籍分類名フィールドは、書籍分類詳細モデルに存在しないため、`SerializerMethodField`で定義して、書籍分類名を返却するメソッド（`_get_classification_name`）を指定しています。
+
+また、作成日時（`created_at`）と更新日時（`updated_at`）フィールドは読み込み専用であるため、`DateTimeField`を定義しています。
+
+通常の書籍分類詳細シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/serializers.py
+git commit -m '書籍分類詳細シリアライザーを実装'
+```
+
+> 03c104c (tag: 070-implement-classification-detail-serializer)
+
+### 書籍分類詳細APIビューの実装
+
+書籍分類ビューは関数ビューとして実装しました。
+DRFは、[ジェネリックなクラスビュー](https://www.django-rest-framework.org/api-guide/generic-views/)としていくつか提供しています。
+
+書籍分類詳細ビューは、クラスビューの[ListCreateAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#listcreateapiview)を継承した書籍分類詳細一覧登録ビューと、[RetrieveUpdateDestroyAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#retrieveupdatedestroyapiview)を継承した書籍分類詳細詳細更新削除ビューで実装します。
+
+```python
+# ./api1/books/views.py
+- from rest_framework import status
++ from rest_framework import generics, serializers, status
+  from rest_framework.decorators import api_view
+  from rest_framework.request import Request
+  from rest_framework.response import Response
+
+- from books.models import Classification
++ from books.models import Classification, ClassificationDetail
+
+- from .serializers import ClassificationSerializer
++ from .serializers import (
++     ClassificationDetailSerializer,
++     ClassificationDetailUpdateSerializer,
++     ClassificationSerializer,
++ )
+
+  (...省略...)
+
+class ClassificationDetailListCreateView(generics.ListCreateAPIView):
+    """書籍分類詳細一覧登録ビュー"""
+
+    queryset = ClassificationDetail.objects.all()
+    serializer_class = ClassificationDetailSerializer
+
+
+class ClassificationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    """書籍分類詳細更新削除ビュー"""
+
+    queryset = ClassificationDetail.objects.all()
+    serializer_class = ClassificationDetailSerializer
+    lookup_field = "code"
+
+    def get_serializer_class(self) -> serializers.Serializer:
+        if self.request.method.lower() in ("put", "patch"):
+            return ClassificationDetailUpdateSerializer
+        return super().get_serializer_class()
+```
+
+DRFのクラスビューでは、クエリセットとシリアライザーを定義する必要があります。
+なお、クエリセットは、通常、そのビューで表示するモデルインスタンスを含むクエリセットを設定します。
+
+書籍分類詳細一覧登録ビューは、書籍分類詳細シリアライザーをシリアライザーのクラスとして設定しています。
+書先分類詳細詳細更新削除ビューも同様に、書籍分類詳細シリアライザーを設定していますが、`get_serializer_class`メソッドをオーバーライドすることで、リクエストが`POST`または`PATCH`メソッドの場合は、書籍分類詳細更新用シリアライザーを使用するようにしています。
+
+また、書籍分類詳細更新削除ビューは、後でこのビューをディスパッチするときにパスコンバーターで指定した`code`で書籍分類詳細モデルインスタンスを取得するように設定（`lookup_field = "code"`）しています。
+なお、`lookup_field`を指定しない時のデフォルトは`"pk"`です。
+
+書籍分類詳細APIビューを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/views.py
+git commit -m '書籍分類詳細ビューを実装'
+```
+
+> 445a44b (tag: 071-implement-classification-detail-views)
+
+### 書籍分類詳細APIビューのディスパッチ
+
+書籍分類詳細APIビューを次の通りディスパッチします。
+
+```python
+  urlpatterns = [
+      path("books/classifications/", views.classification_list),
+      path("books/classifications/<str:code>/", views.classification_detail),
++     path(
++         "books/classification-details/",
++         views.ClassificationDetailListCreateView.as_view(),
++     ),
++     path(
++         "books/classification-details/<str:code>/",
++         views.ClassificationRetrieveUpdateDestroyView.as_view(),
++     ),
+  ]
+```
+
+書籍分類詳細APIビューをディスパッチしたら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add api1/urls.py
+git commit -m '書籍分類詳細APIを実装'
+```
+
+> 4c42754 (tag: 072-implement-classification-detail-api)
+
+### 書籍分類詳細APIの呼び出し
+
+#### 書籍分類詳細一覧APIの呼び出し
+
+書籍分類詳細一覧APIを次の通り呼び出します。
+
+```bash
+curl -s http://localhost:8000/api1/books/classification-details/ | jq .
+# [
+#   {
+#     "code": "000",
+#     "classification_code": "000",
+#     "classification_name": "総記",
+#     "name": "総記",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   },
+#   {
+#     "code": "010",
+#     "classification_code": "000",
+#     "classification_name": "総記",
+#     "name": "図書館、図書館情報学",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   },
+#   {
+#     "code": "020",
+#     "classification_code": "000",
+#     "classification_name": "総記",
+#     "name": "図書、書誌学",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   },
+#   {
+#     "code": "030",
+#     "classification_code": "000",
+#     "classification_name": "総記",
+#     "name": "百科事典、用語索引",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   },
+# (...省略...)
+#   {
+#     "code": "990",
+#     "classification_code": "900",
+#     "classification_name": "文学",
+#     "name": "その他の諸言語文学",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   }
+# ]
+```
+
+#### 書籍分類詳細詳細APIの呼び出し
+
+書籍分類詳細詳細APIを次の通り呼び出します。
+
+```bash
+curl -s http://localhost:8000/api1/books/classification-details/110/ | jq .
+# {
+#   "code": "110",
+#   "classification_code": "100",
+#   "classification_name": "哲学",
+#   "name": "哲学各論",
+#   "created_at": "2023-04-24T09:00:00+09:00",
+#   "updated_at": "2023-04-24T09:00:00+09:00"
+# }
+```
+
+#### 書籍分類詳細登録APIの呼び出し
+
+書籍分類詳細登録APIを次の通り呼び出します。
+
+```bash
+curl -X POST -H "Content-Type: application/json" -s -d '{"code": "999", "classification_code": "100", "name": "ダミー書籍分類詳細"}' http://localhost:8000/api1/books/classification-details/ | jq .
+# {
+#   "code": "999",
+#   "classification_code": "100",
+#   "classification_name": "哲学",
+#   "name": "ダミー書籍分類詳細",
+#   "created_at": "2023-05-02T19:52:40.354312+09:00",
+#   "updated_at": "2023-05-02T19:52:40.354326+09:00"
+# }
+```
+
+#### 書籍分類詳細更新APIの呼び出し
+
+書籍分類詳細更新APIを次の通り呼び出します。
+
+```bash
+curl -X PATCH -H "Content-Type: application/json" -s -d '{"classification_code": "200", "name": "更新後のダミー書籍分類詳細"}' http://localhost:8000/api1/books/classification-details/999/ | jq .
+# {
+#   "classification_code": "200",
+#   "name": "更新後のダミー書籍分類詳細"
+# }
+```
+
+### 書籍分類詳細削除APIの呼び出し
+
+書籍分類詳細削除APIを次の通り呼び出します。
+
+```bash
+curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999/ | grep HTTP
+# HTTP/1.1 204 No Content
+```

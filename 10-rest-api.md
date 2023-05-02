@@ -9,10 +9,17 @@
   - [Django REST Framework](#django-rest-framework)
   - [Django REST Frameworkのインストール](#django-rest-frameworkのインストール)
   - [書籍APIアプリの追加](#書籍apiアプリの追加)
-  - [Django REST Frameworkによる書籍アプリモデルを操作するAPIの実装](#django-rest-frameworkによる書籍アプリモデルを操作するapiの実装)
-    - [シリアライザー (Serializer)](#シリアライザー-serializer)
-    - [書籍分類APIの実装](#書籍分類apiの実装)
-      - [書籍分類シリアライザーの実装](#書籍分類シリアライザーの実装)
+  - [シリアライザー (Serializer) とは](#シリアライザー-serializer-とは)
+  - [書籍分類APIの実装](#書籍分類apiの実装)
+    - [書籍分類シリアライザーの実装](#書籍分類シリアライザーの実装)
+    - [書籍分類APIビューの実装](#書籍分類apiビューの実装)
+    - [書籍分類APIビューのディスパッチ](#書籍分類apiビューのディスパッチ)
+    - [書籍分類APIの呼び出し](#書籍分類apiの呼び出し)
+      - [書籍分類一覧APIの呼び出し](#書籍分類一覧apiの呼び出し)
+      - [書籍分類詳細APIの呼び出し](#書籍分類詳細apiの呼び出し)
+      - [書籍登録APIの呼び出し](#書籍登録apiの呼び出し)
+      - [書籍分類更新APIの呼び出し](#書籍分類更新apiの呼び出し)
+      - [書籍分類削除APIの呼び出し](#書籍分類削除apiの呼び出し)
 
 本章では、書籍分類、書籍分類詳細及び書籍を取得、登録、更新及び削除するWeb APIを`REST`形式で作成します。
 
@@ -126,6 +133,27 @@ python manage.py startapp api1
 アプリ名の`api1`の末尾の`1`は、APIのバージョンを示しています。
 本チュートリアルでAPIをバージョン管理しませんが、APIをバージョニングするためにバージョン番号をつける事例があります。
 
+プロジェクト設定ファイルの`INSTALLED_APP`に`api`アプリを追加します。
+
+```python
+# ./book_management/settings.py
+  INSTALLED_APPS = [
+      "django.contrib.admin",
+      "django.contrib.auth",
+      "django.contrib.contenttypes",
+      "django.contrib.sessions",
+      "django.contrib.messages",
+      "django.contrib.staticfiles",
++     "rest_framework",
+      "django_bootstrap5",
+      "debug_toolbar",
+      "accounts.apps.AccountsConfig",
+      "divisions.apps.DivisionsConfig",
+      "books.apps.BooksConfig",
+      "api1.apps.Api1Config",
+  ]
+```
+
 次の通り変更をリポジトリにコミットします。
 
 ```bash
@@ -133,5 +161,425 @@ git add ./api1
 git commit -m 'api1アプリを追加'
 ```
 
-> ab08a80 (tag: 065-add-api1-app)
+> c890271 (tag: 065-add-api1-app)
 
+## シリアライザー (Serializer) とは
+
+[シリアライザー (Serializer)](https://www.django-rest-framework.org/api-guide/serializers/)は、JSONなどのフォーマットとPythonオブジェクトの間の変換を行うクラスです。
+シリアライザーを使用することで、PythonオブジェクトをJSONやXMLなどの形式に相互変換できます。
+シリアライザーは、通常、次の処理をします。
+
+- リクエストデータのバリデーション
+- PythonオブジェクトをJSONやXMLなどのフォーマットに変換する
+- JSONやXMLなどのフォーマットをPythonオブジェクトに変換する
+- レスポンスデータのバリデーション
+
+シリアライザーは、Djangoのフォームと同様に定義され、また処理内容も同様です。
+
+## 書籍分類APIの実装
+
+書籍APIを実装する`./api1/books/`ディレクトリと`./api1/books/__init__.py`ファイルを次の通り作成して、
+
+```bash
+mkdir ./api1/books
+touch ./api1/books/__init__.py
+```
+
+### 書籍分類シリアライザーの実装
+
+書式分類シリアライザー（`ClassificationSerializer`）を次の通り実装します。
+
+```python
+# ./api1/books/serializers.py
+from typing import Any
+
+from rest_framework import serializers
+
+from books.models import Classification
+
+
+class ClassificationSerializer(serializers.Serializer):
+    """書籍分類シリアライザー"""
+
+    # 書籍分類コード
+    code = serializers.CharField(max_length=3)
+    # 書籍分類名
+    name = serializers.CharField(max_length=80)
+
+    def create(self, validated_data: Any) -> Classification:
+        """
+        validated_dataから書籍分類を作成して返却する。
+
+        Args:
+            validated_data: 書籍分類シリアライザーが検証したデータ。
+
+        Returns:
+            書籍分類モデルインスタンス。
+        """
+        return Classification.objects.create(**validated_data)
+
+    def update(self, instance: Classification, validated_data: Any) -> Classification:
+        """
+        既存の書籍分類モデルインスタンスをvalidated_dataで更新して返却する。
+
+        Args:
+            instance: 更新する書籍分類モデルインスタンス。
+            validated_data: 書籍分類シリアライザーが検証したデータ。
+
+        Returns:
+            書籍分類モデルインスタンス。
+        """
+        instance.code = validated_data.get("code", instance.code)
+        instance.name = validated_data.get("name", instance.name)
+        instance.save()
+        return instance
+```
+
+書籍分類シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/
+git commit -m '書籍分類シリアライザーを実装'
+```
+
+> b738fd2 (tag: 066-implement-classification-serializer)
+
+### 書籍分類APIビューの実装
+
+書籍分類APIビューを次の通り実装します。
+
+```python
+# ./api1/books/views.py
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.request import Request
+from rest_framework.response import Response
+
+from books.models import Classification
+
+from .serializers import ClassificationSerializer
+
+
+@api_view(["GET", "POST"])
+def classification_list(request: Request) -> Response:
+    """すべての書籍分類を返却するか、書籍分類を登録する。
+
+    GETメソッドの場合は、すべての書籍分類モデルインスタンスを返却する。
+    POSTメソッドの場合は、書籍分類モデルインスタンスを登録する。
+
+    Args:
+        request: リクエストインスタンス。
+    Returns:
+        レスポンス。
+    """
+    if request.method == "GET":
+        # GETメソッドの場合は、すべての書籍分類モデルインスタンスを返却
+        classifications = Classification.objects.all()
+        serializer = ClassificationSerializer(classifications, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        # POSTメソッドの場合は、書籍分類モデルインスタンスを登録
+        serializer = ClassificationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "PUT", "DELETE"])
+def classification_detail(request: Request, code: str) -> Response:
+    """
+    書籍分類を取得、更新または削除する。
+
+    Args:
+        request: リクエストインスタンス。
+        code: 書籍分類コード。
+    Returns:
+        レスポンス。
+    """
+    # 書籍分類コードから書籍分類モデルインスタンスを取得
+    try:
+        instance = Classification.objects.get(code=code)
+    except Classification.DoesNotExist:
+        # 書籍分類モデルインスタンスを取得できない場合は、`404 Not Found`を返却
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        # GETメソッドの場合は、書籍分類モデルインスタンスを返却
+        serializer = ClassificationSerializer(instance)
+        return Response(serializer.data)
+
+    elif request.method == "PUT":
+        # PUTメソッドの場合は、書籍分類モデルインスタンスを更新して返却
+        # 書籍分類コードの更新は不可
+        request.data["code"] = code
+        serializer = ClassificationSerializer(instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        # DELETEメソッドの場合は、書籍分類モデルインスタンスを削除
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+```
+
+`@api_view`デコレーターの主な機能は、そのビューがレスポンスするHTTPメソッドのリストを受けとります。
+デフォルトは、`GET`メソッドのみです。
+例えば、`classification_list`関数ビューは、`GET`メソッドと`POST`メソッドにレスポンスします。
+`@api_view`デコレーターに指定したメソッド以外でそのビューが呼び出された場合、`405 Method Not Allowed`をレスポンスします。
+
+`rest_framework.request.Request`は、`django.http.HttpRequest`をDRFが拡張したクラスです。
+
+`ClassificationSerializer`は、書籍分類モデルインスタンスをJSON形式に変換（`シリアライズ`）したり、受け取った`POST`データを書籍分類モデルインスタンスに変換（`デシリアライズ`したリします。
+
+書籍分類APIビューを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/views.py
+git commit -m '書籍分類APIビューを実装`
+```
+
+> 85994e3 (tag: 067-implement-classification-views)
+
+### 書籍分類APIビューのディスパッチ
+
+書籍分類APIビューを次の通りディスパッチします。
+
+```python
+# ./api1/urls.py
+from django.urls import path
+
+from .books import views
+
+urlpatterns = [
+    path('books/classifications/', views.classification_list),
+    path('books/classifications/<str:code>/', views.classification_detail),
+]
+```
+
+また、ルートURLconfを次の通り設定します。
+
+```python
+# ./book_management/urls.py
+  urlpatterns = [
+      path("accounts/", include("accounts.urls")),
+      path("divisions/", include("divisions.urls")),
+      path("books/", include("books.urls")),
++     path("api1/", include("api1.urls")),
+      path("admin/", admin.site.urls),
+  ]
+```
+
+書籍分類ビューをディスパッチしたら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/urls.py
+git add ./book_management/urls.py
+git commit -m '書籍分類APIを実装'
+```
+
+> e30dab6 (tag: 068-implement-classification-api)
+
+### 書籍分類APIの呼び出し
+
+書籍分類APIをターミナルから`curl`コマンドで呼び出します。
+次のコマンドをターミナルで実行して、`curl`コマンドがインストールされているか確認します。
+
+```bash
+curl --version
+```
+
+`curl`コマンドのバージョンが表示されたら`curl`コマンドがインストールされています。
+`curl`コマンドがインストールされていない場合は、次の通り`curl`コマンドをインストールします。
+
+```bash
+sudo apt -y install curl
+```
+
+また、レスポンスとして得られるJSONを整形するために`jq`コマンドを使用します。
+次のコマンドをターミナルで実行して、`jq`コマンドがインストールされているか確認します。
+
+```bash
+jq --version
+```
+
+`jq`コマンドのバージョンが表示されたら`jq`コマンドがインストールされています。
+`jq`コマンドがインストールされていない場合は、次の通り`jq`コマンドをインストールします。
+
+```bash
+sudo apt -y install jq
+```
+
+#### 書籍分類一覧APIの呼び出し
+
+書籍分類一覧APIを次の通り呼び出します。
+なお、`#`は、書籍分類一覧APIからのレスポンスを`jq`コマンドで整形した結果です。
+実際の書籍分類一覧APIからのレスポンスは、レスポンスデータが大きくならないように、スペースや改行が削除されているはずです。
+
+<!-- cspell: disable -->
+```bash
+curl http://localhost:8000/api1/books/classifications/ | jq .
+#   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+#                                  Dload  Upload   Total   Spent    Left  Speed
+# 100   323  100   323    0     0  19365      0 --:--:-- --:--:-- --:--:-- 24846
+# [
+#   {
+#     "code": "000",
+#     "name": "総記"
+#   },
+#   {
+#     "code": "100",
+#     "name": "哲学"
+#   },
+#   {
+#     "code": "200",
+#     "name": "歴史"
+#   },
+#   {
+#     "code": "300",
+#     "name": "社会科学"
+#   },
+#   {
+#     "code": "400",
+#     "name": "自然科学"
+#   },
+#   {
+#     "code": "500",
+#     "name": "技術"
+#   },
+#   {
+#     "code": "600",
+#     "name": "産業"
+#   },
+#   {
+#     "code": "700",
+#     "name": "芸術"
+#   },
+#   {
+#     "code": "800",
+#     "name": "言語"
+#   },
+#   {
+#     "code": "900",
+#     "name": "文学"
+#   }
+# ]
+```
+<!-- cspell: enable -->
+
+ちなみに、書籍一覧APIを許可されていない｀PUT`メソッドで呼び出した場合、`405 Method Not Allowed`が返却されます。
+なお、`curl`に指定した`-X`は、HTTPメソッドを指定するオプションで、ここでは`PUT`メソッドを指定しています。
+また、`-i`は、レスポンスに加えて、レスポンスヘッダを出力するオプションです。
+
+<!-- cspell: disable -->
+```bash
+curl -X PUT -i http://localhost:8000/api1/books/classifications/
+# HTTP/1.1 405 Method Not Allowed
+# Date: Tue, 02 May 2023 02:09:16 GMT
+# Server: WSGIServer/0.2 CPython/3.11.2
+# Content-Type: application/json
+# Vary: Accept, Cookie
+# Allow: GET, POST, OPTIONS
+# djdt-store-id: f5aa6483c73b465d8be98dccd32fbdc3
+# Server-Timing: TimerPanel_utime;dur=3.642999999996732;desc="User CPU time", TimerPanel_stime;dur=2.131000000019867;desc="System CPU time", TimerPanel_total;dur=5.774000000016599;desc="Total CPU time", TimerPanel_total_time;dur=7.985115051269531;desc="Elapsed time", SQLPanel_sql_time;dur=0;desc="SQL 0 queries", CachePanel_total_time;dur=0;desc="Cache 0 Calls"
+# X-Frame-Options: DENY
+# Content-Length: 64
+# X-Content-Type-Options: nosniff
+# Referrer-Policy: same-origin
+# Cross-Origin-Opener-Policy: same-origin
+#
+# {"detail":"メソッド \"PUT\" は許されていません。"}
+```
+<!-- cspell: enable -->
+
+#### 書籍分類詳細APIの呼び出し
+
+書籍分類詳細APIを次の通り呼び出します。
+
+<!-- cspell: disable -->
+```bash
+curl http://localhost:8000/api1/books/classifications/100/
+# {"code":"100","name":"哲学"}
+```
+<!-- cspell: enable -->
+
+#### 書籍登録APIの呼び出し
+
+書籍分類登録APIを次の通り呼び出します。
+次のコマンドでは、コード`999`及び名前`ダミー書籍分類`の書式分類を登録します。
+なお、`curl`コマンドの`-H`は、リクエストヘッダに独自のヘッダを追加するオプションで、ここでは`POST`するデータが`JSON`であることを、`Content-Type: application/json`で指定しています。
+また、`-d`は、`POST`データを指定するオプションで、登録する書籍分類をJSONで表現しています。
+さらに、`-s`は、サイレントモードを示しており、リクエストを発行してレスポンスを受け取るまでの経過時間などを表示しないオプションです。
+
+<!-- cspell: disable -->
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"code": "999", "name": "ダミー書籍分類"}' -s http://localhost:8000/api1/books/classifications/
+# {"code":"999","name":"ダミー書籍分類"}
+```
+<!-- cspell: enable -->
+
+登録した書籍分類が、実際に登録されているか確認します。
+
+<!-- cspell: disable -->
+```bash
+curl http://localhost:8000/api1/books/classifications/999/
+# {"code":"999","name":"ダミー書籍分類"}
+```
+<!-- cspell: enable -->
+
+#### 書籍分類更新APIの呼び出し
+
+書籍分類更新APIを次の通り呼び出します。
+次のコマンドでは、書籍分類コード`999`の書籍分類名を`ダミー書籍分類（更新後）`に変更します。
+
+```bash
+curl -X PUT -H "Content-Type: application/json" -d '{"code": "999", "name": "ダミー書籍分類（更新後）"}' -s http://localhost:8000/api1/books/classifications/999/
+# {"code":"999","name":"ダミー書籍分類（更新後）"}
+```
+
+更新した書籍分類が、実際に更新されているか確認します。
+
+<!-- cspell: disable -->
+```bash
+curl http://localhost:8000/api1/books/classifications/999/
+# {"code":"999","name":"ダミー書籍分類（更新後）"}
+```
+<!-- cspell: enable -->
+
+#### 書籍分類削除APIの呼び出し
+
+書籍分類削除APIを次の通り呼び出します。
+次のコマンドは、前に登録した書籍分類コード`999`の書籍分類を削除します。
+
+<!-- cspell: disable -->
+```bash
+curl -X DELETE -i http://localhost:8000/api1/books/classifications/999/
+# HTTP/1.1 204 No Content
+# Date: Tue, 02 May 2023 02:35:52 GMT
+# Server: WSGIServer/0.2 CPython/3.11.2
+# Vary: Accept, Cookie
+# Allow: PUT, OPTIONS, DELETE, GET
+# djdt-store-id: a72f283bd08d41ad85280e7b715d2f44
+# Server-Timing: TimerPanel_utime;dur=11.161000000001309;desc="User CPU time", TimerPanel_stime;dur=3.0420000000006553;desc="System CPU time", TimerPanel_total;dur=14.203000000001964;desc="Total CPU time", TimerPanel_total_time;dur=15.965938568115234;desc="Elapsed time", SQLPanel_sql_time;dur=0.8637905120849609;desc="SQL 4 queries", CachePanel_total_time;dur=0;desc="Cache 0 Calls"
+# X-Frame-Options: DENY
+# Content-Length: 0
+# X-Content-Type-Options: nosniff
+# Referrer-Policy: same-origin
+# Cross-Origin-Opener-Policy: same-origin
+```
+<!-- cspell: enable -->
+HTTPレスポンスステータスコードが`204 No Content`であるため、書籍分類コード`999`の書籍分類が削除されたはずです。
+
+削除した書籍分類が、実際に削除されているか確認します。
+
+<!-- cspell: disable -->
+```bash
+curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
+# HTTP/1.1 404 Not Found
+```
+<!-- cspell: enable -->
+
+レスポンスステータスコードが`404 Not Found`であるため、書籍分類コード`999`の書籍分類が削除されていることを確認できました。

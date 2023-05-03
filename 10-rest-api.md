@@ -16,7 +16,7 @@
     - [書籍分類APIビューのディスパッチ](#書籍分類apiビューのディスパッチ)
     - [書籍分類APIの呼び出し](#書籍分類apiの呼び出し)
       - [書籍分類一覧APIの呼び出し](#書籍分類一覧apiの呼び出し)
-      - [書籍分類詳細APIの呼び出し](#書籍分類詳細apiの呼び出し)
+      - [書籍分類（`Classification`）詳細APIの呼び出し](#書籍分類classification詳細apiの呼び出し)
       - [書籍分類登録APIの呼び出し](#書籍分類登録apiの呼び出し)
       - [書籍分類更新APIの呼び出し](#書籍分類更新apiの呼び出し)
       - [書籍分類削除APIの呼び出し](#書籍分類削除apiの呼び出し)
@@ -25,12 +25,18 @@
     - [書籍分類詳細シリアライザーの実装](#書籍分類詳細シリアライザーの実装)
     - [書籍分類詳細APIビューの実装](#書籍分類詳細apiビューの実装)
     - [書籍分類詳細APIビューのディスパッチ](#書籍分類詳細apiビューのディスパッチ)
-    - [書籍分類詳細APIの呼び出し](#書籍分類詳細apiの呼び出し-1)
+    - [書籍分類詳細（`ClassificationDetail`）APIの呼び出し](#書籍分類詳細classificationdetailapiの呼び出し)
       - [書籍分類詳細一覧APIの呼び出し](#書籍分類詳細一覧apiの呼び出し)
       - [書籍分類詳細詳細APIの呼び出し](#書籍分類詳細詳細apiの呼び出し)
       - [書籍分類詳細登録APIの呼び出し](#書籍分類詳細登録apiの呼び出し)
       - [書籍分類詳細更新APIの呼び出し](#書籍分類詳細更新apiの呼び出し)
     - [書籍分類詳細削除APIの呼び出し](#書籍分類詳細削除apiの呼び出し)
+  - [書籍APIの実装](#書籍apiの実装)
+    - [書籍シリアライザーの実装](#書籍シリアライザーの実装)
+      - [書籍読み込み専用シリアライザーの実装](#書籍読み込み専用シリアライザーの実装)
+      - [書籍書き込み専用シリアライザーの実装](#書籍書き込み専用シリアライザーの実装)
+    - [書籍ビューセットの実装](#書籍ビューセットの実装)
+    - [書籍ビューセットのディスパッチ](#書籍ビューセットのディスパッチ)
 
 本章では、書籍分類、書籍分類詳細及び書籍を取得、登録、更新及び削除するWeb APIを`REST`形式で作成します。
 
@@ -533,7 +539,7 @@ curl -X PUT -i -s http://localhost:8000/api1/books/classifications/
 なお、`curl`コマンドで指定した`-X`は、HTTPメソッドを指定するオプションで、ここでは`PUT`メソッドを指定しています。
 また、`-i`は、レスポンスに加えて、レスポンスヘッダを出力するオプションです。
 
-#### 書籍分類詳細APIの呼び出し
+#### 書籍分類（`Classification`）詳細APIの呼び出し
 
 書籍分類詳細APIを次の通り呼び出します。
 
@@ -667,7 +673,7 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
 +
 +     # 書籍分類コード
 +     classification_code = serializers.CharField(
-+         max_length=3, source="classification.code", label="書籍分類コード"
++         max_length=3, source="classification", label="書籍分類コード"
 +     )
 +
 +     class Meta:
@@ -690,7 +696,7 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
 +         try:
 +             return Classification.objects.get(code=classification_code)
 +         except Classification.DoesNotExist:
-+             raise exceptions.NotFound(detail="classification doesn't found")
++             raise exceptions.NotFound(detail="Classification doesn't exist")
 +
 +     def update(
 +         self, instance: ClassificationDetail, validated_data: Any
@@ -704,10 +710,9 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
 +         Exceptions:
 +             rest_framework.exceptions.NotFound: 書籍分類が見つからない場合。
 +         """
-+         classification = self._get_classification(
-+             validated_data["classification"]["code"]
++         validated_data["classification"] = self._get_classification(
++             validated_data["classification"]
 +         )
-+         validated_data["classification"] = classification
 +         return super().update(instance, validated_data)
 ```
 
@@ -785,10 +790,9 @@ class ClassificationDetailSerializer(ClassificationDetailUpdateSerializer):
         Exceptions:
             rest_framework.exceptions.NotFound: 書籍分類が見つからない場合。
         """
-        classification = self._get_classification(
-            validated_data["classification"]["code"]
+        validated_data["classification"] = self._get_classification(
+            validated_data["classification"]
         )
-        validated_data["classification"] = classification
         return super().create(validated_data)
 ```
 
@@ -901,7 +905,7 @@ git commit -m '書籍分類詳細APIを実装'
 
 > 4c42754 (tag: 072-implement-classification-detail-api)
 
-### 書籍分類詳細APIの呼び出し
+### 書籍分類詳細（`ClassificationDetail`）APIの呼び出し
 
 #### 書籍分類詳細一覧APIの呼び出し
 
@@ -1006,3 +1010,303 @@ curl -X PATCH -H "Content-Type: application/json" -s -d '{"classification_code":
 curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999/ | grep HTTP
 # HTTP/1.1 204 No Content
 ```
+
+## 書籍APIの実装
+
+書籍分類詳細APIは、DRFが適用する`ジェネリックなクラスビュー`で実装しました。
+書籍APIは、書籍分類詳細APIの実装を一通り持っている[rest_framework.viewsets.https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset]で実装します。
+
+### 書籍シリアライザーの実装
+
+書籍APIでは、書籍一覧、詳細、削除APIで使用する書籍読み込み専用シリアライザーと、書籍登録、更新APIで使用する書籍書き込み専用シリアライザーの2つのシリアライザーを実装します。
+
+#### 書籍読み込み専用シリアライザーの実装
+
+書籍読み込み専用シリアライザーを次の通り実装します。
+
+```python
+# ./api1/books/serializers.py
+  from rest_framework import exceptions, serializers
+
+- from books.models import Classification, ClassificationDetail
++ from books.models import Book, Classification, ClassificationDetail
++ from divisions.models import Division
+
+  (...省略...)
+
++ class ClassificationReadOnlySerializer(serializers.ModelSerializer):
++     """書籍分類モデル読み込み専用シリアライザー"""
++
++     class Meta:
++         model = Classification
++         fields = (
++             "code",
++             "name",
++         )
++
++
++ class ClassificationDetailReadOnlySerializer(serializers.ModelSerializer):
++     """書籍分類詳細モデル読み込み専用シリアライザー"""
++
++     classification = ClassificationReadOnlySerializer(label="書籍分類")
++
++     class Meta:
++         model = Classification
++         fields = (
++             "code",
++             "classification",
++             "name",
++         )
++
++
++ class DivisionReadOnlySerializer(serializers.ModelSerializer):
++     """部署モデルシリアライザー"""
++
++     class Meta:
++         model = Division
++         fields = (
++             "code",
++             "name",
++         )
++
++
++ class BookReadOnlySerializer(serializers.ModelSerializer):
++     """書籍シリアライザー"""
++
++     # 書籍ID
++     id = serializers.CharField(label="書籍ID")
++     # 書籍分類詳細
++     classification_detail = ClassificationDetailReadOnlySerializer(label="書籍分類詳細")
++     # 管理部署
++     division = DivisionReadOnlySerializer(label="管理部署")
++
++     class Meta:
++         model = Book
++         fields = (
++             "id",
++             "title",
++             "classification_detail",
++             "authors",
++             "isbn",
++             "publisher",
++             "published_at",
++             "division",
++             "disposed",
++             "disposed_at",
++             "created_at",
++             "updated_at",
++         )
+```
+
+書籍読み込み専用シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/serializers.py
+git commit -m '書籍読み込み専用シリアライザーを実装'
+```
+
+> e40c472 (tag: 073-implement-book-read-only-serializer)
+
+#### 書籍書き込み専用シリアライザーの実装
+
+書籍書き込み専用シリアライザーを次の通り実装します。
+
+```python
+# ./api1/books/serializers.py
+class BookWriteOnlySerializer(serializers.ModelSerializer):
+    """書籍書き込み専用シリアライザー"""
+
+    # 書籍ID
+    id = serializers.CharField(max_length=26, read_only=True)
+    # 書籍分類詳細コード
+    classification_detail_code = serializers.CharField(
+        max_length=3, source="classification_detail", label="書籍分類詳細コード"
+    )
+    # 管理部署コード
+    division_code = serializers.CharField(
+        max_length=2, source="division", label="管理部署コード"
+    )
+
+    class Meta:
+        model = Book
+        fields = (
+            "id",
+            "title",
+            "classification_detail_code",
+            "authors",
+            "isbn",
+            "publisher",
+            "published_at",
+            "division_code",
+            "disposed",
+            "disposed_at",
+        )
+
+    def _get_classification_detail(self, code: str) -> ClassificationDetail:
+        """書籍分類詳細コードから書籍分類詳細モデルインスタンスを取得して返却する。
+
+        Args:
+            code: 書籍分類詳細コード。
+        Returns:
+            書籍分類詳細モデルインスタンス。
+        Exceptions:
+            rest_framework.exceptions.NotFound: 書籍分類詳細が見つからない場合。
+        """
+        try:
+            return ClassificationDetail.objects.get(code=code)
+        except ClassificationDetail.DoesNotExist:
+            raise exceptions.NotFound(detail="Classification detail doesn't exist")
+
+    def _get_division(self, code: str) -> Division:
+        """部署コードから部署モデルインスタンスを取得して返却する。
+
+        Args:
+            code: 部署コード。
+        Returns:
+            部署モデルインスタンス。
+        Exceptions:
+            rest_framework.exceptions.NotFound: 部署が見つからない場合。
+        """
+        try:
+            return Division.objects.get(code=code)
+        except Division.DoesNotExist:
+            raise exceptions.NotFound(detail="Division doesn't exist")
+
+    def _organize_validated_data(self, validated_data: Any) -> Any:
+        """書籍書き込みシリアライザーが検証したデータを整理する。
+
+        書籍書き込みシリアライザーが検証したデータに、書籍分類詳細及び部署モデルインスタンスを設定する。
+
+        Args:
+            validated_data: 書籍書き込みシリアライザーが検証したデータ。
+        Returns:
+            書籍書き込みシリアライザーが検証したデータを整理した結果。
+        Exceptions:
+            rest_framework.exceptions.NotFound: 書籍分類詳細または部署が見つからない場合。
+        """
+        validated_data["classification_detail"] = self._get_classification_detail(
+            validated_data["classification_detail"]
+        )
+        validated_data["division"] = self._get_division(validated_data["division"])
+        return validated_data
+
+    def create(self, validated_data: Any) -> Book:
+        """書籍を登録する。
+
+        Args:
+            validated_data: 書籍書き込み専用シリアライザーが検証したデータ。
+        Returns:
+            作成した書籍モデルインスタンス。
+        Exceptions:
+            rest_framework.exceptions.NotFound: 書籍分類詳細または部署が見つからない場合。
+        """
+        return super().create(self._organize_validated_data(validated_data))
+
+    def update(self, instance: Any, validated_data: Any) -> Book:
+        """書籍を更新する。
+
+        Args:
+            validated_data: 書籍書き込み専用シリアライザーが検証したデータ。
+        Returns:
+            更新した書籍モデルインスタンス。
+        Exceptions:
+            rest_framework.exceptions.NotFound: 書籍分類詳細または部署が見つからない場合。
+        """
+        return super().update(instance, self._organize_validated_data(validated_data))
+```
+
+書籍書き込み専用シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/books/serializers.py
+git commit -m '書籍書き込み専用シリアライザーを実装'
+```
+
+> 006f798 (tag: 074-implement-book-write-only-serializer)
+
+### 書籍ビューセットの実装
+
+次の通り書籍ビューセット（`BookViewSet`）を実装します。
+
+```python
+# ./api1/books/views.py
+- from rest_framework import generics, serializers, status
++ from rest_framework import generics, serializers, status, viewsets
+  from rest_framework.decorators import api_view
+  from rest_framework.request import Request
+  from rest_framework.response import Response
+
+- from books.models import Classification, ClassificationDetail
++ from books.models import Book, Classification, ClassificationDetail
+
+- from .serializers import (ClassificationDetailSerializer,
+-                           ClassificationDetailUpdateSerializer,
+-                           ClassificationSerializer)
++ from .serializers import (BookReadOnlySerializer, BookWriteOnlySerializer,
++                           ClassificationDetailSerializer,
++                           ClassificationDetailUpdateSerializer,
++                           ClassificationSerializer)
+
+  (...省略...)
+
++ class BookViewSet(viewsets.ModelViewSet):
++     """書籍ビューセット"""
++
++     queryset = Book.objects.all()
++     serializer_class = BookReadOnlySerializer
++
++     def get_serializer_class(self) -> serializers.Serializer:
++         """書籍シリアライザークラスを返却する。
++
++         Returns:
++             書籍シリアライザー。
++         """
++         if self.request.method.lower() in ("post", "put", "patch", "delete"):
++             return BookWriteOnlySerializer
++         return BookReadOnlySerializer
+```
+
+`get_serializer_class`メソッドをオーバーライドして、HTTPリクエストメソッドが`POST（登録）`、`PUT（更新）`、`PATCH（一部更新）`及び`DELETE（削除）`の場合は、書籍書き込み専用シリアライザーを使用して、`GET（一覧、詳細）`の場合は書籍読み込み専用シリアライザーを使用するようにしています。
+
+書籍ビューセットを実装したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add api1/books/views.py
+git commit -m '書籍ビューセットを実装'
+```
+
+> 01141ba (tag: 075-implement-book-viewset)
+
+### 書籍ビューセットのディスパッチ
+
+次の通り書籍ビューセットをディスパッチします。
+
+```python
+  from django.urls import path
++ from rest_framework.routers import DefaultRouter
+
+  from .books import views
+
+  urlpatterns = [
+      (...省略...)
+  ]
++
++
++ # 書籍ビューセットをディスパッチ
++ router = DefaultRouter()
++ router.register("books", viewset=views.BookViewSet)
++ urlpatterns += router.urls
+```
+
+[rest_framework.routers.DefaultRouter](https://www.django-rest-framework.org/api-guide/routers/#defaultrouter)は、書籍分類または書籍分類詳細APIのようなURLをビューセットのために生成します。
+
+`urlpatterns += router.urls`で、`DefaultRouter`が生成するURLを`urlpatterns`に追加することで、書籍ビューセットをディスパッチしています。
+
+書籍ビューセットをディスパッチしたら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./api1/urls.py
+git commit -m '書籍ビューセットをディスパッチ'
+```
+
+> 8d19173 (tag: 076-dispatch-book-viewset)

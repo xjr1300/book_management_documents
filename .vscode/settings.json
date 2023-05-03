@@ -31,6 +31,8 @@
     "urlconf",
     "urlpatterns",
     "varchar",
+    "viewset",
+    "viewsets",
     "yesno"
   ],
   "markdownlint.config": {

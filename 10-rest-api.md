@@ -833,7 +833,7 @@ git commit -m '書籍分類詳細シリアライザーを実装'
 書籍分類ビューは関数ビューとして実装しました。
 DRFは、[ジェネリックなクラスビュー](https://www.django-rest-framework.org/api-guide/generic-views/)としていくつか提供しています。
 
-書籍分類詳細ビューは、クラスビューの[ListCreateAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#listcreateapiview)を継承した書籍分類詳細一覧登録ビューと、[RetrieveUpdateDestroyAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#retrieveupdatedestroyapiview)を継承した書籍分類詳細詳細更新削除ビューで実装します。
+書籍分類詳細ビューは、クラスビューの[ListCreateAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#listcreateapiview)を継承した書籍分類詳細一覧登録ビューと、[RetrieveUpdateDestroyAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#retrieveupdatedestroyapiview)を継承した書籍分類詳細更新削除ビューで実装します。
 
 ```python
 # ./api1/books/views.py
@@ -879,7 +879,7 @@ DRFのクラスビューでは、クエリセットとシリアライザーを�
 なお、クエリセットは、通常、そのビューで表示するモデルインスタンスを含むクエリセットを設定します。
 
 書籍分類詳細一覧登録ビューは、書籍分類詳細シリアライザーをシリアライザーのクラスとして設定しています。
-書先分類詳細詳細更新削除ビューも同様に、書籍分類詳細シリアライザーを設定していますが、`get_serializer_class`メソッドをオーバーライドすることで、リクエストが`POST`または`PATCH`メソッドの場合は、書籍分類詳細更新用シリアライザーを使用するようにしています。
+書籍分類詳細更新削除ビューも同様に、書籍分類詳細シリアライザーを設定していますが、`get_serializer_class`メソッドをオーバーライドすることで、リクエストが`POST`または`PATCH`メソッドの場合は、書籍分類詳細更新用シリアライザーを使用するようにしています。
 
 また、書籍分類詳細更新削除ビューは、後でこのビューをディスパッチするときにパスコンバーターで指定した`code`で書籍分類詳細モデルインスタンスを取得するように設定（`lookup_field = "code"`）しています。
 なお、`lookup_field`を指定しない時のデフォルトは`"pk"`です。
@@ -1474,7 +1474,7 @@ git commit -m '認証APIを実装'
       def get_serializer_class(self) -> serializers.Serializer:
 ```
 
-DRFのクラスビューやビューセットのクラス変数`permission_classes`の設定や、`get_permission_classes`メソッドをおばーライドすることで、APIのビューを保護できます。
+DRFのクラスビューやビューセットのクラス変数`permission_classes`の設定や、`get_permission_classes`メソッドをオーバーライドすることで、APIのビューを保護できます。
 
 ここでは、`permissions.IsAuthenticatedOrReadOnly`パーミッションを設定することで、認証済みユーザーから`POST`、`PUT`、`PATCH`及び`DELETE`メソッド（`安全でないメソッド`）で、認証されていないユーザーから`GET`、`HEAD`及び`OPTIONS`メソッド（`安全なメソッド`）で送信されたリクエストを受け付けます。
 また、認証されていないユーザーから`安全でないメソッド`で送信されたリクエストを拒否して、`401 Unauthorized`を返却します。

@@ -37,6 +37,22 @@
       - [書籍書き込み専用シリアライザーの実装](#書籍書き込み専用シリアライザーの実装)
     - [書籍ビューセットの実装](#書籍ビューセットの実装)
     - [書籍ビューセットのディスパッチ](#書籍ビューセットのディスパッチ)
+  - [書籍APIの保護](#書籍apiの保護)
+    - [JWT (JSON Web Token)とは](#jwt-json-web-tokenとは)
+    - [認証APIの実装](#認証apiの実装)
+      - [Simple JWTのインストール](#simple-jwtのインストール)
+      - [Simple JWTの設定](#simple-jwtの設定)
+      - [認証APIの実装](#認証apiの実装-1)
+    - [書籍登録、更新及び削除APIの保護](#書籍登録更新及び削除apiの保護)
+    - [書籍API保護の確認](#書籍api保護の確認)
+      - [認証APIの呼び出し](#認証apiの呼び出し)
+      - [書籍一覧及び詳細APIの呼び出し](#書籍一覧及び詳細apiの呼び出し)
+      - [アクセストークンを付けて書籍登録APIを呼び出し](#アクセストークンを付けて書籍登録apiを呼び出し)
+      - [アクセストークンなしで書籍登録APIを呼び出し](#アクセストークンなしで書籍登録apiを呼び出し)
+      - [アクセストークンなしで書籍更新APIを呼び出し](#アクセストークンなしで書籍更新apiを呼び出し)
+      - [アクセストークンなしで書籍削除APIを呼び出し](#アクセストークンなしで書籍削除apiを呼び出し)
+      - [アクセストークンを付けて書籍更新APIを呼び出し](#アクセストークンを付けて書籍更新apiを呼び出し)
+      - [アクセストークンを付けて書籍削除APIを呼び出し](#アクセストークンを付けて書籍削除apiを呼び出し)
 
 本章では、書籍分類、書籍分類詳細及び書籍を取得、登録、更新及び削除するWeb APIを`REST`形式で作成します。
 
@@ -1310,3 +1326,253 @@ git commit -m '書籍ビューセットをディスパッチ'
 ```
 
 > 8d19173 (tag: 076-dispatch-book-viewset)
+
+## 書籍APIの保護
+
+書籍登録、更新及び削除APIの呼び出しを、認証済みユーザーのみ許可します。
+認証済みユーザーであることを判別するために[JWT (JSON Web Token)](https://jwt.io/)を利用します。
+
+### JWT (JSON Web Token)とは
+
+JWT（JSON Web Token）は、WebアプリケーションやAPIで認証や認可を行うための安全な方法の1つです。
+JWTは、JSON形式で表現されるトークンであり、ユーザーの認証情報やアプリケーションへのアクセス許可などの情報を含んでいます。
+
+### 認証APIの実装
+
+#### Simple JWTのインストール
+
+DRFでJWTを生成するために[Simple JWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/index.html)パッケージを次の通りインストールします。
+
+```bash
+pip install djangorestframework-simplejwt
+pip freeze > requirements.txt
+git add requirements.txt
+git commit -m 'Simple JWTパッケージをインストール'
+```
+
+> fc97531 (tag: 077-install-simple-jwt)
+
+#### Simple JWTの設定
+
+プロジェクト設定ファイルを次の通り変更します。
+
+```python
+# ./book_management/settings.py
+  import os
++ from datetime import timedelta
+  from pathlib import Path
+  from typing import List
+
+  (...省略...)
+
+  INSTALLED_APPS = [
+      "django.contrib.admin",
+      "django.contrib.auth",
+      "django.contrib.contenttypes",
+      "django.contrib.sessions",
+      "django.contrib.messages",
+      "django.contrib.staticfiles",
+      "rest_framework",
++     "rest_framework_simplejwt",
+      "django_bootstrap5",
+      "debug_toolbar",
+      "accounts.apps.AccountsConfig",
+      "divisions.apps.DivisionsConfig",
+      "books.apps.BooksConfig",
+      "api1.apps.Api1Config",
+  ]
+
+  (...省略..)
++ # Django REST Framework
++ REST_FRAMEWORK = {
++     "DEFAULT_AUTHENTICATION_CLASSES": (
++         "rest_framework_simplejwt.authentication.JWTAuthentication",
++     )
++ }
++
++ # Simple JWT
++ SIMPLE_JWT = {
++     "REFRESH_TOKEN_LIFETIME": timedelta(hours=1),
++     "USER_ID_FIELD": "email",
++ }
+```
+
+認証APIは、アクセストークンとリフレッシュトークンを返却します。
+アクセストークンは、認証済みユーザーのみがアクセス可能なページをリクエストするときに、リクエストヘッダに追加します。
+また、リフレッシュトークンは、アクセストークンの有効期間が過ぎたときに、有効なアクセストークンを取得するときに使用します。
+リフレッシュトークンの有効期間が過ぎた場合は、再度アクセストークンとリフレッシュトークンを取得する必要があります。
+このため、リフレッシュートークンの有効期間は、アクセストークンより長くなっています。
+`Simple JWT`パッケージのデフォルトの有効期間は次の通りです。
+
+- アクセストークン: 5分
+- リフレッシュトークン: 1日
+
+本チュートリアルでは、アクセストークンの有効期間を1時間に変更しています。
+
+また、本Webアプリケーションのユーザーは`id`モデルフィールドがないため、`Simple JWT`が`email`モデルフィールドをユーザーIDモデルフィールドとして認識するように、`"USER_ID_FIELD": "email"`を設定しています。
+
+`Simple JWT`を設定したら、次の通り変更をリポジトリにコミットします。
+
+```bash
+git add ./book_management/settings.py
+git commit -m 'Simple JWTを設定'
+```
+
+> 0427dcf (tag: 078-configure-simple-jwt)
+
+#### 認証APIの実装
+
+次の通り認証APIを実装します。
+
+```python
+# ./api1/urls.py
+  from django.urls import path
+  from rest_framework.routers import DefaultRouter
++ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+  from .books import views
+
+  urlpatterns = [
+
+      (...省略...)
+
++     path("auth/token/", TokenObtainPairView.as_view()),
++     path("auth/token/refresh/", TokenRefreshView.as_view()),
+  ]
+```
+
+```bash
+git add ./api1/urls.py
+git commit -m '認証APIを実装'
+```
+
+> 9832957 (tag: 079-implement-authentication-api)
+
+### 書籍登録、更新及び削除APIの保護
+
+認証済みユーザーのみ書籍登録、更新及び削除APIを呼び出せるように、次の通り書籍ビューセットに[パーミッション（権限）](https://www.django-rest-framework.org/api-guide/permissions/)を設定します。
+なお、パーミッションは、DRFが提供する以外にも、独自のパーミッションを定義してビューになどに設定できます。
+
+```bash
+# ./api1/books/views.py
+- from rest_framework import generics, serializers, status, viewsets
++ from rest_framework import generics, permissions, serializers, status, viewsets
+  from rest_framework.decorators import api_view
+  from rest_framework.request import Request
+  from rest_framework.response import Response
+
+  (...省略...)
+
+  class BookViewSet(viewsets.ModelViewSet):
+
+      queryset = Book.objects.all()
+      serializer_class = BookReadOnlySerializer
++     permission_classes = [
++         permissions.IsAuthenticatedOrReadOnly,
++     ]
+
+      def get_serializer_class(self) -> serializers.Serializer:
+```
+
+DRFのクラスビューやビューセットのクラス変数`permission_classes`の設定や、`get_permission_classes`メソッドをおばーライドすることで、APIのビューを保護できます。
+
+ここでは、`permissions.IsAuthenticatedOrReadOnly`パーミッションを設定することで、認証済みユーザーから`POST`、`PUT`、`PATCH`及び`DELETE`メソッド（`安全でないメソッド`）で、認証されていないユーザーから`GET`、`HEAD`及び`OPTIONS`メソッド（`安全なメソッド`）で送信されたリクエストを受け付けます。
+また、認証されていないユーザーから`安全でないメソッド`で送信されたリクエストを拒否して、`401 Unauthorized`を返却します。
+
+書籍ビューセットにパーミッションを設定したら、次の通り変更をコミットします。
+
+```bash
+git add ./api1/books/views.py
+git commit -m '書籍ビューセットにパーミッションを設定'
+```
+
+> ed859f1 (tag: 080-set-permission-to-book-viewset)
+
+### 書籍API保護の確認
+
+#### 認証APIの呼び出し
+
+次の通り認証APIを呼び出します。
+
+<!-- cspell: disable -->
+```bash
+curl -X POST -H "Content-Type: application/json" -s -d '{"email": "spam@example.com", "password": "django"}
+' http://localhost:8000/api1/auth/token/ | jq .
+# {
+#   "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY4MzA5Mzg0MSwiaWF0IjoxNjgzMDkwMjQxLCJqdGkiOiJmNTYzOGE2MjhkY2M0MDVjYmQxZDg0OWM2NGJkMTFjNSIsInVzZXJfaWQiOiJzcGFtQGV4YW1wbGUuY29tIn0.rWjDZWPMskMsOkGWVwU_P90c3Cu-RWIJ9XKq62TllKs",
+#   "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzMDkwNTQxLCJpYXQiOjE2ODMwOTAyNDEsImp0aSI6IjQ4MDFmM2I4MDk4NDQwZmRiYzE4NjYwZmRjMzY2MDRiIiwidXNlcl9pZCI6InNwYW1AZXhhbXBsZS5jb20ifQ.YjsgfL4mzeG0b8Yb4MfOMOxYxGC6iAFGdymHqiY4Fhk"
+# }
+```
+<!-- cspell: enable -->
+
+#### 書籍一覧及び詳細APIの呼び出し
+
+アクセストークンなしで、書籍一覧及び詳細APIを呼び出せることを確認します。
+
+<!-- cspell: disable -->
+```bash
+curl -s http://localhost:8000/api1/books/
+# [{"id":"01GYV46C5KXWDRKMB1WR3TW6RK","title":"Fluent Python","classification_detail":{"code":"000","classification":{"code":"000","name":"総記"},"name":"総記"},"authors":"（著）Luciano Ramalho\r\n（監修）豊沢　聡、桑井　博之\r\n（訳）梶原　玲子","isbn":"ISBN978-4-87311-817-8","publisher":"オライリー・ジャパン","published_at":"2017-10-11","division":{"code":"58","name":"ICT開発室"},"disposed":false,"disposed_at":null,"created_at":"2023-04-25T09:00:00+09:00","updated_at":"2023-04-25T09:00:00+09:00"},{"id":"01GYV585X4JNDCSVA3BY93KN54","title":"プログラミングRust","classification_detail":{"code":"000","classification":{"code":"000","name":"総記"},"name":"総記"},"authors":"（著）Jim Blandy、Jason Orendorff\n（訳）中田　秀基","isbn":"ISBN978-4-87311-855-0","publisher":"オライリー・ジャパン","published_at":"2018-08-08","division":{"code":"58","name":"ICT開発室"},"disposed":false,"disposed_at":null,"created_at":"2023-04-25T09:00:00+09:00","updated_at":"2023-04-25T09:00:00+09:00"},{"id":"01GYZYA8NS02G8NWCFWBZ6KS9T","title":"プロを目指す人のためのTypeScript入門","classification_detail":{"code":"000","classification":{"code":"000","name":"総記"},"name":"総記"},"authors":"鈴木  僚太","isbn":"ISBN978-4-297-12747-3","publisher":"技術評論社","published_at":"2022-05-05","division":{"code":"58","name":"ICT開発室"},"disposed":false,"disposed_at":null,"created_at":"2023-04-25T09:00:00+09:00","updated_at":"2023-04-25T09:00:00+09:00"}]
+
+curl -s http://localhost:8000/api1/books/01GYZYA8NS02G8NWCFWBZ6KS9T/
+# {"id":"01GYZYA8NS02G8NWCFWBZ6KS9T","title":"プロを目指す人のためのTypeScript入門","classification_detail":{"code":"000","classification":{"code":"000","name":"総記"},"name":"総記"},"authors":"鈴木  僚太","isbn":"ISBN978-4-297-12747-3","publisher":"技術評論社","published_at":"2022-05-05","division":{"code":"58","name":"ICT開発室"},"disposed":false,"disposed_at":null,"created_at":"2023-04-25T09:00:00+09:00","updated_at":"2023-04-25T09:00:00+09:00"}
+```
+
+#### アクセストークンを付けて書籍登録APIを呼び出し
+
+アクセストークンを付けて、次の通り書籍登録APIを呼び出せることを確認します。
+
+```bash
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzMDkxNjQ3LCJpYXQiOjE2ODMwOTEzNDcsImp0aSI6IjE2MGUzMDM2NTk4MjQ4MWE4ZDAxMmZiOWQ0YTA4NDlmIiwidXNlcl9pZCI6InNwYW1AZXhhbXBsZS5jb20ifQ.NcO0N6G8Z-lzTRWY5WCfv-XdxGV8F1lGQ3gNBw1ei0U" -i -s -d '{"title": "ハンズオンWebAssembly", "classification_detail_code": "000", "authors": "（著）Gerard Gallant\r\n（訳）北原　憲、洲崎　俊、西谷　完太、磯野　亘平、米内　貴志", "isbn": "ISBN978-4-8144-0010-2", "publisher": "オライリー・ジャパン", "published_at": "2022-10-07", "division_code": "58"}' http://localhost:8000/api1/books/
+# {"id":"01GZG10ZM1DJKAAVA8J404EB48","title":"ハンズオンWebAssembly","classification_detail_code":"総記","authors":"（著）Gerard Gallant\r\n（訳）北原　憲、洲崎　俊、西谷　完太、磯野　亘平、米内　貴志","isbn":"ISBN978-4-8144-0010-2","publisher":"オライリー・ジャパン","published_at":"2022-10-07","division_code":"ICT開発室","disposed":false,"disposed_at":null}%
+```
+
+#### アクセストークンなしで書籍登録APIを呼び出し
+
+アクセストークンなしで、書籍登録APIを呼び出せないことを確認します。
+
+```bash
+curl -X POST -H "Content-Type: application/json" -i -s -d '{"title": "ハンズオンWebAssembly", "classification_detail_code": "000", "authors": "（著）Gerard Gallant\r\n（訳）北原　憲、洲崎　俊、西谷　完太、磯野　亘平、米内　貴志", "isbn": "ISBN978-4-8144-0010-2", "publisher": "オライリー・ジャパン", "published_at": "2022-10-07", "division_code": "58"}' http://localhost:8000/api1/books/ | grep HTTP
+# HTTP/1.1 401 Unauthorized
+```
+
+#### アクセストークンなしで書籍更新APIを呼び出し
+
+アクセストークンなしで、書籍更新APIを呼び出せないことを確認します。
+
+<!-- cspell: enable -->
+```bash
+curl -X PUT -H "Content-Type: application/json" -i -s -d '{"title": "ハンズオンWebAssembly", "classification_detail_code": "000", "authors": "（著）Gerard Gallant\r\n（訳）北原　憲、洲崎　俊、西谷　完太、磯野　亘平、米内　貴志", "isbn": "ISBN978-4-8144-0010-2", "publisher": "オライリー・ジャパン", "published_at": "2022-10-07", "division_code": "58"}' http://localhost:8000/api1/books/01GZG10ZM1DJKAAVA8J404EB48/ | grep HTTP
+# HTTP/1.1 401 Unauthorized
+```
+<!-- cspell: enable -->
+
+#### アクセストークンなしで書籍削除APIを呼び出し
+
+アクセストークンなしで、書籍削除APIを呼び出せないことを確認します。
+
+```bash
+curl -X DELETE -H "Content-Type: application/json" -i -s http://localhost:8000/api1/books/01GZG10ZM1DJKAAVA8J404EB48/ | grep HTTP
+# HTTP/1.1 401 Unauthorized
+```
+
+#### アクセストークンを付けて書籍更新APIを呼び出し
+
+アクセストークンを付けて、書籍更新APIを呼び出せることを確認します。
+
+<!-- cspell: disable -->
+```bash
+curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzMDkzMzU4LCJpYXQiOjE2ODMwOTMwNTgsImp0aSI6IjAzODE4MjIwNmYwZTRiNmI5ZTNjMTQyMThjZDA3Y2QzIiwidXNlcl9pZCI6InNwYW1AZXhhbXBsZS5jb20ifQ.G4tT8xX05ee1DnITw0kZuMuSjFNUHK5TE6EOntp-0PI" -s -d '{"title": "ハンズオンWebAssembly", "classification_detail_code": "000", "authors": "（著）Gerard Gallant\r\n（訳）北原　憲、洲崎　俊、西谷　完太、磯野　亘平、米内　貴志", "isbn": "ISBN978-4-8144-0010-2", "publisher": "オライリー・ジャパン", "published_at": "2022-10-07", "division_code": "58"}' http://localhost:8000/api1/books/01GZG10ZM1DJKAAVA8J404EB48/
+# {"id":"01GZG10ZM1DJKAAVA8J404EB48","title":"ハンズオンWebAssembly","classification_detail_code":"総記","authors":"（著）Gerard Gallant\r\n（訳）北原　憲、洲崎　俊、西谷　完太、磯野　亘平、米内　貴志","isbn":"ISBN978-4-8144-0010-2","publisher":"オライリー・ジャパン","published_at":"2022-10-07","division_code":"ICT開発室","disposed":false,"disposed_at":null}
+```
+<!-- cspell: enable -->
+
+#### アクセストークンを付けて書籍削除APIを呼び出し
+
+アクセストークンを付けて、書籍削除APIを呼び出せることを確認します。
+
+<!-- cspell: disable -->
+```bash
+curl -X DELETE -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgzMDkzNzQ4LCJpYXQiOjE2ODMwOTM0NDgsImp0aSI6IjgxNWRmMDA3ZTA0NjRkNzRhN2FjMzFlZjcyYzRkMDM4IiwidXNlcl9pZCI6InNwYW1AZXhhbXBsZS5jb20ifQ.KY_6wUz-qlB7sg6GsTlk1P5_8Q0pGRm9p41BH9C5dNo" -s -i http://localhost:8000/api1/books/01GZG10ZM1DJKAAVA8J404EB48/ | grep HTTP
+# HTTP/1.1 204 No Content
+```

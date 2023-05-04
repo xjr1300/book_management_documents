@@ -475,6 +475,8 @@ git commit -m 'ログイン機能とログインページを実装'
 
 > 47146e6 (tag: 058-implement-login-feature-and-login-page)
 
+![ログインページ](./images/login-page.png)
+
 ## ログアウト機能とログアウトページの実装
 
 次の通りログアウトビューを実装します。
@@ -594,6 +596,10 @@ git commit -m '書籍ページのページヘッダにユーザーの名前を�
 ```
 
 > 80e1931 (tag: 060-display-user-features-at-book-page-header)
+
+![名前とログアウトリンクを表示した書籍一覧ページ](./images/bs-book-list-page-with-name-and-logout-link.png)
+
+![ログアウトページ](./images/logout-page.png)
 
 ## アクセス制限の実装
 
@@ -730,6 +736,8 @@ git commit -m 'メッセージを提供する独自のLoginRequiredMixinを実�
 
 ユーザーがログアウトした状態で書籍登録、更新及び削除ページにアクセスしてください。
 正しく実装していれば、当該ページは表示されず、アクセスする権限がないことを示すメッセージと共に、ログインページにリダイレクトされます。
+
+![権限がないことをユーザーに通知するログインページ](./images/login-page-with-message.png)
 
 次の通り変更をリポジトリにコミットしてください。
 

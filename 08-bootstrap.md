@@ -59,7 +59,7 @@ git add requirements.txt
 git commit -m 'django-bootstrap5をインストール'
 ```
 
-> a758707 (tag: 046-install-django-bootstrap5)
+> e11e7d6 (tag: 046-install-django-bootstrap5)
 
 ## Bootstrap用のベーステンプレートの作成
 
@@ -82,7 +82,7 @@ git add ./templates/bootstrap_base.html
 git commit -m 'Bootstrap用のベーステンプレートを実装'
 ```
 
-> a47fa54 (tag: 047-implement-bootstrap-base-template)
+> 2707d08 (tag: 047-implement-bootstrap-base-template)
 
 なお、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の内容は次の通りです。
 
@@ -149,7 +149,7 @@ git add ./books/templates/books/book_base_page.html
 git commit -m '書籍ベースページテンプレートを実装'
 ```
 
-> d5fe309 (tag: 048-implement-book-base-page-template)
+> 070d4f0 (tag: 048-implement-book-base-page-template)
 
 ## 書籍分類リンクテンプレートにBootstrapを適用
 
@@ -188,7 +188,7 @@ git add ./books/templates/books/_classification_links.html
 git commit -m '書籍分類リンクテンプレートにBootstrapを適用'
 ```
 
-> 1e0bcb7 (tag: 049-implement-classification-links-template)
+> e63cf3d (tag: 049-implement-classification-links-template)
 
 ## 書籍一覧テンプレートにBootstrapを適用
 
@@ -253,7 +253,7 @@ git add ./books/templates/books/book_list.html
 git commit -m '書籍一覧テンプレートにBootstrapを適用'
 ```
 
-> f1df953 (tag: 050-apply-bootstrap-to-book-list-template)
+> 419fe41 (tag: 050-apply-bootstrap-to-book-list-template)
 
 ## 書籍詳細表示テンプレートにBootstrapを的章
 
@@ -322,7 +322,7 @@ git add ./books/templates/books/_book_detail.html
 git commit -m 'books/_book_detail.htmlにBootstrapを適用'
 ```
 
-> afea70c (tag: 051-apply-bootstrap-to-_book_detail.html)
+> cce419d (tag: 051-apply-bootstrap-to-_book_detail.html)
 
 ## 書籍詳細テンプレートにBootstrapを適用
 
@@ -352,7 +352,7 @@ git add ./books/templates/books/book_detail.html
 git commit -m '書籍詳細テンプレートにBootstrapを適用'
 ```
 
-> 0e39c1e (tag: 052-apply-bootstrap-to-book-detail-template)
+> a9c65b6 (tag: 052-apply-bootstrap-to-book-detail-template)
 
 ## 書籍フォームテンプレートにBootstrapを適用
 
@@ -498,7 +498,7 @@ git add ./books/
 git commit -m '書籍フォームテンプレートにBootstrapを適用'
 ```
 
-> bd21c4f (tag: 053-apply-bootstrap-to-book-form-template)
+> b044433 (tag: 053-apply-bootstrap-to-book-form-template)
 
 ## 書籍削除テンプレートにBootstrapを適用
 
@@ -543,7 +543,7 @@ git add ./books/templates/books/book_confirm_delete.html
 git commit -m '書籍削除テンプレートにBootstrapを適用'
 ```
 
-> ab55f06 (tag: 054-apply-bootstrap-to-book-delete-template)
+> 4677db2 (tag: 054-apply-bootstrap-to-book-delete-template)
 
 ## まとめ
 

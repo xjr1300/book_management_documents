@@ -108,7 +108,7 @@ git add ./core/mixins.py
 git commit -m 'ミックスインを整理'
 ```
 
-> 386b205 (tag: 036-arrange-mixins)
+> b11d94c (tag: 036-organize-mixins)
 
 ## 書籍分類ページの実装
 
@@ -132,7 +132,7 @@ app_name = "books"
 
 書籍分類ページを実装して、書籍分類ページが正常に機能することが確認できた後、変更をリポジトリにコミットしてください。
 
-> c262a6f (tag: 037-implement-classification-page)
+> 5a9f8c3 (tag: 037-implement-classification-page)
 
 ## 書籍分類詳細ページの実装
 
@@ -243,7 +243,7 @@ git commit -m '書籍分類詳細ページを実装
 
  書籍分類詳細ページを実装
 
-> e5d8a18 (HEAD -> main, tag: 038-implement-classification-detail-pages)
+> e557597 (tag: 038-implement-classification-detail-page)
 
 ## 書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ
 
@@ -395,7 +395,7 @@ git add ./books/
 git commit -m '書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタできるように実装'
 ```
 
-> 960fcf7 (tag: 039-filter-classification-detail-by-classification)
+> c7602e9 (tag: 039-filter-classification-detail-by-classification)
 
 ## 書籍ページの実装
 
@@ -590,7 +590,7 @@ git add ./books/
 git commit -m '書籍一覧ページを実装'
 ```
 
-> 74b4652 (tag: 040-implement-book-list-page) 書式一覧ページを実装
+> 1154965 (tag: 040-implement-book-list-page)
 
 ### 書籍詳細ページの実装
 
@@ -718,7 +718,7 @@ git add ./books/
 git commit -m '書籍詳細ページを実装'
 ```
 
-> f2f7f66 (tag: 041-implement-book-detail-page)
+> ce435d3 (tag: 041-implement-book-detail-page)
 
 ### 書籍フォームの実装
 
@@ -907,7 +907,7 @@ git add ./books/
 git commit -m '書籍登録ビューを実装'
 ```
 
-> 123cc72 (tag: 042-implement-book-create-page)
+> 3493107 (tag: 042-implement-book-create-page)
 
 ### 書籍更新ページの実装
 
@@ -1003,7 +1003,7 @@ git add --all
 git commit -m '書籍更新ページを実装'
 ```
 
-> af3e106 (tag: 043-implement-book-update-page)
+> 4725ac7 (tag: 043-implement-book-update-page)
 
 ### 書籍削除ページの実装
 
@@ -1097,7 +1097,7 @@ git add ./books/
 git commit -m '書籍削除ページを実装'
 ```
 
-> ab211ae (tag: 044-implement-book-delete-page)
+> dd8f122 (tag: 044-implement-book-delete-page)
 
 ## トランザクション
 
@@ -1158,7 +1158,7 @@ git add ./books/views.py
 git commit -m '書籍登録、更新及び削除ページにトランザクションを開始して、書籍の操作をアトミック化'
 ```
 
-> 7022f03 (tag: 045-set-transaction-at-book-pages)
+> 4790ca4 (tag: 045-set-transaction-at-book-pages)
 
 ### デコレーター
 

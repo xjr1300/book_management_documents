@@ -97,7 +97,7 @@ git add book_management/settings.py
 git commit -m 'アカウントアプリを追加'
 ```
 
-> 5892ba0 (tag: 055-add-accounts-app)
+> 37a5a10 (tag: 055-add-accounts-app)
 
 ## 独自ユーザーモデルの実装
 
@@ -273,7 +273,7 @@ git add book_management/settings.py
 git commit -m 'ユーザーモデルを実装'
 ```
 
-> 48321bb (tag: 056-implement-user-model)
+> 65296bc (tag: 056-implement-user-model)
 
 ## ユーザーモデルを管理サイトに登録
 
@@ -358,7 +358,7 @@ git add ./accounts/admin.py
 git commit -m 'ユーザーモデルを管理サイトに登録'
 ```
 
-> 417fda8 (tag: 057-register-user-model-to-admin-site)
+> 34e30cf (tag: 057-register-user-model-to-admin-site)
 
 ## ログイン機能とログインページの実装
 
@@ -473,7 +473,7 @@ git add ./book_management/
 git commit -m 'ログイン機能とログインページを実装'
 ```
 
-> d3dbaf7 (tag: 058-implement-login-feature-and-login-page)
+> 47146e6 (tag: 058-implement-login-feature-and-login-page)
 
 ## ログアウト機能とログアウトページの実装
 
@@ -534,7 +534,7 @@ git add ./books/
 git commit -m 'ログアウト機能とログアウトページを実装'
 ```
 
-> 7f5aa72 (tag: 059-implement-logout-feature-and-logout-page)
+> 45ec00d (tag: 059-implement-logout-feature-and-logout-page)
 
 ## 書籍ページヘッダにユーザーの名前とログイン及びログアウトリンクの表示
 
@@ -593,7 +593,7 @@ git add ./books/
 git commit -m '書籍ページのページヘッダにユーザーの名前を表示して、ログアウトできるように実装'
 ```
 
-> 891096a (tag: 060-display-user-features-at-book-page-header)
+> 80e1931 (tag: 060-display-user-features-at-book-page-header)
 
 ## アクセス制限の実装
 
@@ -655,7 +655,7 @@ git add ./core/mixins.py
 git commit -m 'メッセージを提供する独自のLoginRequiredMixinを実装'
 ```
 
-> 2b539c7 (tag: 061-implement-custom-login-required-mixin-provides-messages)
+> 98bc801 (tag: 061-implement-custom-login-required-mixin-provides-messages)
 
 ### 書籍登録、更新及び削除ページのアクセス制限
 
@@ -739,7 +739,7 @@ git add ./books/views.py
 git commit -m '書籍登録、更新及び削除ページのアクセス制限を実装'
 ```
 
-> 48dd81c (tag: 062-implement-access-restrictions)
+> 8b2592c (tag: 062-implement-access-restrictions)
 
 ### 書籍一覧及び書籍詳細ページのリンクの整理
 
@@ -792,7 +792,7 @@ git add ./books/
 git commit -m '書籍一覧及び詳細ページのリンクを整理'
 ```
 
-> db0e0d7 (tag: 063-organize-register-update-delete-page-links)
+> 239b121 (tag: 063-organize-register-update-delete-page-links)
 
 ## まとめ
 

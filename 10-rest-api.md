@@ -39,10 +39,10 @@
     - [書籍ビューセットのディスパッチ](#書籍ビューセットのディスパッチ)
   - [書籍APIの保護](#書籍apiの保護)
     - [JWT (JSON Web Token)とは](#jwt-json-web-tokenとは)
-    - [認証APIの実装](#認証apiの実装)
+    - [認証API](#認証api)
       - [Simple JWTのインストール](#simple-jwtのインストール)
       - [Simple JWTの設定](#simple-jwtの設定)
-      - [認証APIの実装](#認証apiの実装-1)
+      - [認証APIの実装](#認証apiの実装)
     - [書籍登録、更新及び削除APIの保護](#書籍登録更新及び削除apiの保護)
     - [書籍API保護の確認](#書籍api保護の確認)
       - [認証APIの呼び出し](#認証apiの呼び出し)
@@ -155,7 +155,7 @@ git add ./requirements.txt
 git commit -m 'Django REST Frameworkをインストール'
 ```
 
-> fa70ef6 (tag: 064-install-django-rest-framework)
+> 48bef78 (tag: 064-install-django-rest-framework)
 
 ## 書籍APIアプリの追加
 
@@ -196,7 +196,7 @@ git add ./api1
 git commit -m 'api1アプリを追加'
 ```
 
-> c890271 (tag: 065-add-api1-app)
+> 9ae6d11 (tag: 065-add-api1-app)
 
 ## シリアライザー (Serializer) とは
 
@@ -282,7 +282,7 @@ git add ./api1/books/
 git commit -m '書籍分類シリアライザーを実装'
 ```
 
-> d6e4e58 (tag: 066-implement-classification-serializer)
+> c4edf10 (tag: 066-implement-classification-serializer)
 
 ### 書籍分類APIビューの実装
 
@@ -382,7 +382,7 @@ git add ./api1/books/views.py
 git commit -m '書籍分類APIビューを実装`
 ```
 
-> ac8e845 (tag: 067-implement-classification-views)
+> c66d7e4 (tag: 067-implement-classification-views)
 
 ### 書籍分類APIビューのディスパッチ
 
@@ -421,7 +421,7 @@ git add ./book_management/urls.py
 git commit -m '書籍分類APIを実装'
 ```
 
-> dd540f7 (tag: 068-implement-classification-api)
+> e1523a5 (tag: 068-implement-classification-api)
 
 ### 書籍分類APIの呼び出し
 
@@ -755,7 +755,7 @@ git add ./api1/books/serializers.py
 git commit -m `書籍分類詳細更新用シリアライザーを実装'
 ```
 
-> d00ead3 (tag: 069-implement-classification-detail-serializer-for-update)
+> 3bbd5f3 (tag: 069-implement-classification-detail-serializer-for-update)
 
 ### 書籍分類詳細シリアライザーの実装
 
@@ -826,7 +826,7 @@ git add ./api1/books/serializers.py
 git commit -m '書籍分類詳細シリアライザーを実装'
 ```
 
-> 03c104c (tag: 070-implement-classification-detail-serializer)
+> 6d720df (tag: 070-implement-classification-detail-serializer)
 
 ### 書籍分類詳細APIビューの実装
 
@@ -891,7 +891,7 @@ git add ./api1/books/views.py
 git commit -m '書籍分類詳細ビューを実装'
 ```
 
-> 445a44b (tag: 071-implement-classification-detail-views)
+> 739190e (tag: 071-implement-classification-detail-views)
 
 ### 書籍分類詳細APIビューのディスパッチ
 
@@ -919,7 +919,7 @@ git add api1/urls.py
 git commit -m '書籍分類詳細APIを実装'
 ```
 
-> 4c42754 (tag: 072-implement-classification-detail-api)
+> edc65fc (tag: 072-implement-classification-detail-api)
 
 ### 書籍分類詳細（`ClassificationDetail`）APIの呼び出し
 
@@ -1121,7 +1121,7 @@ git add ./api1/books/serializers.py
 git commit -m '書籍読み込み専用シリアライザーを実装'
 ```
 
-> e40c472 (tag: 073-implement-book-read-only-serializer)
+> b8044a6 (tag: 073-implement-book-read-only-serializer)
 
 #### 書籍書き込み専用シリアライザーの実装
 
@@ -1238,7 +1238,7 @@ git add ./api1/books/serializers.py
 git commit -m '書籍書き込み専用シリアライザーを実装'
 ```
 
-> 006f798 (tag: 074-implement-book-write-only-serializer)
+> 5229a06 (tag: 074-implement-book-write-only-serializer)
 
 ### 書籍ビューセットの実装
 
@@ -1291,7 +1291,7 @@ git add api1/books/views.py
 git commit -m '書籍ビューセットを実装'
 ```
 
-> 01141ba (tag: 075-implement-book-viewset)
+> bd2ef49 (tag: 075-implement-book-viewset)
 
 ### 書籍ビューセットのディスパッチ
 
@@ -1325,7 +1325,7 @@ git add ./api1/urls.py
 git commit -m '書籍ビューセットをディスパッチ'
 ```
 
-> 8d19173 (tag: 076-dispatch-book-viewset)
+> aef3213 (tag: 076-dispatch-book-viewset)
 
 ## 書籍APIの保護
 
@@ -1337,7 +1337,7 @@ git commit -m '書籍ビューセットをディスパッチ'
 JWT（JSON Web Token）は、WebアプリケーションやAPIで認証や認可を行うための安全な方法の1つです。
 JWTは、JSON形式で表現されるトークンであり、ユーザーの認証情報やアプリケーションへのアクセス許可などの情報を含んでいます。
 
-### 認証APIの実装
+### 認証API
 
 #### Simple JWTのインストール
 
@@ -1350,7 +1350,7 @@ git add requirements.txt
 git commit -m 'Simple JWTパッケージをインストール'
 ```
 
-> fc97531 (tag: 077-install-simple-jwt)
+> 0c5d58d (tag: 077-install-simple-jwt)
 
 #### Simple JWTの設定
 
@@ -1418,7 +1418,7 @@ git add ./book_management/settings.py
 git commit -m 'Simple JWTを設定'
 ```
 
-> 0427dcf (tag: 078-configure-simple-jwt)
+> c378e2a (tag: 078-configure-simple-jwt)
 
 #### 認証APIの実装
 
@@ -1446,7 +1446,7 @@ git add ./api1/urls.py
 git commit -m '認証APIを実装'
 ```
 
-> 9832957 (tag: 079-implement-authentication-api)
+> d987dc1 (tag: 079-implement-authentication-api)
 
 ### 書籍登録、更新及び削除APIの保護
 
@@ -1486,7 +1486,7 @@ git add ./api1/books/views.py
 git commit -m '書籍ビューセットにパーミッションを設定'
 ```
 
-> ed859f1 (tag: 080-set-permission-to-book-viewset)
+> cd3bcea (tag: 080-set-permission-to-book-viewset)
 
 ### 書籍API保護の確認
 

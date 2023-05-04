@@ -302,7 +302,7 @@ git add ./books/
 git commit -m '書籍分類詳細モデルを実装'
 ```
 
-> 98fc23e (tag: 031-implement-classification-detail-model)
+> 7c124ad (tag: 031-implement-classification-detail-model)
 
 ### 書籍モデルの実装
 
@@ -371,7 +371,7 @@ git add requirements.txt
 git commit -m 'ULIDFieldを実装'
 ```
 
-> c94942b (tag: 032-implement-ulid-model-field)
+> de3162a (tag: 032-implement-ulid-model-field)
 
 ### 書籍モデルの定義
 
@@ -449,7 +449,7 @@ git add ./books/.
 git commit -m '書籍モデルを実装'
 ```
 
-> 6244550 (tag: 033-implement-book-model)
+> 5f1d241 (tag: 033-implement-book-model)
 
 ## 書籍、書籍分類及び書籍分類詳細フィクスチャーの作成
 
@@ -563,7 +563,7 @@ git add ./books/fixtures
 git commit -m '書籍分類及び書籍分類詳細フィクスチャーを作成'
 ```
 
-> 14fb5f1 (tag: 034-add-books-fixtures)
+> 4aba444 (tag: 034-add-books-fixtures)
 
 ## 書籍アプリモデルを管理サイトに登録
 
@@ -655,7 +655,7 @@ git add ./books/admin.py
 git commit -m '書籍アプリのモデルを管理サイトに登録'
 ```
 
-> 5054a66 (tag: 035-register-books-app-models-to-admin-site)
+> f69a5dd (tag: 035-register-books-app-models-to-admin-site)
 
 ## まとめ
 

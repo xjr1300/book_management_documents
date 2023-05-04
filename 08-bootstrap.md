@@ -6,7 +6,7 @@
   - [書籍ベースページテンプレートの実装](#書籍ベースページテンプレートの実装)
   - [書籍分類リンクテンプレートにBootstrapを適用](#書籍分類リンクテンプレートにbootstrapを適用)
   - [書籍一覧テンプレートにBootstrapを適用](#書籍一覧テンプレートにbootstrapを適用)
-  - [書籍詳細表示テンプレートにBootstrapを的章](#書籍詳細表示テンプレートにbootstrapを的章)
+  - [書籍詳細表示テンプレートにBootstrapを適用](#書籍詳細表示テンプレートにbootstrapを適用)
   - [書籍詳細テンプレートにBootstrapを適用](#書籍詳細テンプレートにbootstrapを適用)
   - [書籍フォームテンプレートにBootstrapを適用](#書籍フォームテンプレートにbootstrapを適用)
   - [書籍削除テンプレートにBootstrapを適用](#書籍削除テンプレートにbootstrapを適用)
@@ -255,9 +255,11 @@ git commit -m '書籍一覧テンプレートにBootstrapを適用'
 
 > 419fe41 (tag: 050-apply-bootstrap-to-book-list-template)
 
-## 書籍詳細表示テンプレートにBootstrapを的章
+![Bootstrapを適用した書籍一覧ページ](./images/bs-book-list-page.png)
 
-書籍書斎表示テンプレートにBootstrapを次の通り適用します。
+## 書籍詳細表示テンプレートにBootstrapを適用
+
+書籍詳細表示テンプレートにBootstrapを次の通り適用します。
 
 ```html
 <!-- ./books/templates/books/_book_detail.html -->
@@ -353,6 +355,8 @@ git commit -m '書籍詳細テンプレートにBootstrapを適用'
 ```
 
 > a9c65b6 (tag: 052-apply-bootstrap-to-book-detail-template)
+
+![Bootstrapを適用した書籍詳細ページ](./images/bs-book-detail-page.png)
 
 ## 書籍フォームテンプレートにBootstrapを適用
 
@@ -500,6 +504,10 @@ git commit -m '書籍フォームテンプレートにBootstrapを適用'
 
 > b044433 (tag: 053-apply-bootstrap-to-book-form-template)
 
+![Bootstrapを適用した書籍登録ページ](./images/bs-book-create-page.png)
+
+![Bootstrapを適用した書籍更新ページ](./images/bs-book-update-page.png)
+
 ## 書籍削除テンプレートにBootstrapを適用
 
 書籍削除テンプレートにBootstrapを次の通り適用します。
@@ -544,6 +552,8 @@ git commit -m '書籍削除テンプレートにBootstrapを適用'
 ```
 
 > 4677db2 (tag: 054-apply-bootstrap-to-book-delete-template)
+
+![Bootstrapを適用した書籍削除ページ](./images/bs-book-delete-page.png)
 
 ## まとめ
 

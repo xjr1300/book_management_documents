@@ -173,6 +173,17 @@ extend-exclude = """
 profile = "black"
 skip_gitignore = true
 extend_skip_glob = ["**/migrations/*", "manage.py"]
+
+[tool.mypy]
+python_version = "3.9"
+no_strict_optional = true
+ignore_missing_imports = true
+check_untyped_defs = true
+exclude = ['^manage\.py$', '^settings\.py$', '^migrations$', 'venv']
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "book_management.settings"
 ```
 
 最後に、リンター及びフォーマッターを`make`コマンドで実行するために`Makefile`ファイルを作成して次を入力して保存します。
@@ -189,6 +200,9 @@ lint:
 format:
 	isort .
 	black .
+
+type-check:
+	mypy .
 ```
 <!-- markdownlint-enable MD010 -->
 
@@ -199,6 +213,8 @@ format:
 make lint
 # ソースコードをチェックして自動的に修正
 make format
+# 静的に型をチェック
+make type-check
 ```
 
 > e2be2a3 (tag: 081-reconfigure-linter-and-formatter)

@@ -123,9 +123,23 @@ DRFは次の通りリクエストを処理します。
 
 <!-- cspell: disable -->
 ```bash
-pip install djangorestframework
+pip install djangorestframework djangorestframework-stubs
 ```
 <!-- cspell: enable -->
+
+`mypy`による静的型チェックのために、`./pyproject.toml`ファイルを次の通り変更します。
+
+```toml
+# ./pyproject.toml
+  [tool.mypy]
+  python_version = "3.9"
+  no_strict_optional = true
+  ignore_missing_imports = true
+  check_untyped_defs = true
+  exclude = ['^manage\.py$', '^settings\.py$', '^migrations$', 'venv']
+- plugins = ["mypy_django_plugin.main"]
++ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+```
 
 プロジェクト設定ファイルの`INSTALLED_APP`に`rest_framework`を次の通り追加します。
 

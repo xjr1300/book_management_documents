@@ -146,6 +146,16 @@ app_name = "books"
 
 ## 書籍分類詳細ページの実装
 
+![書籍分類詳細一覧ページ](./images/classification-detail-list-page.png)
+
+![書籍分類詳細詳細ページ](./images/classification-detail-detail-page.png)
+
+![書籍分類詳細登録ページ](./images/classification-detail-create-page.png)
+
+![書籍分類詳細更新ページ](./images/classification-detail-update-page.png)
+
+![書籍分類詳細削除ページ](./images/classification-detail-delete-page.png)
+
 書籍分類詳細ページとリクエストURLの対応を次の通りとします。
 
 - 書籍分類詳細一覧ページ: `/books/classification-details/`

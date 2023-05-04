@@ -240,7 +240,7 @@ class ClassificationDetail(TimestampModel):
         Returns:
             書籍分類詳細モデルのフルネーム。
         """
-        return f"{self.code}: {self.name.name}"
+        return f"{self.code}: {self.name}"
 ```
 
 `ForeignKey`モデルフィールドは、1対多の関連を表現するために他または自身のモデルを参照する外部キーをモデルに追加します。

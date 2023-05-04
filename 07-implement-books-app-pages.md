@@ -134,6 +134,16 @@ app_name = "books"
 
 > 5a9f8c3 (tag: 037-implement-classification-page)
 
+![書籍分類一覧ページ](./images/classification-list-page.png)
+
+![書籍分類詳細ページ](./images/classification-detail-page.png)
+
+![書籍分類登録ページ](./images/classification-create-page.png)
+
+![書籍分類更新ページ](./images/classification-update-page.png)
+
+![書籍分類削除ページ](./images/classification-delete-page.png)
+
 ## 書籍分類詳細ページの実装
 
 書籍分類詳細ページとリクエストURLの対応を次の通りとします。

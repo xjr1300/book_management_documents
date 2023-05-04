@@ -7,6 +7,9 @@
     - [Djangoのアプリとは](#djangoのアプリとは)
   - [本チュートリアルで提示するソースコードについて](#本チュートリアルで提示するソースコードについて)
   - [本チュートリアルのソースコード](#本チュートリアルのソースコード)
+  - [本チュートリアルの前提事項](#本チュートリアルの前提事項)
+    - [OS](#os)
+    - [Visual Studio Code](#visual-studio-code)
   - [まとめ](#まとめ)
 
 [Django](https://www.djangoproject.com/)は、PythonでWebアプリケーションを開発するときに利用される、Webアプリケーション開発フレームワークの1つです。
@@ -130,6 +133,29 @@ def fibonacci(seq):
 本チュートリアルのソースコードは[GitHub](https://github.com/xjr1300/book_management)にあります。
 チュートリアルのドキュメント中に、ソースコードなどのコミットIDとタグを示してあります。
 このコミットIDとタグを参照して、GitHubで前のコミットからのソースコードなどの差分を確認できます。
+
+## 本チュートリアルの前提事項
+
+### OS
+
+本チュートリアルは、`Ubuntu`を実行環境として想定しています。
+本チュートリアルを`Windows`などの他の環境で実行する場合は、本チュートリアルで使用するコマンドを`Windows`用のコマンドに置き換えてください。
+
+```bash
+# UbuntuでPython仮想環境を有効にする。
+source venv/bin/activate
+# WindowsでPython仮想環境を有効にする。
+venv\Scripts\activate.bat
+```
+
+### Visual Studio Code
+
+本チュートリアルは、`Visual Studio Code (vscode)`で実行することを想定しています。
+また、`vscode`には、次のエクステンションをインストールしてください。
+
+- Python extension for Visual Studio Code (マイクロソフト社)
+- Pylance （マイクロソフト社）
+- VS Code Makefile Tools （マイクロソフト社）
 
 ## まとめ
 

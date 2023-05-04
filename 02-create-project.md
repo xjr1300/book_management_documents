@@ -9,7 +9,7 @@
     - [./book\_management/settings.pyファイル](#book_managementsettingspyファイル)
     - [./book\_management/urls.pyファイル](#book_managementurlspyファイル)
     - [./book\_management/wsgi.pyファイル](#book_managementwsgipyファイル)
-  - [pysenの設定](#pysenの設定)
+  - [リンター及びフォーマッターの設定](#リンター及びフォーマッターの設定)
   - [プロジェクトのコミット](#プロジェクトのコミット)
   - [開発用サーバーの起動](#開発用サーバーの起動)
   - [プロジェクトの日本語化とタイムゾーンの設定](#プロジェクトの日本語化とタイムゾーンの設定)
@@ -66,7 +66,7 @@ source venv/bin/activate
 # 仮装環境にインストールされているpipをアップグレード
 pip install --upgrade pip
 # 仮装環境にPythonのリンター、フォーマッター及び静的型チェッカーをインストール
-pip install pysen black flake8 isort mypy
+pip install black flake8 pyproject-flake8 isort mypy
 # 仮装環境にDjangoとDjangoの型を提供するパッケージをインストール
 pip install django django-stubs
 # カレントディレクトリをプロジェクトディレクトリとするDjangoプロジェクトを作成
@@ -132,83 +132,78 @@ Webサイトがリクエストを受け取ったときに、当該リクエス�
 
 > 繰り返しになりますが、プロダクション環境で運用する場合、このファイルまたは前で説明した`asgi.py`ファイルが必要になります。
 
-## pysenの設定
-
-`pysen`はリンターとフォーマッターの設定を一元管理して、それらを実行するツールです。
+## リンター及びフォーマッターの設定
 
 リンターとは、ソースコードを解析して、文法の誤りだけでなく、バグの原因となりそうな箇所を検出するツールです。
 また、フォーマッターとは、スペースの数や改行の位置など、ソースコードのレイアウトやスタイルを自動的に整形するツールです。
 
-`pysen`はリンターとフォーマッターに以下のツールを使用しています。
+リンター及びフォーマッターに次のツールを使用します。
 
 - [flake8](https://flake8.pycqa.org/en/latest/) - ソースコードのエラーチェックと[PEP8](https://peps.python.org/pep-0008/)に準拠しているかチェック
 - [isort](https://pycqa.github.io/isort/) - インポートの順番をチェックして整形
 - [black](https://black.readthedocs.io/en/stable/) - PEP8に準拠しているかチェックして整形
 - [mypy](https://mypy.readthedocs.io/en/stable/) - 静的に型をチェック
 
-プロジェクトディレクトリに`./pyproject.toml`ファイルを作成します。
+リンター及びフォーマッターを設定するために、プロジェクトディレクトリに`./pyproject.toml`ファイルを作成します。
+なお、`flake8`は`pyproject.toml`に対応していないため、`pyproject.toml`をロードする`flake8`のプラグイン`pyproject-flake8`パッケージをインストールしています。
 
 ```bash
 code pyproject.toml
 ```
 
-そして、`./pyproject.toml`ファイルに次を入力して保存します。
+次に、`./pyproject.toml`ファイルに次を入力して保存します。
 
 ```toml
-[tool.pysen]
-version = "0.10"
+# ./pyproject.toml
+[tool.flake8]
+per-file-ignores = ["__init__.py:F401"]
+max-line-length = 88
+extend-exclude = ["venv", "migrations", "manage.py", "settings.py"]
 
-[tool.pysen.lint]
-enable_black = true
-enable_flake8 = true
-enable_isort = true
-enable_mypy = true
-mypy_preset = "strict"
-line_length = 88
-py_version = "py310"
+[tool.black]
+line-length = 88
+extend-exclude = """
+(
+    migrations/
+    | manage.py
+)
+"""
 
-[[tool.pysen.lint.mypy_targets]]
-paths = ["."]
-
-[tool.pysen.lint.source]
-includes = ["."]
-excludes = ["venv/"]
-exclude_globs = ["**/migrations/"]
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+extend_skip_glob = ["**/migrations/*", "manage.py"]
 ```
 
-pysenは次の通り実行できます。
+最後に、リンター及びフォーマッターを`make`コマンドで実行するために`Makefile`ファイルを作成して次を入力して保存します。
+なお、`pflake8`の左は1つの`タブ`を入力します。
+
+<!-- markdownlint-disable MD010 -->
+```Makefile
+# ./Makefile
+lint:
+	pflake8 .
+	isort --check .
+	black --check .
+
+format:
+	isort .
+	black .
+```
+<!-- markdownlint-enable MD010 -->
+
+リンター及びフォーマッターは、次の通り実行します。
 
 ```bash
 # ソースコードをチェックして結果を報告
-pysen run lint
-# ソースコードをチェックして自動的に修正 (by black and isort)
-pysen run format
+make lint
+# ソースコードをチェックして自動的に修正
+make format
 ```
 
-`pysen run lint`を実行するとエラーが報告されます。
-
-`manage.py`ファイルの7行目あたりにある`def main():`を次の通り変更して保存します。
-
-```python
-- def main():
-+ def main() -> None:
-```
-
-`book_management/settings.py`ファイルの13行目あたりにある`from pathlib import Path`の下の行に次を追加します。
-
-```python
-  from pathlib import Path
-+ from typing import List
-```
-
-また、`book_management/settings.py`ファイルの28行目あたりにある`ALLOWED_HOST = []`を次の通り変更して保存します。
-
-```python
-- ALLOWED_HOSTS = []
-+ ALLOWED_HOSTS: List[str] = []
-```
-
-上記実施後、`pysen run lint`を実行すると、pysenがソースコードに問題を見つけることができなかったことを報告します。
+> e2be2a3 (tag: 081-reconfigure-linter-and-formatter)
+>
+> 上記コミット及びダグは、`pysen`と呼ばれるリンター及びフォーマッターの利用をやめて、独自にリンター及びフォーマッターを再設定したときのコミットです。
 
 ## プロジェクトのコミット
 

@@ -249,6 +249,8 @@ urlpatterns = [
 開発サーバーを起動していない場合は開発サーバーを起動します。
 そして、ブラウザで`http://localhost:8000/divisions/`にアクセスすると、部署の一覧が表示されるはずです。
 
+![最初の部署一覧ページ](./images/1st-division-list-page.png)
+
 部署一覧ページが正常に表示された場合は、次の通りリポジトリに変更をコミットします。
 
 ```bash
@@ -342,6 +344,8 @@ except Division.DoesNotExist:
 
 開発サーバーを起動していない場合は開発サーバーを起動します。
 そして、ブラウザで`http://localhost:8000/divisions/58/`にアクセスすると、ICT開発室が表示されるはずです。
+
+![最初の部署詳細ページ](./images/1st-division-list-page.png)
 
 部署詳細ページが正常に表示された場合は、次の通りリポジトリに変更をコミットします。
 
@@ -528,6 +532,8 @@ git commit -m 'テンプレートをリファクタリング'
   {% endfor %}
 ```
 
+![2番目の部署一覧ページ](./images/2nd-division-list-page.png)
+
 部署詳細ページから部署一覧ページに遷移するリンクを次の通り設置します。
 
 ```html
@@ -538,6 +544,8 @@ git commit -m 'テンプレートをリファクタリング'
 + </div>
   {% endblock inner_body %}
 ```
+
+![2番目の部署詳細ページ](./image/../images/2nd-division-detail-page.png)
 
 部署一覧ページと部署詳細ページに相互リンクが設置され、相互にページ遷移できた場合は、次の通りリポジトリに変更をコミットします。
 
@@ -735,6 +743,8 @@ form.as_table()
   {% endblock inner_body %}
 ```
 
+![最初の部署登録ページ](./images/1st-division-create-page.png)
+
 これで、部署一覧ページと部署登録ページが相互リンクを持つようになりました。
 
 部署登録ページで部署を登録でき、部署一覧ページと部署登録ページの相互リンクが機能した場合は、次の通りリポジトリに変更をコミットします。
@@ -862,6 +872,8 @@ def update(request: HttpRequest, code: str) -> HttpResponse:
 
 部署更新ページで部署を更新でき、各ページに設置したリンクが機能した場合は、次の通りリポジトリに変更をコミットします。
 
+![最初の部署更新ページ](./images/1st-division-update-page.png)
+
 ```bash
 git add ./divisions/
 git commit -m '部署更新ページを実装'
@@ -933,6 +945,8 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
           </li>
 ```
 
+![3番目の部署一覧ページ](./images/3rd-division-list-page.png)
+
 部署詳細テンプレートに部署削除ページへのリンクを次の通り設置します。
 
 ```html
@@ -943,6 +957,8 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
 +     <a href="{% url 'divisions:division-delete' division.code %}">部署削除</a>
     </div>
 ```
+
+![3番目の部署詳細ページ](./images/3rd-division-detail-page.png)
 
 部署フォームテンプレートに部署削除ページへのリンクを次の通り設置します。
 
@@ -956,6 +972,10 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
       {% endif %}
     </div>
 ```
+
+![2番目の部署登録ページ](./images/2nd-division-create-page.png)
+
+![2番目の部署更新ページ](./images/2nd-division-update-page.png)
 
 ### 部署削除ビューのディスパッチ
 
@@ -978,6 +998,8 @@ def delete(request: HttpRequest, code: str) -> HttpResponse:
 ```
 
 部署削除ページで部署を削除でき、それぞれの部署ページに設置したリンクが機能した場合は、次の通りリポジトリに変更をコミットします。
+
+![最初の部署削除ページ](./images/1st-division-delete-page.png)
 
 ```bash
 git add --all

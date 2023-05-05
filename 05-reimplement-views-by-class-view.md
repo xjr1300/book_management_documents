@@ -3,7 +3,7 @@
 - [クラスビューによる部署アプリのビューの再実装](#クラスビューによる部署アプリのビューの再実装)
   - [部署一覧関数ビューを部署一覧クラスビューで再実装](#部署一覧関数ビューを部署一覧クラスビューで再実装)
     - [モデルの指定](#モデルの指定)
-    - [表示するQuerySetの取得](#表示するquerysetの取得)
+    - [表示するクエリセットの取得](#表示するクエリセットの取得)
     - [テンプレートのパスとコンテキスト名の指定](#テンプレートのパスとコンテキスト名の指定)
     - [get\_context\_dataメソッドのオーバーライド](#get_context_dataメソッドのオーバーライド)
   - [部署詳細関数ビューを部署詳細クラスビューで再実装](#部署詳細関数ビューを部署詳細クラスビューで再実装)
@@ -22,10 +22,11 @@
     - [\`CreateDivisionViewのMROとメソッド呼び出し](#createdivisionviewのmroとメソッド呼び出し)
   - [まとめ](#まとめ)
 
-前の章で部署アプリのビューを関数ビューで実装しましたが、それを[クラスビュー (Class-based views)](https://docs.djangoproject.com/en/4.2/topics/class-based-views/)で再実装します。
+前の章で部署アプリのビューを関数ビューで実装しました。
+本章では、それを[クラスビュー (Class-based views)](https://docs.djangoproject.com/en/4.2/topics/class-based-views/)で再実装します。
 
 Djangoが提供するクラスビューは、ジェリックでどのモデルにも適用できます。
-クラスビューは、関数ビューと比較して実装するコードが少なくなります。
+クラスビューは、関数ビューと比較して実装するコードが少なくなる傾向があります。
 
 > クラスビューのデフォルトの振る舞いを変更する場合、クラスビューのメソッドをオーバーライドする必要があり、コードが増えることもあります。
 
@@ -74,18 +75,18 @@ Djangoが提供するクラスビューは、ジェリックでどのモデル�
 
 部署一覧クラスビューでは、ビューが部署モデルを扱うことをクラス変数`model`で指定しています。
 
-### 表示するQuerySetの取得
+### 表示するクエリセットの取得
 
 部署一覧クラスビューに部署をデータベースから取得する実装がありませんが、それは`ListViews`（正確には`BaseListView`）が`get`メソッド内で次を処理しているからです。
 
-- `MultipleObjectMixin`の`get_queryset`メソッドを呼び出して、表示するモデルインスタンスのQuerySetを取得して、メンバ変数`object_list`に設定します。
-- `MultipleObjectMixin`の`get_context_data`メソッドを呼び出して、上記で取得したQuerySetを追加したコンテキストを取得します。
+- `MultipleObjectMixin`の`get_queryset`メソッドを呼び出して、表示するモデルインスタンスを格納したクエリセットを取得して、メンバ変数`object_list`に設定します。
+- `MultipleObjectMixin`の`get_context_data`メソッドを呼び出して、上記で取得したクエリセットを追加したコンテキストを取得します。
 
 ### テンプレートのパスとコンテキスト名の指定
 
-実際のところ、部署一覧関数ビューを実装するとき、テンプレートのパス、テンプレートで使用するコンテキスト名などは**意図的に**指定しました。
+実のところ、実装したすべての部署テンプレートのパス、またテンプレートで使用するコンテキスト名などは**意図的**です。
 
-`MultipleObjectMixin`の`get_context_data`メソッドは、自身の`get_context_object_name`メソッドを呼び出して、上記QuerySetを格納するコンテキスト名を取得します。
+`MultipleObjectMixin`の`get_context_data`メソッドは、自身の`get_context_object_name`メソッドを呼び出して、上記クエリセットを格納するコンテキスト名を取得します。
 この`get_context_object_name`メソッドは、`context_object_name`クラス変数が設定されていない場合、小文字に変換したモデル名の末尾に`_list`を追加した文字列を返却して、その文字列がコンテキスト名になります。
 部署一覧テンプレートにおいて、そのコンテキスト名は`division_list`です。
 
@@ -94,8 +95,8 @@ Djangoが提供するクラスビューは、ジェリックでどのモデル�
 ### get_context_dataメソッドのオーバーライド
 
 HTMLの`head`要素の`title`要素のコンテンツに設定したいタイトルは、本Webアプリケーション独自の仕様です。
-このため、部署一覧クラスビューで`get_context_data`メソッドをオーバーライドして、`MultipleObjectMixin`の`get_context_data`メソッドを呼び出し（`super().get_context_data(**kwargs)`）て、Djangoが作成したコンテキストを取得します。
-その後、取得したコンテキストに`title`という名前でタイトル名を追加しています。
+このため、部署一覧クラスビューで`get_context_data`メソッドをオーバーライドして、`MultipleObjectMixin`の`get_context_data`メソッドを呼び出して（`super().get_context_data(**kwargs)`）、Djangoが作成したコンテキストを取得します。
+その後、取得したコンテキストに`title`というキーでタイトル名を追加しています。
 
 > クラスビューのデフォルトの振る舞いを確認したい場合は、次を参照してください。
 > 特に、`Classy Class-Based Views.`は確認しやすく、非常に便利です。
@@ -106,7 +107,7 @@ HTMLの`head`要素の`title`要素のコンテンツに設定したいタイト
 > - [Django - Document](https://docs.djangoproject.com/en/4.2/ref/class-based-views/)
 > - [Django Generic View - GitHub](https://github.com/django/django/tree/main/django/views/generic)
 
-部署一覧クラスビューがディスパッチされるように、`./divisions/urls.py`を次の通り変更します。
+部署一覧クラスビューがディスパッチされるように、部署アプリのURLconfを次の通り変更します。
 
 ```python
 # ./divisions/urls.py
@@ -164,10 +165,10 @@ git commit -m '部署一覧関数ビューを部署一覧クラスビューで�
 
 部署詳細クラスビューは、部署一覧クラスビューと同様に自動的にテンプレートやコンテキストを`DetailView`が解決します。
 
-ただし、`DetailView`が取り扱うURLパターンで扱う主キーの識別子は、`DetailView`のベースクラスである`SingleObjectMixin`で`pk`となっています。
+ただし、`DetailView`が取り扱うURLパターンで扱う主キーの識別子は、`DetailView`のベースクラスである`SingleObjectMixin`で`pk`に設定されています。
 `SingleObjectMixin`の実装をオーバーライドするため、部署詳細クラスビューのクラス変数`pk_url_kwarg`に`code`を設定しています。
 
-部署詳細クラスビューがディスパッチされるように、`./divisions/urls.py`を変更します。
+部署詳細クラスビューがディスパッチされるように、部署アプリのURLconfを変更します。
 
 ```python
 # ./divisions/urls.py
@@ -242,14 +243,15 @@ git commit -m '部署詳細関数ビューを部署詳細クラスビューで�
 ```
 
 部署登録クラスビューは、部署一覧クラスビューと同様に自動的にテンプレートやコンテキストを`CreateView`が解決します。
-また、部署登録ページに表示するフォームも`CreateView`のベースクラスである`ModelFromMixin`の`get_form_class`メソッドで解決します。
+また、部署登録ページに表示するフォームも`CreateView`のベースクラスである`ModelFromMixin`の`get_form_class`メソッドで動的にフォームを定義して、`get_form`メソッドでそのフォームを構築します。
+よって、前の章で実装した部署フォームの実装を削除できます。
 
 `CreateView`は、`ProcessFormView`の`post`メソッド内で、フォームの検証に成功したとき`ModelFormMixin`の`form_valid`メソッドを呼び出します。
 `form_valid`メソッドでは、フォームから生成した部署モデルインスタンスをデータベースに登録して、登録した部署モデルインスタンスをメンバ変数`object (self.object)`に設定します。
 
 部署登録クラスビューの`get_success_url`メソッドは、上記で設定されたメンバ変数`object`を参照して、`reverse`関数でリダイレクト先のURLを構築しています。
 
-部署登録クラスクラスビューがディスパッチされるように、`./divisions/urls.py`を変更します。
+部署登録クラスビューがディスパッチされるように、部署アプリのURLconfを変更します。
 
 ```python
 # ./divisions/urls.py
@@ -343,9 +345,9 @@ git commit -m '部署登録関数ビューを部署登録クラスビューで�
 ```
 
 部署更新クラスビューは、部署登録クラスビューと同様です。
-部署更新クラスビューと部署登録クラスビューの異なる点は、部署更新クラスビューの`get_form`メソッドで、部署フォームを`UpdateView`のベースクラスである`FormMixin`の`get_form`メソッドで取得して、部署フォームの部署コードフィールドを読み込み専用に設定しています。
+部署更新クラスビューと部署登録クラスビューの異なる点は、部署更新クラスビューの`get_form`メソッドで、`UpdateView`のベースクラスである`FormMixin`の`get_form`メソッド呼び出すことで部署フォームを取得して、その部署フォームの部署コードフォームフィールドを読み込み専用に設定しています。
 
-部署更新クラスクラスビューがディスパッチされるように、`./divisions/urls.py`を変更します。
+部署更新クラスビューがディスパッチされるように、部署アプリのURLconfを変更します。
 
 ```python
 # ./divisions/urls.py
@@ -417,7 +419,7 @@ git commit -m '部署更新関数ビューを部署更新クラスビューで�
 
 `reverse_lazy`関数は、`reverse`関数の遅延評価バージョンで、クラスビューのクラス変数にURLを設定するなど、URLconfが読み込まれる前にURLパターン名からURLを逆引きしたい場合に`reverse`の代わりに使用します。
 
-部署削除クラスクラスビューがディスパッチされるように、`./divisions/urls.py`を変更します。
+部署削除クラスビューがディスパッチされるように、部署アプリのURLconfを変更します。
 
 ```python
 # ./divisions/urls.py
@@ -448,7 +450,7 @@ git commit -m '部署削除関数ビューを部署削除クラスビューで�
 ### モデルの指定
 
 それぞれのビューに、`model = Division`という実装があります。
-これを[ミックスイン](https://ja.wikipedia.org/wiki/Mixin)と呼ばれる技法を使用して、クラスビューが処理するモデルの定義を`DivisionViewMixin`にまとめます。
+これを[ミックスイン](https://ja.wikipedia.org/wiki/Mixin)と呼ばれる技法を使用して、部署クラスビューに実装したモデルの定義を`DivisionViewMixin`にまとめます。
 
 次の通り`./divisions/views.py`を変更します。
 
@@ -521,7 +523,7 @@ git commit -m 'DivisionViewMixinで部署モデルを指定'
 ### URLキーワードの設定
 
 部署詳細ビューや部署更新ビューなど、1つの部署モデルインスタンスを取り扱うビューについて、`pk_url_kwarg = "code"`という実装が重複しています。
-これは、部署の部署コード（`code`）がプライマリーキーで、URLconfのパスコンバーターで`<str:code>`を指定したため、Djangoのデフォルトの実装と違うため追加したコードでした。
+これは、部署の部署コード（`code`）がプライマリーキーで、URLconfのパスコンバーターで`<str:code>`を指定したため、Djangoのデフォルトの実装を上書きするために追加したコードでした。
 この実装を`DivisionSingleObjectMixin`に次の通りまとめます。
 
 ```python
@@ -591,12 +593,12 @@ git commit -m 'DivisionSingleObjectMixinでパスコンバーターのキーワ�
 
 ### 部署フォームの設定
 
-フィールドなど部署フォームの設定を`DivisionFormMixin`にまとめます。
+部署フォームに表示するフォームフィールドの設定を`DivisionFormMixin`にまとめます。
 
 ```python
 # ./division/views.py
 + class DivisionFormMixin:
-+     """部署フォームドミックスイン"""
++     """部署フォームミックスイン"""
 +
 +     fields = ("code", "name")
 +
@@ -886,6 +888,7 @@ class C(A, B):
 ```
 
 `C`は、`A`、`B`の順番で継承しており、`A`と`B`は`Base`を継承しています。
+つまり、`C`は`A`と`B`を介して`Base`を菱形継承しています。
 `C`のMROは、次のように確認できます。
 なお、出力はわかりやすいように整形しています。
 
@@ -1023,6 +1026,7 @@ Base's foo was called.
 ### `CreateDivisionViewのMROとメソッド呼び出し
 
 `CreateDivisionView`は、`django.generic.base.ContextMixin`から派生した`PageTitleMixin`と`FormActionMixin`を継承しています。
+つまり、前の説明と同様に`CreateDivisionView`は、`PageTitleMixin`と`FormActionMixin`を介して`django.generic.base.ContextMixin`を菱形継承しています。
 
 `CreateDivisionView`のMROは次の通りです。
 
@@ -1064,7 +1068,7 @@ ContextMixin's get_context_data was called.
 ## まとめ
 
 前の章で部署アプリのビューを関数ビューで実装しましたが、本章でそれらをクラスビューで再実装しました。
-また、それぞれの部署クラスビューで重複する項目をミックスインでリファクタリングしました。
-クラスビューは関数ビューよりもDjangoからの支援を受けやすく、オブジェクト思考により実装内容がより明確になります。
+また、それぞれの部署クラスビューで重複する項目をミックスインと呼ばれる技法でリファクタリングしました。
+クラスビューは関数ビューよりもDjangoからの支援を受けやすく、オブジェクト指向により実装内容がより明確になります。
 
-次の章以降では、書籍アプリを追加して、書籍分類、書籍分類詳細及び書籍モデルを実装して、それらを操作するクラスビューを実装します。
+次の章以降では、書籍アプリを追加して、書籍分類、書籍分類詳細及び書籍モデルを実装して、それらのモデルインスタンスを操作するクラスビューを実装します。

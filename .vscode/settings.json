@@ -4,6 +4,7 @@
     "contenttypes",
     "createsuperuser",
     "djangorestframework",
+    "dumpdata",
     "elif",
     "endfor",
     "icontains",

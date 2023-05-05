@@ -4,7 +4,6 @@
   - [ミックスインの整理](#ミックスインの整理)
   - [書籍分類ページの実装](#書籍分類ページの実装)
   - [書籍分類詳細ページの実装](#書籍分類詳細ページの実装)
-    - [ClassificationDetailViewMixinの実装](#classificationdetailviewmixinの実装)
     - [書籍分類詳細一覧ビューの実装](#書籍分類詳細一覧ビューの実装)
     - [ClassificationDetailSingleObjectMixinの実装](#classificationdetailsingleobjectmixinの実装)
     - [書籍分類詳細ビューの実装](#書籍分類詳細ビューの実装)
@@ -28,7 +27,6 @@
 部署アプリのビューを実装するときに定義した`PageTitleMixin`及び`FormActionMixin`は、部署アプリのビューで再利用するため、`core`モジュールに移動します。
 
 > 部署の`DivisionSingleObjectMixin`や`DivisionFormMixin`も書籍分類モデルと同様な実装になりますが、部署と書籍分類は概念が異なるため、再利用することは`やり過ぎたDRY`になるアンチパターンです。
->
 > `PageTitleMixin`はHTMLの`head`要素の`title`要素のコンテンツを設定する、`FormActionMixin`は操作名を提供するミックスインで、ビュー共通の振る舞いを提供するため再利用します。
 
 `./core/mixins.py`ファイルを作成して、`PageTitleMixin`と`FormActionMixin`をそのファイルに移動します。
@@ -112,8 +110,7 @@ git commit -m 'ミックスインを整理'
 
 ## 書籍分類ページの実装
 
-書籍分類ページの実装方法を本チュートリアルで説明しません。
-書籍分類ページを部署アプリの部署ビューと同様に実装してください。
+書籍分類ページを部署ページと同様に実装してください。
 書籍分類ページとリクエストURLの対応を次の通りとします。
 
 - 書籍分類一覧ページ: `/books/classifications/`
@@ -122,7 +119,7 @@ git commit -m 'ミックスインを整理'
 - 書籍分類更新ページ: `/books/classifications/update/<code>`
 - 書籍分類削除ページ: `/books/classifications/delete/<code>`
 
-なお、`./books/urls.py`に次を追加することを忘れないでください。
+なお、書籍アプリのURLconfに次を追加することを忘れないでください。
 
 ```python
 # ./books/urls.py
@@ -130,7 +127,7 @@ git commit -m 'ミックスインを整理'
 app_name = "books"
 ```
 
-書籍分類ページを実装して、書籍分類ページが正常に機能することが確認できた後、変更をリポジトリにコミットしてください。
+書籍分類ページを実装して、書籍分類ページが正常に機能することが確認できたら、次の通り変更をリポジトリにコミットしてください。
 
 > 5a9f8c3 (tag: 037-implement-classification-page)
 
@@ -145,6 +142,8 @@ app_name = "books"
 ![書籍分類削除ページ](./images/classification-delete-page.png)
 
 ## 書籍分類詳細ページの実装
+
+書籍分類詳細ページを書籍分類ページと同様に実装してください。
 
 ![書籍分類詳細一覧ページ](./images/classification-detail-list-page.png)
 
@@ -164,10 +163,7 @@ app_name = "books"
 - 書籍分類詳細更新ページ: `/books/classification-details/update/<code>`
 - 書籍分類詳細削除ページ: `/books/classification-details/delete/<code>`
 
-### ClassificationDetailViewMixinの実装
-
-本チュートリアルでは、`ClassificationDetailViewMixin`の実装方法を説明しません。
-`ClassificationDetailViewMixin`を`ClassificationViewMixin`と同様に実装してください。
+書籍分類ページと異なる実装は、本節で説明します。
 
 ### 書籍分類詳細一覧ビューの実装
 
@@ -185,7 +181,7 @@ class ClassificationDetailListView(
     template_name = "books/classification_detail_list.html"
 ```
 
-`context_object_name`で書籍分類詳細一覧ビューが取得する書籍分類詳細QuerySetのコンテキスト名を指定しています。
+`context_object_name`で書籍分類詳細一覧ビューが取得する書籍分類詳細クエリセットのコンテキスト名を指定しています。
 `context_object_name`を指定しない場合、そのコンテキスト名はモデル名を単純に小文字化した文字列の末尾に`_list`を追加した`classificationdetail_list`になります。
 
 `template_name`で書籍分類詳細一覧ビューのテンプレートを指定しています。
@@ -243,12 +239,12 @@ class ClassificationDetailFormMixin(generic.edit.ModelFormMixin):
         return form
 ```
 
-上記の通り`get_form`をオーバーライドしない場合、書籍分類ドロップダウンで書籍分類を選択していないことを示す`---------`を選択できます。
-書籍分類詳細モデルインスタンスは、書籍分類詳細を必ず入力する必要があるため、`---------`を選択候補から除くために`get_form`をオーバーライドしています。
+上記の通り`get_form`をオーバーライドしない場合、書籍分類詳細フォームの書籍分類ドロップダウンで書籍分類を選択していないことを示す`---------`を選択できます。
+書籍分類詳細モデルインスタンスは、書籍分類を必ず入力する必要があるため、`---------`を選択候補から除くために`get_form`をオーバーライドしています（`form.fields["classification"].empty_label = None`）。
 
 ### 書籍分類詳細登録、更新及び削除ビューの実装
 
-本チュートリアルでは、書籍分類詳細登録（`ClassificationDetailCreate`）、更新（`ClassificationDetailUpdate`）及び削除（`ClassificationDeleteView`）は、書籍分類のそれぞれに対応するビューを参考に実装してください。
+書籍分類詳細登録（`ClassificationDetailCreateView`）、更新（`ClassificationDetailUpdateView`）及び削除（`ClassificationDetailDeleteView`）は、書籍分類のそれぞれに対応するビューを参考に実装してください。
 なお、それぞれのビューでは、テンプレート名を適切に指定してください。
 
 ### 変更のコミット
@@ -266,19 +262,17 @@ git commit -m '書籍分類詳細ページを実装
 
 ## 書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ
 
-書籍分類詳細一覧ページで、管理サイトと同様に、書籍分類詳細の一覧を書籍分類でフィルタできるようにします。
-
-次のようなリクエストURLを処理できるようにします。
+書籍分類詳細一覧ページで、管理サイトと同様に、書籍分類詳細の一覧を書籍分類でフィルタできるようにするために、次のようなリクエストURLを処理できるようにします。
 
 ```url
 http://localhost:8000/books/classification_details/?classification_code=<code>
 ```
 
-上記URLの`?`より右が`GETパラメーター`と呼ばれており、`<パラメーター>=<値>`という形式になっています。
-GETパラメーターは、`&`で繋げて複数設定できます。
+上記URLの`?`より右が`GETパラメーター`で`<パラメーター>=<値>`という形式になっています。
+なお、GETパラメーターは、`&`で繋げて複数設定できます。
 
-上記URLにおいて、本Webアプリケーションは、`classification_code=<code>`を書籍分類コードとして扱います。
-書籍分類詳細一覧ページでは、GETパラメーターで指定されあ書籍分類コードに一致する書籍分類コードの書籍のみを表示します。
+上記URLにおいて、本Webアプリケーションは、`classification_code=<code>`の`<code>`を書籍分類コードとして扱います。
+書籍分類詳細一覧ページでは、GETパラメーターで指定された書籍分類コードに一致する書籍分類コードを持つ書籍分類詳細のみを表示します。
 なお、書籍分類コードが指定されていないとき、または書籍分類コードがどの書籍分類にも一致しない場合は、すべての書籍分類詳細を表示します。
 
 `./books/views.py`のインポート文を次の通り変更します。
@@ -339,7 +333,7 @@ class ClassificationDetailListView(
     classification: Optional[Classification] = None
 
     def get_queryset(self) -> QuerySet[ClassificationDetail]:
-        """書籍分類詳細一覧ページで表示する書籍分類詳細QuerySetを返却する。"""
+        """書籍分類詳細一覧ページで表示する書籍分類詳細クエリセットを返却する。"""
         self.classification = get_classification_from_param(self.request)
         if not self.classification:
             return ClassificationDetail.objects.all()
@@ -363,7 +357,7 @@ class ClassificationDetailListView(
         return ctx
 ````
 
-書籍分類詳細一覧ページでGETパラメーターで指定された書籍分類で書籍分類詳細をフィルタできるように、書籍分類詳細リストテンプレートを次で置き換えます。
+書籍分類詳細一覧ページでGETパラメーターで指定された書籍分類で書籍分類詳細をフィルタできるように、書籍分類詳細一覧テンプレートを次で置き換えます。
 
 ```html
 <!-- ./books/templates/books/classification_detail_list.html -->
@@ -407,7 +401,7 @@ class ClassificationDetailListView(
 ```
 
 書籍分類詳細一覧ページに書籍分類詳細を書籍分類でフィルタするリンクが表示されます。
-書籍分類リンクをクリックして、書籍分類詳細がその書籍分類でフィルタされることを確認できたら、次の通り変更をリポジトリにコミットします。
+書籍分類リンクをクリックして、書籍分類詳細がクリックした書籍分類でフィルタされることを確認できたら、次の通り変更をリポジトリにコミットします。
 
 ![書籍分類でフィルタ可能な書籍分類詳細一覧ページ](./images/filtered-classification-detail-list-page.png)
 
@@ -424,7 +418,7 @@ git commit -m '書籍分類詳細一覧ページで書籍分類詳細を書籍�
 
 書籍一覧ビュー（`BookListView`）を次の通り実装します。
 書籍一覧ページも、書籍分類詳細一覧ページと同様に、書籍分類で書籍をフィルタできるようにします。
-なお、書籍分類のリンクを表示するテンプレートは、書籍分類詳細一覧ビューと共有します。
+なお、書籍分類のリンクを表示するテンプレートは、書籍分類詳細一覧ページと共有します。
 
 ```python
 # ./books/views.py
@@ -457,7 +451,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
     classification: Optional[Classification] = None
 
     def get_queryset(self) -> QuerySet[Book]:
-        """書籍一覧ページで表示する書籍QuerySetを返却する。"""
+        """書籍一覧ページで表示する書籍クエリセットを返却する。"""
         self.classification = get_classification_from_param(self.request)
         if not self.classification:
             return Book.objects.all()
@@ -596,7 +590,7 @@ class BookListView(BookViewMixin, PageTitleMixin, generic.ListView):
     {% if classification_detail_list %}
 ```
 
-書籍一覧ビューをディスパッチするために、`./books/urls.py`に次を追加します。
+書籍一覧ビューをディスパッチするために、書籍アプリのURLconfに次を追加します。
 
 ```python
 # ./books/urls.py
@@ -632,7 +626,7 @@ class BookDetailView(
 ```
 
 書籍詳細ページでは、書籍の詳細を`table`要素で表示します。
-この`table`要素は、後で実装する書籍削除テンプレートにも表示するため、`./books/templates/books/_book_detail.html`テンプレートに実装してインクルード(`include`)します。
+この`table`要素は、後で実装する書籍削除テンプレートにも表示するため、次の通り書籍詳細表示テンプレートに実装してインクルード(`include`)します。
 
 ```html
 <!-- ./books/templates/books/_book_detail.html -->
@@ -705,7 +699,7 @@ class BookDetailView(
 {% endblock inner_body %}
 ```
 
-書籍詳細ビューをディスパッチするために、`./books/urls.py`に次を追加します。
+書籍詳細ビューをディスパッチするために、書籍アプリのURLconfに次を追加します。
 
 ```python
     # 書籍詳細ページ (ex: /books/<id>/)
@@ -734,7 +728,7 @@ class BookDetailView(
 ```
 
 開発サーバーを起動して、ブラウザで書籍一覧ページにアクセスした後、書籍詳細ページへのリンクをクリックして書籍詳細ページが正常に表示されるか確認します。
-書籍焼成ページが正常に表示されたら、次の通り変更をリポジトリにコミットします。
+書籍詳細ページが正常に表示されたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
@@ -900,7 +894,7 @@ class BookCreateView(
   {% endblock inner_body %}
 ```
 
-書籍詳細ページに書籍登録ページへのリンクを設置するために、書籍一覧テンプレートを次の通り変更します。
+書籍詳細ページに書籍登録ページへのリンクを設置するために、書籍詳細テンプレートを次の通り変更します。
 
 ```html
 <!-- ./books/templates/books/book_detail.html -->
@@ -923,9 +917,9 @@ class BookCreateView(
       path("<str:pk>/", views.BookDetailView.as_view(), name="book-detail"),
 ```
 
-> 書籍フォームテンプレートに実装したJavaScriptコードの`classificationDetails`変数のレンダリング結果を、ChromeのDevToolなどで確認してください。
-
 書籍登録ページで正常に書籍を登録できたら、次の通り変更をリポジトリにコミットします。
+
+> 書籍フォームテンプレートに実装したJavaScriptコードの`classificationDetails`変数の値のレンダリング結果を、ChromeのDevToolなどで確認してください。
 
 ```bash
 git add ./books/
@@ -1016,7 +1010,7 @@ class BookUpdateView(
     </div>
 ```
 
-書籍更新ビューをディスパッチするために、`./books/urls.py`に次を追加します。
+書籍更新ビューをディスパッチするために、書籍アプリのURLconfに次を追加します。
 
 ```python
     # 書籍更新ページ (ex: /books/update/<id>/)
@@ -1107,7 +1101,7 @@ class BookDeleteView(
       {% endif %}
 ```
 
-書籍削除ビューをディスパッチするために、`./books/urls.py`に次を追加します。
+書籍削除ビューをディスパッチするために、書籍アプリのURLconfに次を追加します。
 
 ```python
 # ./books/urls.py
@@ -1119,7 +1113,7 @@ class BookDeleteView(
   ]
 ```
 
-書籍更新ページで正常に書籍を削除できたら、次の通り変更をリポジトリにコミットします。
+書籍削除ページで正常に書籍を削除できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
@@ -1180,7 +1174,7 @@ git commit -m '書籍削除ページを実装'
 `@transaction.atomic`は`デコレーター｀です。
 デコレーターは、関数やメソッドをラップ（`wrap`、覆って）、ラップした関数またはメソッドを実行する前または後で、何らかの処理を実行できます。
 
-上記では、`@transaction.atomic`デコレーターは、ラップした`post`メソッドを実行する前にトランザクションを開始して、`post`メソッドの実行が終了した後にトランザクションをコミットまたはロールバックします。
+上記において`@transaction.atomic`デコレーターは、ラップした`post`メソッドを実行する前にトランザクションを開始して、`post`メソッドの実行が終了した後にトランザクションをコミットまたはロールバックします。
 
 トランザクジョンを設定後、書籍登録、更新及び削除ページが正常に機能したら、次の通り変更をリポジトリにコミットします。
 
@@ -1222,7 +1216,7 @@ test()
 ```
 
 Pythonの関数は、[ファーストクラスオブジェクト（第1級オブジェクト）](https://ja.wikipedia.org/wiki/%E7%AC%AC%E4%B8%80%E7%B4%9A%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88)であり、[高階関数](https://ja.wikipedia.org/wiki/%E9%AB%98%E9%9A%8E%E9%96%A2%E6%95%B0)でもあります。
-この点において、C言語の関数はポインタであり、ファーストクラスオブジェクトでもなければ、高階関数でもありません。
+この点において、C言語の関数はポインタであるため、C言語の関数はファーストクラスオブジェクトでもなければ、高階関数でもありません。
 
 > **ファーストクラスオブジェクト（第1級オブジェクト）**
 >

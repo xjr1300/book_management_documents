@@ -15,14 +15,14 @@
 [Bootstrap](https://getbootstrap.jp/docs/5.0/getting-started/introduction/)は、Twitter社（現X社）が開発した、ウェブサイトやWebアプリケーションを作成するフロントエンドWebアプリケーションフレームワークです。
 Bootstrapは、タイポグラフィ、フォーム、ボタン、ナビゲーションなどの部品を、HTML、CSS及びJavaScriptで提供しています。
 
-また、主にBootstrapのフォーム部品をDjangoで利用することを支援する[django-bootstrap5](https://django-bootstrap5.readthedocs.io/en/latest/index.html)パッケージがあります。
+また、主にBootstrapのフォーム部品をDjangoで利用しやすくする[django-bootstrap5](https://django-bootstrap5.readthedocs.io/en/latest/index.html)パッケージがあります。
 
-本章では、Bootstrap5とdjango-bootstrap5を使用して、書籍ページを装飾してレイアウトします。
+本章では、Bootstrap5とdjango-bootstrap5を使用して、書籍ページを装飾及びレイアウトします。
 
 Bootstrapについての説明は[ここ](https://getbootstrap.jp/docs/5.0/getting-started/introduction/)を参照してください。
 また、django-bootstrap5についての説明は[ここ](https://django-bootstrap5.readthedocs.io/en/latest/index.html)を参照してください。
 
-> Bootstrapが提供するデフォルトの色やレイアウトなどを変更したい場合、CSSでBootstrapのCSSを上書きするなどして、独自の装飾やレイアウトなどを設定できます。
+> Bootstrapが提供するデフォルトの色やレイアウトなどを変更したい場合、CSSでBootstrapのCSSを上書きしてください。
 
 ## django-bootstrap5のインストール
 
@@ -64,7 +64,6 @@ git commit -m 'django-bootstrap5をインストール'
 ## Bootstrap用のベーステンプレートの作成
 
 Bootstrap用のベーステンプレートを次の通り作成します。
-なお、Bootstrap用のベーステンプレートは、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の`head`要素の`title`要素のコンテンツを空にしています。
 
 ```html
 <!-- templates/bootstrap_base.html -->
@@ -84,7 +83,8 @@ git commit -m 'Bootstrap用のベーステンプレートを実装'
 
 > 2707d08 (tag: 047-implement-bootstrap-base-template)
 
-なお、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の内容は次の通りです。
+Bootstrap用のベーステンプレートが継承した、django-bootstrap5が提供する`django_bootstrap5/bootstrap5.html`の内容は次の通りです。
+Bootstrap用のベーステンプレートは、`django_bootstrap5/bootstrap5.html`の`head`要素の`title`を上書きしています。
 
 ```html
 <!-- django_bootstrap5/bootstrap5.html （一部整形） -->
@@ -105,27 +105,29 @@ git commit -m 'Bootstrap用のベーステンプレートを実装'
   {% if 'javascript_in_head'|bootstrap_setting %}
     {% bootstrap_javascript %}
   {% endif %}
+  <!-- 継承したテンプレートで、追加のヘッダを実装するブロック -->
   {% block bootstrap5_extra_head %}{% endblock %}
 </head>
 <body>
-  <!-- 継承したレンプレートで、ページのヘッダを実装するブロック-->
+  <!-- 継承したテレンプレートで、ページのヘッダを実装するブロック-->
   {% block bootstrap6_before_content %}{% endblock %}
-  <!-- 継承したレンプレートで、ページのメインコンテンツを実装するブロック-->
+  <!-- 継承したテレンプレートで、ページのメインコンテンツを実装するブロック-->
   {% block bootstrap5_content %} CONTENT {% endblock %}
-  <!-- 継承したレンプレートで、ページのフッターを実装するブロック-->
+  <!-- 継承したテレンプレートで、ページのフッターを実装するブロック-->
   {% block bootstrap5_after_content %}{% endblock %}
   <!-- Bootstrap JavaScript if it is in body -->
   {% if not 'javascript_in_head'|bootstrap_setting %}
     {% bootstrap_javascript %}
   {% endif %}
+  <!-- 継承したレンプレートで追加のJavaScriptを実装するブロック -->
   {% block bootstrap5_extra_script %}{% endblock %}
 </body>
 </html>
 ```
 
-`django_bootstrap5/bootstrap5.html`は、`bootstrap5_content`ブロックにページのコンテンツを、`bootstrap5_before_content`ブロックにページのヘッダー（HTMLの`head`要素ではありません）、`bootstrap5_after_content`にページのフッターを追加します。
+`django_bootstrap5/bootstrap5.html`は、`bootstrap5_content`ブロックにページのメインコンテンツを、`bootstrap5_before_content`ブロックにページのヘッダーを、`bootstrap5_after_content`にページのフッターを上書きするように構成されています。
 
-また、Bootstrap5のCSSやJavaScriptは、このテンプレートが導入してくれます。
+なお、Bootstrap5を利用するために必要なCSSやJavaScriptは、このテンプレートが導入するようになっています。
 
 ## 書籍ベースページテンプレートの実装
 
@@ -259,7 +261,7 @@ git commit -m '書籍一覧テンプレートにBootstrapを適用'
 
 ## 書籍詳細表示テンプレートにBootstrapを適用
 
-書籍詳細表示テンプレートにBootstrapを次の通り適用します。
+書籍詳細表示テンプレートを次で入れ替えます。
 
 ```html
 <!-- ./books/templates/books/_book_detail.html -->
@@ -328,7 +330,7 @@ git commit -m 'books/_book_detail.htmlにBootstrapを適用'
 
 ## 書籍詳細テンプレートにBootstrapを適用
 
-書籍詳細テンプレートにBootstrapを次の通り適用します。
+書籍詳細テンプレートを次で入れ替えます。
 
 ```html
 <!-- ./books/templates/books/book_detail.html -->
@@ -371,7 +373,7 @@ git commit -m '書籍詳細テンプレートにBootstrapを適用'
 }
 ```
 
-書籍フォームテンプレートにBootstrapを次の通り適用します。
+書籍フォームテンプレートを次で入れ替えます。
 
 ```html
 <!-- ./books/templates/books/book_form.html -->
@@ -510,7 +512,7 @@ git commit -m '書籍フォームテンプレートにBootstrapを適用'
 
 ## 書籍削除テンプレートにBootstrapを適用
 
-書籍削除テンプレートにBootstrapを次の通り適用します。
+書籍削除テンプレートを次で入れ替えます。
 
 ```html
 <!-- ./books/templates/books/book_confirm_delete.html -->

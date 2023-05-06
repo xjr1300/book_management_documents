@@ -220,8 +220,11 @@ TEMPLATES = [
 部署一覧関数ビューで呼び出した`render`関数でテンプレートに`divisions/division_list.html`を指定しました。
 上記設定により、その`render`関数は`./divisions/templates/divisions/division_list.html`ファイルをテンプレートとして使用します。
 
-> Djangoがテンプレートを探す場所には優先順位があります。
-> 期待するテンプレートが使用されない場合は、テンプレートを検索する優先順位を確認してください。
+Djangoがテンプレートを探す場所には優先順位があります。
+期待するテンプレートが使用されない場合は、テンプレートを検索するバックエンド（`BACKEND`）がどのような優先順位でテンプレートを検索するか確認してください。
+
+デフォルトでバックエンドに設定されている`django.template.backends.django.DjangoTemplates`は、最初に`django.template.loaders.filesystem.Loader`によって`DIRS`に追加されているディレクトリ、`APP_DIRS`に`True`が設定されている場合は、次に`django.template.loaders.app_directories.Loader`によってアプリの`templates`ディレクトリを検索します。
+この優先順位で検索して、最初に見つかったテンプレートを使用してHTMLコンテンツなどをレンダリングします。
 
 ### 部署一覧ビューのディスパッチ
 

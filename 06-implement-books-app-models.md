@@ -490,9 +490,7 @@ mkdir ./books/fixtures
     updated_at: 2023-04-25 00:00:00+00:00
     title: プログラミングRust
     classification_detail: "000"
-    authors: "（著）Jim Blandy、Jason Orendorff
-
-      （訳）中田　秀基"
+    authors: "（著）Jim Blandy、Jason Orendorff\r\n（訳）中田　秀基"
     isbn: ISBN978-4-87311-855-0
     publisher: オライリー・ジャパン
     published_at: 2018-08-08

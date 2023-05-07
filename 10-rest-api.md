@@ -3,7 +3,7 @@
 - [REST API](#rest-api)
   - [REST APIとは](#rest-apiとは)
     - [リソース指向の設計](#リソース指向の設計)
-    - [HTTPメソッドの使用](#httpメソッドの使用)
+    - [HTTPメソッドの適切な使用](#httpメソッドの適切な使用)
     - [ステートレスな設計（状態を持たない設計）](#ステートレスな設計状態を持たない設計)
     - [書式化されたデータの使用](#書式化されたデータの使用)
   - [Django REST Framework](#django-rest-framework)
@@ -15,14 +15,15 @@
     - [書籍分類APIビューの実装](#書籍分類apiビューの実装)
     - [書籍分類APIビューのディスパッチ](#書籍分類apiビューのディスパッチ)
     - [書籍分類APIの呼び出し](#書籍分類apiの呼び出し)
+      - [curl及びjqコマンドのインストール](#curl及びjqコマンドのインストール)
       - [書籍分類一覧APIの呼び出し](#書籍分類一覧apiの呼び出し)
-      - [書籍分類（`Classification`）詳細APIの呼び出し](#書籍分類classification詳細apiの呼び出し)
+      - [書籍分類詳細APIの呼び出し](#書籍分類詳細apiの呼び出し)
       - [書籍分類登録APIの呼び出し](#書籍分類登録apiの呼び出し)
       - [書籍分類更新APIの呼び出し](#書籍分類更新apiの呼び出し)
       - [書籍分類削除APIの呼び出し](#書籍分類削除apiの呼び出し)
   - [書籍分類詳細APIの実装](#書籍分類詳細apiの実装)
-    - [書籍分類詳細更新用シリアライザーの実装](#書籍分類詳細更新用シリアライザーの実装)
-    - [書籍分類詳細シリアライザーの実装](#書籍分類詳細シリアライザーの実装)
+    - [更新用の書籍分類詳細シリアライザーの実装](#更新用の書籍分類詳細シリアライザーの実装)
+    - [一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーの実装](#一覧詳細登録及び削除用の書籍分類詳細シリアライザーの実装)
     - [書籍分類詳細APIビューの実装](#書籍分類詳細apiビューの実装)
     - [書籍分類詳細APIビューのディスパッチ](#書籍分類詳細apiビューのディスパッチ)
     - [書籍分類詳細（`ClassificationDetail`）APIの呼び出し](#書籍分類詳細classificationdetailapiの呼び出し)
@@ -33,8 +34,8 @@
     - [書籍分類詳細削除APIの呼び出し](#書籍分類詳細削除apiの呼び出し)
   - [書籍APIの実装](#書籍apiの実装)
     - [書籍シリアライザーの実装](#書籍シリアライザーの実装)
-      - [書籍読み込み専用シリアライザーの実装](#書籍読み込み専用シリアライザーの実装)
-      - [書籍書き込み専用シリアライザーの実装](#書籍書き込み専用シリアライザーの実装)
+      - [読み込み専用書籍シリアライザーの実装](#読み込み専用書籍シリアライザーの実装)
+      - [書き込み専用書籍シリアライザーの実装](#書き込み専用書籍シリアライザーの実装)
     - [書籍ビューセットの実装](#書籍ビューセットの実装)
     - [書籍ビューセットのディスパッチ](#書籍ビューセットのディスパッチ)
   - [書籍APIの保護](#書籍apiの保護)
@@ -58,29 +59,35 @@
 
 ## REST APIとは
 
-`REST API`は、Webアプリケーションの機能を提供するためのAPIの設計方法の1つです。
-`REST API`は、`Representational State Transfer`の略で、HTTPプロトコルを使用してクライアントとサーバー間でデータを転送する目的で使用されます。
+`REST API`は、Webアプリケーションの機能を提供するAPIを設計する方法の1つです。
+`REST API`は、`Representational State Transfer`の略で、HTTPプロトコルを使用してクライアントとサーバー間でデータを連携する目的で使用されます。
 
-`REST API`は、Webアプリケーションの機能を外部から利用するために広く使用されており、Web APIを外部に提供するWebサイトの多くは`REST API`を採用しています。
+`REST API`は、Webアプリケーションの機能を外部から利用するために広く使用されており、APIを外部に提供するWebサイトの多くは`REST API`を採用しています。
 
-ただし、`REST API`に明確な仕様は無いため、何が`RESTful（レストフル、レストを満たす）`なのかは曖昧です。
+ただし、`REST API`には、明確な仕様が定義されていないため、何が`RESTful（レストフル、レストを満たす）`なのかは曖昧です。
 
-> `REST API`には、[N+1問題](https://restfulapi.net/rest-api-n-1-problem/)と呼ばれる課題があり、これを解決する[GraphQL](https://graphql.org/)がありますが、現時点（2023-04-30）で内部提供向けに実装されていることが多く、外部提供は進んでいません。
-> `GraphQL`は、`REST API`と異なり明確な仕様が定義されています。
+> `REST API`には、[N+1問題](https://restfulapi.net/rest-api-n-1-problem/)と呼ばれる課題があり、これを解決する[GraphQL](https://graphql.org/)があります。
+> しかし、現時点（2023-04-30）でGraphQLは内部向けに実装されていることが多く、外部への提供は進んでいません。
+> なお、`GraphQL`は、`REST API`と異なり明確な仕様が定義されています。
 
 `REST API`の設計原則を次に示します。
 
 - リソース指向の設計
-- HTTPメソッドの使用
+- HTTPメソッドの適切な使用
 - ステートレスな設計（状態を持たない設計）
 - 書式化されたデータの使用
 
+> **APIとは**
+>
+> `API（Application Programming Interface）`とは、アプリケーションが他のアプリケーションと連携するために、外部に公開されたものです。
+> APIでアプリケーションが他のアプリケーションと連携する方法を定義することで、異なるプログラミング言語やプラットフォームで利用することができます。
+
 ### リソース指向の設計
 
-リソース指向の設計では、リソースに対してユニークな識別子（`URI`）を割り当てることが重要です。
+リソースに対してユニークな識別子（`URI`）を割り当てます。
 書籍の場合であれば、`http://localhost/api/books/`のようなURIを割り当てます。
 
-### HTTPメソッドの使用
+### HTTPメソッドの適切な使用
 
 HTTPメソッドは、次の通り区別して使用します。
 
@@ -90,16 +97,26 @@ HTTPメソッドは、次の通り区別して使用します。
 - PATCHメソッド: リソースの一部更新
 - DELETEメソッド: リソースの削除
 
+なお、`REST API`の呼び出しに成功したとき、次のレスポンスステータスコードが得られます。
+
+| 操作                | レスポンスステータスコード |
+| ------------------ | ------------------- |
+| リソースの取得        | 200 OK               |
+| リソースの作成　       | 201 Created         |
+| リソースの更新、一部更新 | 200 OK              |
+| リソースの削除        | 204 No Content       |
+
 ### ステートレスな設計（状態を持たない設計）
 
-Djangoは、認証情報をセッションに記録しますが、`REST API`ではセッションなどの状態を持たずに、リクエストとレスポンスのみを使用して通信を行います。
-認証状態などは、後で説明する`JWT（「じょっと」と呼びます）`で判断します。
+Djangoは、認証情報をセッションに記録しますが、`REST API`ではセッションなどの状態を持たずに、リクエストとレスポンスのみを使用して連携します。
+認証状態などは、後で説明する`JWT（JSON Web Token、「じょっと」と呼びます）`で判断されます。
 
 ### 書式化されたデータの使用
 
-`REST API`では、書式化されたデータを使用して、クライアントとサーバー間でデータを転送します。
-`JSON`や`XML`などの形式を利用することで、異なるプログラミング言語やプラットフォーム間での互換性が向上します。
-本Webアプリケーションは、`JSON`を採用します。
+`REST API`では、`JSON`や`XML`など書式化されたデータを使用して、クライアントとサーバー間でデータを転送します。
+本Webアプリケーションは、APIとして採用されることが多く、データ量が小さくなることから`XML`ではなく`JSON`を採用します。
+
+JSONについては、[ここ](https://www.json.org/json-ja.html)を参照してください。
 
 ## Django REST Framework
 
@@ -110,12 +127,12 @@ Djangoは、認証情報をセッションに記録しますが、`REST API`で�
 DRFは次の通りリクエストを処理します。
 
 1. ビューが、リクエストを受信する。
-2. `シリアライザー`が、リクエストデータを解析する（`デシリアライズ`）。
-3. `シリアライザー`が、モデルインスタンスを操作する。
-4. `シリアライザー`が、結果を生成する（`シリアライズ`）。
-5. ビュー、が結果をレスポンスとして送信する。
+2. `シリアライザー`が、リクエストデータを解析してモデルインスタンスを生成する（`デシリアライズ`）。
+3. `シリアライザー`が、生成したモデルインスタンスを操作する。
+4. `シリアライザー`が、モデルインスタンスを書式化する（`シリアライズ`）。
+5. ビューが、書式化したモデルインスタンスをレスポンスとして送信する。
 
-`シリアライザー`は、後で説明します。
+`シリアライザー`については、後で詳しく説明します。
 
 ## Django REST Frameworkのインストール
 
@@ -173,16 +190,16 @@ git commit -m 'Django REST Frameworkをインストール'
 
 ## 書籍APIアプリの追加
 
-書籍アプリのモデルを操作するアプリを次の通り追加します。
+書籍アプリのモデルを操作する`api1`アプリを次の通り追加します。
 
 ```bash
 python manage.py startapp api1
 ```
 
 アプリ名の`api1`の末尾の`1`は、APIのバージョンを示しています。
-本チュートリアルでAPIをバージョン管理しませんが、APIをバージョニングするためにバージョン番号をつける事例があります。
+本チュートリアルでAPIをバージョン管理しませんが、APIをバージョニングするためにバージョン番号を付けています。
 
-プロジェクト設定ファイルの`INSTALLED_APP`に`api`アプリを追加します。
+プロジェクト設定ファイルの`INSTALLED_APP`に`api1`アプリを追加します。
 
 ```python
 # ./book_management/settings.py
@@ -193,13 +210,13 @@ python manage.py startapp api1
       "django.contrib.sessions",
       "django.contrib.messages",
       "django.contrib.staticfiles",
-+     "rest_framework",
+      "rest_framework",
       "django_bootstrap5",
       "debug_toolbar",
       "accounts.apps.AccountsConfig",
       "divisions.apps.DivisionsConfig",
       "books.apps.BooksConfig",
-      "api1.apps.Api1Config",
++     "api1.apps.Api1Config",
   ]
 ```
 
@@ -214,16 +231,19 @@ git commit -m 'api1アプリを追加'
 
 ## シリアライザー (Serializer) とは
 
-[シリアライザー (Serializer)](https://www.django-rest-framework.org/api-guide/serializers/)は、JSONなどのフォーマットとPythonオブジェクトの間の変換を行うクラスです。
-シリアライザーを使用することで、PythonオブジェクトをJSONやXMLなどの形式に相互変換できます。
+[シリアライザー (Serializer)](https://www.django-rest-framework.org/api-guide/serializers/)は、JSONなど書式化されたデータとモデルインスタンスを相互に変換するクラスです。
 シリアライザーは、通常、次の処理をします。
 
-- リクエストデータのバリデーション
-- PythonオブジェクトをJSONやXMLなどのフォーマットに変換する
-- JSONやXMLなどのフォーマットをPythonオブジェクトに変換する
-- レスポンスデータのバリデーション
+- リクエストデータの検証
+- モデルインスタンスをJSONやXMLなど書式化されたデータに変換する
+- JSONやXMLなどで書式化されたデータをモデルインスタンスに変換する。
+- レスポンスデータの検証
 
-シリアライザーは、Djangoのフォームと同様に定義され、また処理内容も同様です。
+シリアライザーは、Djangoのモデルフォームのように振舞います。
+
+> JSON、XMLなど <--- シリアライザー ---> モデルインスタンス
+>
+> フォームデータ  <--- モデルフォーム ---> モデルインスタンス
 
 ## 書籍分類APIの実装
 
@@ -236,7 +256,7 @@ touch ./api1/books/__init__.py
 
 ### 書籍分類シリアライザーの実装
 
-書式分類シリアライザー（`ClassificationSerializer`）を次の通り実装します。
+書籍分類シリアライザー（`ClassificationSerializer`）を次の通り実装します。
 
 ```python
 # ./api1/books/serializers.py
@@ -380,14 +400,16 @@ def classification_detail(request: Request, code: str) -> Response:
         return Response(status=status.HTTP_204_NO_CONTENT)
 ```
 
-`@api_view`デコレーターの主な機能は、そのビューがレスポンスするHTTPメソッドのリストを受けとります。
-デフォルトは、`GET`メソッドのみです。
-例えば、`classification_list`関数ビューは、`GET`メソッドと`POST`メソッドにレスポンスします。
-`@api_view`デコレーターに指定したメソッド以外でそのビューが呼び出された場合、`405 Method Not Allowed`をレスポンスします。
+書籍分類一覧及び書籍分類登録APIは、`classification_list`関数ビューで処理されます。
+また、書籍分類詳細、更新及び削除APIは、`classification_detail`関数ビューで処理されます。
+
+`@api_view`デコレーターは、そのビューが処理するHTTPメソッドのリストを受けとります。
+よって、`classification_list`関数ビューは、`GET`メソッドと`POST`メソッドを処理します。
+`@api_view`デコレーターで指定されたメソッド以外でそのビューが呼び出された場合、`405 Method Not Allowed`をレスポンスします。
 
 `rest_framework.request.Request`は、`django.http.HttpRequest`をDRFが拡張したクラスです。
 
-`ClassificationSerializer`は、書籍分類モデルインスタンスをJSON形式に変換（`シリアライズ`）して、また受け取った`POST`データを書籍分類モデルインスタンスに変換（`デシリアライズ`）します。
+`ClassificationSerializer`は、書籍分類モデルインスタンスを書籍分類を表現するJSONに変換（`シリアライズ`）して、逆にJSONで表現された書籍分類を書籍分類モデルインスタンスに変換（`デシリアライズ`）します。
 
 書籍分類APIビューを実装したら、次の通り変更をリポジトリにコミットします。
 
@@ -400,7 +422,7 @@ git commit -m '書籍分類APIビューを実装`
 
 ### 書籍分類APIビューのディスパッチ
 
-書籍分類APIビューを次の通りディスパッチします。
+書籍分類APIビューをディスパッチするために、`api1`アプリのURLconfを次の通り作成します。
 
 ```python
 # ./api1/urls.py
@@ -427,7 +449,7 @@ urlpatterns = [
   ]
 ```
 
-書籍分類ビューをディスパッチしたら、次の通り変更をリポジトリにコミットします。
+書籍分類APIビューをディスパッチしたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./api1/urls.py
@@ -439,111 +461,52 @@ git commit -m '書籍分類APIを実装'
 
 ### 書籍分類APIの呼び出し
 
-書籍分類APIをターミナルから`curl`コマンドで呼び出します。
-次のコマンドをターミナルで実行して、`curl`コマンドがインストールされているか確認します。
+#### curl及びjqコマンドのインストール
+
+書籍分類APIをターミナルから`curl`コマンドで呼び出し、またレスポンスとして得られるJSONを`jq`コマンドで整形するために、次の通り`curl`と`jq`コマンドをインストールします。
 
 ```bash
-curl --version
-```
-
-`curl`コマンドのバージョンが表示されたら`curl`コマンドがインストールされています。
-`curl`コマンドがインストールされていない場合は、次の通り`curl`コマンドをインストールします。
-
-```bash
-sudo apt -y install curl
-```
-
-また、レスポンスとして得られるJSONを整形するために`jq`コマンドを使用します。
-次のコマンドをターミナルで実行して、`jq`コマンドがインストールされているか確認します。
-
-```bash
-jq --version
-```
-
-`jq`コマンドのバージョンが表示されたら`jq`コマンドがインストールされています。
-`jq`コマンドがインストールされていない場合は、次の通り`jq`コマンドをインストールします。
-
-```bash
-sudo apt -y install jq
+sudo apt -y install curl jq
 ```
 
 #### 書籍分類一覧APIの呼び出し
 
 書籍分類一覧APIを次の通り呼び出します。
-なお、`#`は、書籍分類一覧APIからのレスポンスを`jq`コマンドで整形した結果です。
-実際の書籍分類一覧APIからのレスポンスは、レスポンスデータが大きくならないように、スペースや改行が削除されているはずです。
+なお、`#`は、書籍分類一覧APIから受け取ったレスポンスボディを`jq`コマンドで整形した結果です。
+実際レスポンスボディは、データが大きくならないようにスペースや改行が削除されています。
 
 <!-- cspell: disable -->
 ```bash
 curl -s http://localhost:8000/api1/books/classifications/ | jq .
-[
-  {
-    "code": "000",
-    "name": "総記",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "100",
-    "name": "哲学",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "200",
-    "name": "歴史",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "300",
-    "name": "社会科学",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "400",
-    "name": "自然科学",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "500",
-    "name": "技術",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "600",
-    "name": "産業",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "700",
-    "name": "芸術",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "800",
-    "name": "言語",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  },
-  {
-    "code": "900",
-    "name": "文学",
-    "created_at": "2023-04-24T09:00:00+09:00",
-    "updated_at": "2023-04-24T09:00:00+09:00"
-  }
-]
+# [
+#   {
+#     "code": "000",
+#     "name": "総記",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   },
+#   {
+#     "code": "100",
+#     "name": "哲学",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   },
+#
+#   （...省略...）
+#
+#   {
+#     "code": "900",
+#     "name": "文学",
+#     "created_at": "2023-04-24T09:00:00+09:00",
+#     "updated_at": "2023-04-24T09:00:00+09:00"
+#   }
+# ]
 ```
 <!-- cspell: enable -->
 
 なお、`curl`コマンドで指定した`-s`は、サイレントモードを示しており、リクエストを発行してレスポンスを受け取るまでの経過時間などを表示しないオプションです。
 
-ちなみに、書籍一覧APIを許可されていない｀PUT`メソッドで呼び出した場合、`405 Method Not Allowed`が返却されます。
+ちなみに、書籍一覧APIを許可されていない`PUT`メソッドで呼び出した場合、次の通り`405 Method Not Allowed`が返却されます。
 
 <!-- cspell: disable -->
 ```bash
@@ -566,10 +529,11 @@ curl -X PUT -i -s http://localhost:8000/api1/books/classifications/
 ```
 <!-- cspell: enable -->
 
-なお、`curl`コマンドで指定した`-X`は、HTTPメソッドを指定するオプションで、ここでは`PUT`メソッドを指定しています。
-また、`-i`は、レスポンスに加えて、レスポンスヘッダを出力するオプションです。
+`curl`コマンドで指定した`-X`は、HTTPメソッドを指定するオプションで、ここでは`PUT`メソッドを指定しています。
+なお、`curl`コマンドのデフォルトのメソッドは`GET`です。
+また、`-i`は、レスポンスヘッダを出力するオプションです。
 
-#### 書籍分類（`Classification`）詳細APIの呼び出し
+#### 書籍分類詳細APIの呼び出し
 
 書籍分類詳細APIを次の通り呼び出します。
 
@@ -588,8 +552,8 @@ curl -s http://localhost:8000/api1/books/classifications/100/ | jq .
 #### 書籍分類登録APIの呼び出し
 
 書籍分類登録APIを次の通り呼び出します。
-次のコマンドでは、コード`999`及び名前`ダミー書籍分類`の書式分類を登録します。
-なお、`curl`コマンドの`-H`は、リクエストヘッダに独自のヘッダを追加するオプションで、ここでは`POST`するデータが`JSON`であることを、`Content-Type: application/json`で指定しています。
+次のコマンドでは、コード`999`及び名前`ダミー書籍分類`の書籍分類を登録します。
+なお、`curl`コマンドの`-H`は、リクエストヘッダを追加するオプションで、ここでは`POST`するデータが`JSON`であることを`Content-Type: application/json`で指定しています。
 また、`-d`は、`POST`データを指定するオプションで、登録する書籍分類をJSONで表現しています。
 <!-- cspell: disable -->
 ```bash
@@ -663,7 +627,7 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classifications/999/
 # Cross-Origin-Opener-Policy: same-origin
 ```
 <!-- cspell: enable -->
-HTTPレスポンスステータスコードが`204 No Content`であるため、書籍分類コード`999`の書籍分類が削除されたはずです。
+HTTPレスポンスステータスコードが`204 No Content`であるため、書籍分類コード`999`の書籍分類が削除されています。
 
 削除した書籍分類が、実際に削除されているか確認します。
 
@@ -678,15 +642,14 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
 
 ## 書籍分類詳細APIの実装
 
-書籍分類シリアライザーは、`rest_framework.serializers.Serializer`を継承して実装しました。
-また、書籍分類ビューは関数ビューとして実装しました。
+前節で、書籍分類シリアライザーは`rest_framework.serializers.Serializer`を継承して、また書籍分類ビューは関数ビューで実装しました。
 
-書籍分類詳細APIの実装は、モデルからシリアライザーを実装する[rest_framework.serializers.ModelSerializer](https://www.django-rest-framework.org/api-guide/serializers/#modelserializer)と、[ジェネリックなクラスビュー](https://www.django-rest-framework.org/api-guide/generic-views/)で実装します。
-なお、書籍分類詳細コードを変更できないようにするため、更新用のシリアライザーとそれ以外のシリアライザーに分けて書籍分類詳細シリアライザーを実装します。
+書籍分類詳細APIは、モデルからシリアライザーを実装する[rest_framework.serializers.ModelSerializer](https://www.django-rest-framework.org/api-guide/serializers/#modelserializer)と、[ジェネリックなクラスビュー](https://www.django-rest-framework.org/api-guide/generic-views/)で実装します。
+なお、書籍分類詳細コードを変更できないようにするため、更新用と一覧、詳細、登録及び削除用のシリアライザーに分けて書籍分類詳細シリアライザーを実装します。
 
-### 書籍分類詳細更新用シリアライザーの実装
+### 更新用の書籍分類詳細シリアライザーの実装
 
-書籍分類詳細更新用シリアライザーを次の通り実装します。
+更新用の書籍分類詳細シリアライザーを次の通り実装します。
 
 ```python
 # ./api1/books/serializers.py
@@ -699,7 +662,7 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
   (...省略...)
 
 + class ClassificationDetailUpdateSerializer(serializers.ModelSerializer):
-+     """書籍分類詳細更新用シリアライザー"""
++     """更新用の書籍分類詳細シリアライザー"""
 +
 +     # 書籍分類コード
 +     classification_code = serializers.CharField(
@@ -746,39 +709,36 @@ curl -i -s http://localhost:8000/api1/books/classifications/999/ | grep HTTP
 +         return super().update(instance, validated_data)
 ```
 
-書籍分類詳細更新用シリアライザーは、`ModelSerializer`を継承しています。
+更新用の書籍分類詳細シリアライザーは、`ModelSerializer`を継承しています。
 
-`ModelSerializer`は、`Meta`の`model`にモデルを指定する必要があります。
-また、`fields`にシリアライザーに持たせるフィールドを指定する必要があります。
-モデルのすべてのフィールドを指定したい場合は、`fields = "__all__"`を指定します。
+`ModelSerializer`は、`Meta`の`model`でモデルを指定して、`fields`でシリアライザーが持つフィールドを指定する必要があります。
+モデルのすべてのフィールドを指定したい場合は、`fields = "__all__"`を指定できます。
+書籍分類詳細は、書籍分類詳細名モデルフィールド（`name`）を持つため、`fields`に`name`フィールドを追加します。
 
-書籍分類詳細は書籍分類名モデルフィールド（`name`）を持つため、書籍分類詳細更新用シリアライザーに`name`フィールドを追加する必要はありません。
-代わりに、単に`fields`に`name`を追加します。
-
-書籍分類詳細は書籍分類モデルフィールド（`classification`）を持つため、`fields`にそのフィールドを指定できます。
-しかし、フィールド名を`classification`ではなく`classification_code`にしたいため、`fields`に指定していません。
-代わりに、書籍分類詳細更新用シリアライザーに、`classification_code`フィールドを定義して、`fields`に追加しています。
-なお、`ModelSerializer`で定義したフィールドは、必ず`fields`に追加する必要があります。
+書籍分類詳細は書籍分類モデルフィールド（`classification`）を持つため、`fields`でそのフィールドを指定できます。
+しかし、フィールド名を`classification`ではなく`classification_code`にするため、`fields`に指定していません。
+代わりに、更新用の書籍分類詳細シリアライザーに、`classification_code`フィールドを定義して、そのフィールド名を`fields`に追加しています。
+なお、`ModelSerializer`を継承したシリアライザーのクラス変数で定義したフィールドは、必ず`fields`に追加する必要があります。
 
 `ModelSerializer`は、ジェネリックにモデルを更新する`update`メソッドを実装していますが、書籍分類モデルフィールドにない`classification_code`を`fields`に追加したため、オリジナルな実装をオーバーライドして、`PUT`された`classification_code`から書籍分類モデルインスタンスを取得して、シリアライザーが検証したデータに追加しています。
 
-書籍分類詳細更新用シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+更新用の書籍分類詳細シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./api1/books/serializers.py
-git commit -m `書籍分類詳細更新用シリアライザーを実装'
+git commit -m `更新用の書籍分類詳細シリアライザーを実装'
 ```
 
 > 3bbd5f3 (tag: 069-implement-classification-detail-serializer-for-update)
 
-### 書籍分類詳細シリアライザーの実装
+### 一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーの実装
 
-書籍分類詳細一覧、詳細、登録及び削除用のシリアライザーを次の通り実装します。
+一覧、詳細、登録及び削除用のシリアライザーを次の通り実装します。
 
 ```python
 # ./api1/books/serializers.py
 class ClassificationDetailSerializer(ClassificationDetailUpdateSerializer):
-    """書籍分類詳細シリアライザー"""
+    """一覧、詳細、登録及び削除用の書籍分類詳細シリアライザー"""
 
     # 書籍分類名
     classification_name = serializers.SerializerMethodField(
@@ -826,28 +786,29 @@ class ClassificationDetailSerializer(ClassificationDetailUpdateSerializer):
         return super().create(validated_data)
 ```
 
-通常の書籍分類詳細シリアライザーは、書籍分類名（`classification_name`）、作成日時（`created_at`）及び更新日時（`updated_at`）フィールドを追加しています。
+一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーに、書籍分類名（`classification_name`）、作成日時（`created_at`）及び更新日時（`updated_at`）フィールドを追加しています。
 
-書籍分類詳細名フィールドは、書籍分類詳細コードが示す書籍分類詳細名を示すために追加しています。
+書籍分類名フィールドは、書籍分類詳細モデルインスタンスの書籍分類コードが示す書籍分類名を提示するため、便宜的に追加しています。
 書籍分類名フィールドは、書籍分類詳細モデルに存在しないため、`SerializerMethodField`で定義して、書籍分類名を返却するメソッド（`_get_classification_name`）を指定しています。
+なお、`SerializerMethodField`は読み取り専用フィールドです。
+読み取り専用フィールドは、登録または更新時に値を設定する必要がありません。
 
-また、作成日時（`created_at`）と更新日時（`updated_at`）フィールドは読み込み専用であるため、`DateTimeField`を定義しています。
+また、作成日時（`created_at`）と更新日時（`updated_at`）フィールドは読み込み専用であるため、`ReadOnly=True`で`DateTimeField`を定義しています。
 
-通常の書籍分類詳細シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./api1/books/serializers.py
-git commit -m '書籍分類詳細シリアライザーを実装'
+git commit -m '一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーを実装'
 ```
 
 > 6d720df (tag: 070-implement-classification-detail-serializer)
 
 ### 書籍分類詳細APIビューの実装
 
-書籍分類ビューは関数ビューとして実装しました。
 DRFは、[ジェネリックなクラスビュー](https://www.django-rest-framework.org/api-guide/generic-views/)としていくつか提供しています。
 
-書籍分類詳細ビューは、クラスビューの[ListCreateAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#listcreateapiview)を継承した書籍分類詳細一覧登録ビューと、[RetrieveUpdateDestroyAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#retrieveupdatedestroyapiview)を継承した書籍分類詳細更新削除ビューで実装します。
+書籍分類詳細ビューは、クラスビューの[ListCreateAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#listcreateapiview)を継承した書籍分類詳細一覧登録ビューと、[RetrieveUpdateDestroyAPIView](https://www.django-rest-framework.org/api-guide/generic-views/#retrieveupdatedestroyapiview)を継承した書籍分類詳細詳細更新削除ビューで実装します。
 
 ```python
 # ./api1/books/views.py
@@ -877,7 +838,7 @@ class ClassificationDetailListCreateView(generics.ListCreateAPIView):
 
 
 class ClassificationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    """書籍分類詳細更新削除ビュー"""
+    """書籍分類詳細詳細更新削除ビュー"""
 
     queryset = ClassificationDetail.objects.all()
     serializer_class = ClassificationDetailSerializer
@@ -892,10 +853,10 @@ class ClassificationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
 DRFのクラスビューでは、クエリセットとシリアライザーを定義する必要があります。
 なお、クエリセットは、通常、そのビューで表示するモデルインスタンスを含むクエリセットを設定します。
 
-書籍分類詳細一覧登録ビューは、書籍分類詳細シリアライザーをシリアライザーのクラスとして設定しています。
-書籍分類詳細更新削除ビューも同様に、書籍分類詳細シリアライザーを設定していますが、`get_serializer_class`メソッドをオーバーライドすることで、リクエストが`POST`または`PATCH`メソッドの場合は、書籍分類詳細更新用シリアライザーを使用するようにしています。
+書籍分類詳細一覧登録ビューは、一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーをシリアライザーのクラスとして設定しています。
+書籍分類詳細詳細更新削除ビューも同様に、一覧、詳細、登録及び削除用の書籍分類詳細シリアライザーを設定していますが、`get_serializer_class`メソッドをオーバーライドすることで、リクエストが`POST`または`PATCH`メソッドの場合は、更新用の書籍分類詳細シリアライザーを使用するように設定しています。
 
-また、書籍分類詳細更新削除ビューは、後でこのビューをディスパッチするときにパスコンバーターで指定した`code`で書籍分類詳細モデルインスタンスを取得するように設定（`lookup_field = "code"`）しています。
+また、書籍分類詳細詳細更新削除ビューは、後でこのビューをディスパッチするときにパスコンバーターで指定した`code`で、書籍分類詳細モデルインスタンスを取得するように設定（`lookup_field = "code"`）しています。
 なお、`lookup_field`を指定しない時のデフォルトは`"pk"`です。
 
 書籍分類詳細APIビューを実装したら、次の通り変更をリポジトリにコミットします。
@@ -960,23 +921,9 @@ curl -s http://localhost:8000/api1/books/classification-details/ | jq .
 #     "created_at": "2023-04-24T09:00:00+09:00",
 #     "updated_at": "2023-04-24T09:00:00+09:00"
 #   },
-#   {
-#     "code": "020",
-#     "classification_code": "000",
-#     "classification_name": "総記",
-#     "name": "図書、書誌学",
-#     "created_at": "2023-04-24T09:00:00+09:00",
-#     "updated_at": "2023-04-24T09:00:00+09:00"
-#   },
-#   {
-#     "code": "030",
-#     "classification_code": "000",
-#     "classification_name": "総記",
-#     "name": "百科事典、用語索引",
-#     "created_at": "2023-04-24T09:00:00+09:00",
-#     "updated_at": "2023-04-24T09:00:00+09:00"
-#   },
+#
 # (...省略...)
+#
 #   {
 #     "code": "990",
 #     "classification_code": "900",
@@ -1044,15 +991,15 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999
 ## 書籍APIの実装
 
 書籍分類詳細APIは、DRFが適用する`ジェネリックなクラスビュー`で実装しました。
-書籍APIは、書籍分類詳細APIの実装を一通り持っている[rest_framework.viewsets.https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset]で実装します。
+書籍APIは、書籍分類詳細APIで実装した内容を一通り揃えた[rest_framework.viewsets.https://www.django-rest-framework.org/api-guide/viewsets/#modelviewset]で実装します。
 
 ### 書籍シリアライザーの実装
 
-書籍APIでは、書籍一覧、詳細、削除APIで使用する書籍読み込み専用シリアライザーと、書籍登録、更新APIで使用する書籍書き込み専用シリアライザーの2つのシリアライザーを実装します。
+書籍APIでは、書籍一覧、詳細、削除APIで使用する読み込み専用書籍シリアライザーと、書籍登録、更新APIで使用する書き込み専用書籍シリアライザーの2つのシリアライザーを実装します。
 
-#### 書籍読み込み専用シリアライザーの実装
+#### 読み込み専用書籍シリアライザーの実装
 
-書籍読み込み専用シリアライザーを次の通り実装します。
+読み込み専用書籍シリアライザーを次の通り実装します。
 
 ```python
 # ./api1/books/serializers.py
@@ -1065,7 +1012,7 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999
   (...省略...)
 
 + class ClassificationReadOnlySerializer(serializers.ModelSerializer):
-+     """書籍分類モデル読み込み専用シリアライザー"""
++     """読み込み専用書籍分類モデルシリアライザー"""
 +
 +     class Meta:
 +         model = Classification
@@ -1076,7 +1023,7 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999
 +
 +
 + class ClassificationDetailReadOnlySerializer(serializers.ModelSerializer):
-+     """書籍分類詳細モデル読み込み専用シリアライザー"""
++     """読み込み専用書籍分類詳細モデルシリアライザー"""
 +
 +     classification = ClassificationReadOnlySerializer(label="書籍分類")
 +
@@ -1090,7 +1037,7 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999
 +
 +
 + class DivisionReadOnlySerializer(serializers.ModelSerializer):
-+     """部署モデルシリアライザー"""
++     """読み込み専用部署モデルシリアライザー"""
 +
 +     class Meta:
 +         model = Division
@@ -1101,7 +1048,7 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999
 +
 +
 + class BookReadOnlySerializer(serializers.ModelSerializer):
-+     """書籍シリアライザー"""
++     """読み込み専用書籍シリアライザー"""
 +
 +     # 書籍ID
 +     id = serializers.CharField(label="書籍ID")
@@ -1128,23 +1075,23 @@ curl -X DELETE -i -s http://localhost:8000/api1/books/classification-details/999
 +         )
 ```
 
-書籍読み込み専用シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+読み込み専用の部署、書籍分類、書籍分類詳細及び書籍シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./api1/books/serializers.py
-git commit -m '書籍読み込み専用シリアライザーを実装'
+git commit -m '読み込み専用書籍シリアライザーを実装'
 ```
 
 > b8044a6 (tag: 073-implement-book-read-only-serializer)
 
-#### 書籍書き込み専用シリアライザーの実装
+#### 書き込み専用書籍シリアライザーの実装
 
-書籍書き込み専用シリアライザーを次の通り実装します。
+書き込み専用書籍シリアライザーを次の通り実装します。
 
 ```python
 # ./api1/books/serializers.py
 class BookWriteOnlySerializer(serializers.ModelSerializer):
-    """書籍書き込み専用シリアライザー"""
+    """書き込み専用書籍シリアライザー"""
 
     # 書籍ID
     id = serializers.CharField(max_length=26, read_only=True)
@@ -1203,14 +1150,14 @@ class BookWriteOnlySerializer(serializers.ModelSerializer):
             raise exceptions.NotFound(detail="Division doesn't exist")
 
     def _organize_validated_data(self, validated_data: Any) -> Any:
-        """書籍書き込みシリアライザーが検証したデータを整理する。
+        """書き込み専用書籍シリアライザーが検証したデータを整理する。
 
-        書籍書き込みシリアライザーが検証したデータに、書籍分類詳細及び部署モデルインスタンスを設定する。
+        書き込み専用書籍シリアライザーが検証したデータに、書籍分類詳細及び部署モデルインスタンスを設定する。
 
         Args:
-            validated_data: 書籍書き込みシリアライザーが検証したデータ。
+            validated_data: 書き込み専用書籍シリアライザーが検証したデータ。
         Returns:
-            書籍書き込みシリアライザーが検証したデータを整理した結果。
+            書き込み専用書籍シリアライザーが検証したデータを整理した結果。
         Exceptions:
             rest_framework.exceptions.NotFound: 書籍分類詳細または部署が見つからない場合。
         """
@@ -1224,7 +1171,7 @@ class BookWriteOnlySerializer(serializers.ModelSerializer):
         """書籍を登録する。
 
         Args:
-            validated_data: 書籍書き込み専用シリアライザーが検証したデータ。
+            validated_data: 書き込み専用書籍シリアライザーが検証したデータ。
         Returns:
             作成した書籍モデルインスタンス。
         Exceptions:
@@ -1236,7 +1183,7 @@ class BookWriteOnlySerializer(serializers.ModelSerializer):
         """書籍を更新する。
 
         Args:
-            validated_data: 書籍書き込み専用シリアライザーが検証したデータ。
+            validated_data: 書き込み専用書籍シリアライザーが検証したデータ。
         Returns:
             更新した書籍モデルインスタンス。
         Exceptions:
@@ -1245,11 +1192,11 @@ class BookWriteOnlySerializer(serializers.ModelSerializer):
         return super().update(instance, self._organize_validated_data(validated_data))
 ```
 
-書籍書き込み専用シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
+書き込み専用の書籍シリアライザーを実装したら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./api1/books/serializers.py
-git commit -m '書籍書き込み専用シリアライザーを実装'
+git commit -m '書き込み専用書籍シリアライザーを実装'
 ```
 
 > 5229a06 (tag: 074-implement-book-write-only-serializer)
@@ -1296,7 +1243,7 @@ git commit -m '書籍書き込み専用シリアライザーを実装'
 +         return BookReadOnlySerializer
 ```
 
-`get_serializer_class`メソッドをオーバーライドして、HTTPリクエストメソッドが`POST（登録）`、`PUT（更新）`、`PATCH（一部更新）`及び`DELETE（削除）`の場合は、書籍書き込み専用シリアライザーを使用して、`GET（一覧、詳細）`の場合は書籍読み込み専用シリアライザーを使用するようにしています。
+`get_serializer_class`メソッドをオーバーライドして、HTTPリクエストメソッドが`POST（登録）`、`PUT（更新）`、`PATCH（一部更新）`及び`DELETE（削除）`の場合は、書き込み専用書籍シリアライザーを使用して、`GET（一覧、詳細）`の場合は読み込み専用書籍シリアライザーを使用するように設定しています。
 
 書籍ビューセットを実装したら、次の通り変更をリポジトリにコミットします。
 
@@ -1309,7 +1256,7 @@ git commit -m '書籍ビューセットを実装'
 
 ### 書籍ビューセットのディスパッチ
 
-次の通り書籍ビューセットをディスパッチします。
+次の通り書籍ビューセットを[rest_framework.routers.DefaultRouter](https://www.django-rest-framework.org/api-guide/routers/#defaultrouter)を使用してディスパッチします。
 
 ```python
   from django.urls import path
@@ -1328,7 +1275,7 @@ git commit -m '書籍ビューセットを実装'
 + urlpatterns += router.urls
 ```
 
-[rest_framework.routers.DefaultRouter](https://www.django-rest-framework.org/api-guide/routers/#defaultrouter)は、書籍分類または書籍分類詳細APIのようなURLをビューセットのために生成します。
+`DefaultRouter`は、書籍分類または書籍分類詳細APIと同様なでビューセットをディスパッチします。
 
 `urlpatterns += router.urls`で、`DefaultRouter`が生成するURLを`urlpatterns`に追加することで、書籍ビューセットをディスパッチしています。
 
@@ -1348,8 +1295,10 @@ git commit -m '書籍ビューセットをディスパッチ'
 
 ### JWT (JSON Web Token)とは
 
-JWT（JSON Web Token）は、WebアプリケーションやAPIで認証や認可を行うための安全な方法の1つです。
+JWTは、WebアプリケーションやAPIで認証や認可する方法の1つです。
 JWTは、JSON形式で表現されるトークンであり、ユーザーの認証情報やアプリケーションへのアクセス許可などの情報を含んでいます。
+
+> 「トークン」とは何らかの文字列を示します。
 
 ### 認証API
 
@@ -1368,7 +1317,7 @@ git commit -m 'Simple JWTパッケージをインストール'
 
 #### Simple JWTの設定
 
-プロジェクト設定ファイルを次の通り変更します。
+`Simple JWT`を設定するために、プロジェクト設定ファイルを次の通り変更します。
 
 ```python
 # ./book_management/settings.py
@@ -1397,6 +1346,7 @@ git commit -m 'Simple JWTパッケージをインストール'
   ]
 
   (...省略..)
+
 + # Django REST Framework
 + REST_FRAMEWORK = {
 +     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -1411,19 +1361,20 @@ git commit -m 'Simple JWTパッケージをインストール'
 + }
 ```
 
-認証APIは、アクセストークンとリフレッシュトークンを返却します。
-アクセストークンは、認証済みユーザーのみがアクセス可能なページをリクエストするときに、リクエストヘッダに追加します。
+認証APIは、`アクセストークン`と`リフレッシュトークン`を返却します。
+アクセストークンは、ユーザーが認証済みであることを示す証拠としてリクエストヘッダに追加されます。
 また、リフレッシュトークンは、アクセストークンの有効期間が過ぎたときに、有効なアクセストークンを取得するときに使用します。
-リフレッシュトークンの有効期間が過ぎた場合は、再度アクセストークンとリフレッシュトークンを取得する必要があります。
 このため、リフレッシュートークンの有効期間は、アクセストークンより長くなっています。
 `Simple JWT`パッケージのデフォルトの有効期間は次の通りです。
 
 - アクセストークン: 5分
 - リフレッシュトークン: 1日
 
+リフレッシュトークンの有効期間が過ぎた場合は、再度アクセストークンとリフレッシュトークンを取得する必要があります。
+
 本チュートリアルでは、アクセストークンの有効期間を1時間に変更しています。
 
-また、本Webアプリケーションのユーザーは`id`モデルフィールドがないため、`Simple JWT`が`email`モデルフィールドをユーザーIDモデルフィールドとして認識するように、`"USER_ID_FIELD": "email"`を設定しています。
+また、本Webアプリケーションのユーザーは`id`モデルフィールドがないため、`Simple JWT`が`email`モデルフィールドをユーザーIDとして認識するように、`"USER_ID_FIELD": "email"`を設定しています。
 
 `Simple JWT`を設定したら、次の通り変更をリポジトリにコミットします。
 
@@ -1488,9 +1439,9 @@ git commit -m '認証APIを実装'
       def get_serializer_class(self) -> serializers.Serializer:
 ```
 
-DRFのクラスビューやビューセットのクラス変数`permission_classes`の設定や、`get_permission_classes`メソッドをオーバーライドすることで、APIのビューを保護できます。
+DRFのクラスビューやビューセットのクラス変数`permission_classes`を設定したり、`get_permission_classes`メソッドをオーバーライドしたりすることで、APIのビューを保護できます。
 
-ここでは、`permissions.IsAuthenticatedOrReadOnly`パーミッションを設定することで、認証済みユーザーから`POST`、`PUT`、`PATCH`及び`DELETE`メソッド（`安全でないメソッド`）で、認証されていないユーザーから`GET`、`HEAD`及び`OPTIONS`メソッド（`安全なメソッド`）で送信されたリクエストを受け付けます。
+ここでは、`permissions.IsAuthenticatedOrReadOnly`を設定することで、認証済みユーザーから`POST`、`PUT`、`PATCH`及び`DELETE`メソッド（`安全でないメソッド`）で、認証されていないユーザーから`GET`、`HEAD`及び`OPTIONS`メソッド（`安全なメソッド`）で送信されたリクエストを受け付けます。
 また、認証されていないユーザーから`安全でないメソッド`で送信されたリクエストを拒否して、`401 Unauthorized`を返却します。
 
 書籍ビューセットにパーミッションを設定したら、次の通り変更をコミットします。

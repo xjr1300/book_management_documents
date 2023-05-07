@@ -63,6 +63,7 @@ Djangoは、主に以下の機能を開発者に提供します。
   - 地理空間情報を管理する[GeoDjango](https://docs.djangoproject.com/en/4.2/ref/contrib/gis/)を提供します。
 - Pythonエコシステム
   - [PyPI (Python Package Index)](https://pypi.org/)が提供する多種多様で膨大なパッケージを利用できます。
+- 単体テスト及び統合テスト
 
 ![Djangoダイアグラム](./images/request_handle_diagram.png)
 

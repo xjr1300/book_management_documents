@@ -12,7 +12,7 @@
       - [ULIDFieldモデルフィールドの定義](#ulidfieldモデルフィールドの定義)
     - [書籍モデルの定義](#書籍モデルの定義)
   - [書籍、書籍分類及び書籍分類詳細フィクスチャーの作成](#書籍書籍分類及び書籍分類詳細フィクスチャーの作成)
-  - [書籍アプリモデルを管理サイトに登録](#書籍アプリモデルを管理サイトに登録)
+  - [書籍アプリモデルを管理サイトに追加](#書籍アプリモデルを管理サイトに追加)
   - [まとめ](#まとめ)
 
 ## 書籍（`books`）アプリの追加
@@ -23,7 +23,7 @@
 python manage.py startapp books
 ```
 
-次に、プロジェクト設定ファイルの`INSTALLED_APP`に書籍アプリを追加して、書籍アプリをプロジェクトに追加します。
+次に、プロジェクト設定ファイルの`INSTALLED_APP`に次を追加して、書籍アプリをプロジェクトに追加します。
 
 ```python
 # ./book_management/settings.py
@@ -50,7 +50,7 @@ python manage.py startapp books
 +     verbose_name = "書籍アプリ"
 ```
 
-そして、`python manage.py shell`でインタラクティブコンソールが正常に起動することを確認した後、書籍アプリの追加をリポジトリにコミットします。
+最後に、`python manage.py shell`でインタラクティブコンソールが正常に起動することを確認した後、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add --all
@@ -64,7 +64,7 @@ git commit -m '書籍アプリを追加'
 ### 作成日時及び更新日時モデルフィールドの共有
 
 作成日時及び更新日時モデルフィールドは、書籍アプリのすべてのモデルに持たせます。
-書籍アプリのモデルを実装する前に、作成日時及び更新日時フィールドをそれぞれのモデルで共有できるようにします。
+書籍アプリのモデルを実装する前に、作成日時及び更新日時フィールドを抽象基本モデルに抽出して、それぞれのモデルで共有できるようにします。
 
 `./core`ディレクトリを作成して、`.core/__init__.py`と`./core/models.py`を作成します。
 
@@ -95,7 +95,8 @@ class TimestampModel(models.Model):
         abstract = True
 ```
 
-`abstract = True`は、`TimestampModel`が[抽象基本モデル](https://docs.djangoproject.com/en/4.2/topics/db/models/#abstract-base-classes)であることをDjangoに伝えて、`TimestampModel`に対応するテーブルがデータベースに作成されないようにします。
+`abstract = True`は、`TimestampModel`が[抽象基本モデル](https://docs.djangoproject.com/en/4.2/topics/db/models/#abstract-base-classes)であることをDjangoに伝えます。
+これにより、Djangoは、`TimestampModel`をマイグレーションの対象にせず、`TimestampModel`に対応するテーブルをデータベースに作成しません。
 
 次に、部署モデルを次の通り変更します。
 
@@ -125,10 +126,8 @@ class TimestampModel(models.Model):
       class Meta:
 ```
 
-なお、`TimestampModel`で作成日時及び更新日時モデルフィールドを共有しても、マイグレーションする必要はありません。
-
-開発サーバーを起動して、部署一覧、詳細、登録、更新及び削除ページで、以前と同様に部署を操作できるか確認してください。
-部署を操作できた場合は、次の通り変更をリポジトリにコミットします。
+開発サーバーを起動して、部署一覧、詳細、登録、更新及び削除ページで、以前と同様に部署モデルインスタンスを操作できるか確認してください。
+部署モデルインスタンスを操作できた場合は、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./divisions/
@@ -189,7 +188,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-書籍分類モデルのマイグレーションに成功したら、次の通り変更をリポジトリにコミットします。
+書籍分類モデルをマイグレーションしたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
@@ -246,6 +245,19 @@ class ClassificationDetail(TimestampModel):
 `ForeignKey`モデルフィールドは、1対多の関連を表現するために他または自身のモデルを参照する外部キーをモデルに追加します。
 書籍分類詳細モデルインスタンスから、次の通り書籍分類モデルインスタンスにアクセスできます。
 
+> **外部参照、外部キーとは**
+>
+> 外部キーとは、データベースにおいて、別のテーブルの主キーを参照するために使用される制約です。
+> つまり、外部キーはあるテーブルのカラムにある値が、別のテーブルの主キーとして存在することを保証します。
+> なお、別テーブルの主キーを参照することを外部参照と呼びます。
+> 外部キー制約は、データベースの整合性を保つために非常に重要です。
+> 例えば、注文と商品という2つのテーブルがある場合、注文のテーブルには商品のIDを記録する必要があります。
+> この場合、注文テーブルには、商品テーブルの主キーを参照する外部キー制約を追加する必要があります。
+> 外部キー制約を設定することにより、データベースに不整合なデータが入力されることを防ぐことができます。
+> 例えば、注文のテーブルに、存在しない商品のIDを記録できなくなります。
+> 外部キー制約は、データベースのパフォーマンスにも影響を与えます。
+> 外部キー制約を追加すると、テーブル間の関係性が明確になり、データベースの最適化が容易になります。
+
 ```python
 # 書籍分類詳細モデルインスタンスを構築
 classification_detail = ClassificationDetail(...)
@@ -255,36 +267,38 @@ classification = classification_detail.classification
 print(f"{classification.code}: {classification.name}")
 ```
 
-部署分類モデルフィールドに対応するテーブルのカラムには、部署分類コードが記録されます。
+書籍分類モデルフィールドに対応するテーブルのカラムには、書籍分類コードが記録されます。
 このため、テーブルに作成されるカラムの名前を`db_column`で`classification_code`を指定しています。
 なお、`db_column`でカラム名を指定しない場合、カラム名は`classification`になります。
 
-また、`on_delete = models.PROTECT`を指定することで、部署分類詳細が参照する部署分類が削除されないように保護します。
+また、`on_delete = models.PROTECT`を指定することで、書籍分類詳細が参照する書籍分類が削除されないように保護します。
 `on_delete`に設定する主な値を次に示します。
-`on_delete`はデータベースに由来するため、レコードはモデルインスタンス、カラムはモデルフィールドに対応します。
+なお、`on_delete`はデータベースに由来するため、次の説明でレコードはモデルインスタンス、カラムはモデルフィールドに対応します。
 
 | `on_delete`に設定できる値 | 説明 |
-| --- | --- |
-| `CASCADE` | 参照先のレコードが削除されたとき、そのレコードを参照するすべてのレコードが削除されます。 |
-| `PROTECT` | 参照先のレコードが削除されるとき、そのレコードを参照するレコードが存在する場合、[ProtectedError](https://docs.djangoproject.com/en/4.2/ref/exceptions/#django.db.models.ProtectedError)を発生させて、参照先のレコードを削除しません。 |
-| `RESTRICT` | `PROTECT`とほとんど同じですが、[RestrictedError](https://docs.djangoproject.com/en/4.2/ref/exceptions/#django.db.models.RestrictedError)が発生します。しかし、`PROTECTED`と異なり、同じトランザクション内で削除される参照先のレコードを参照するすべてのレコードを削除したり、参照先を変更したりする場合、`RestrictedError`は発生せず、参照先のレコードが削除されます。 |
-| `SET_NULL` | 参照先のレコードが削除されたとき、それを参照しているすべてのレコードのカラムを`NULL`に設定します。`SET_NULL`を指定する場合、その`ForeignKey`は`null = True`を設定する必要があります。 |
-| `SET_DEFAULT | `SET_NULL`と異なりモデルフィールドに設定したデフォルト値を設定します。 |
+| --------------------- | --- |
+| `CASCADE`             | 参照先のレコードが削除されたとき、そのレコードを参照するすべてのレコードが削除されます。 |
+| `PROTECT`             | 参照先のレコードが削除されるとき、そのレコードを参照するレコードが存在する場合、[ProtectedError](https://docs.djangoproject.com/en/4.2/ref/exceptions/#django.db.models.ProtectedError)を発生させて、参照先のレコードを削除しません。 |
+| `RESTRICT`            | `PROTECT`とほとんど同じですが、[RestrictedError](https://docs.djangoproject.com/en/4.2/ref/exceptions/#django.db.models.RestrictedError)が発生します。しかし、`PROTECTED`と異なり、同じトランザクション内で削除される参照先のレコードを参照するすべてのレコードを削除したり、参照先を変更したりする場合、`RestrictedError`は発生せず、参照先のレコードが削除されます。 |
+| `SET_NULL`            | 参照先のレコードが削除されたとき、それを参照しているすべてのレコードのカラムを`NULL`に設定します。`SET_NULL`を指定する場合、その`ForeignKey`は`null = True`を設定する必要があります。 |
+| `SET_DEFAULT`         | `SET_NULL`と異なりモデルフィールドに設定したデフォルト値を設定します。 |
 
 `on_delete`に設定できる値の詳細は、[ここ](https://docs.djangoproject.com/en/4.2/ref/models/fields/#django.db.models.ForeignKey.on_delete)を参照してください。
 
-> Djangoバージョン4.2時点では、データベースの外部キーに`ON_DELETE`を設定せず、データベースの`ON_DELETE`の処理をDjangoが模倣します。
+> Djangoバージョン4.2時点では、データベースの外部キーに`ON_DELETE`を設定せず、Djangoはデータベースが実施する`ON_DELETE`の処理を模倣します。
 
 `related_name="classification_details"`は、参照先から参照されるモデルインスタンスを逆参照するときの名前を指定しています。
-名前を指定しなくても、Djangoは`<model_name>_set`で逆参照できますが、ここでは名前を明示的に付けています。
+名前を指定しなくても、Djangoは`<model_name>_set`で逆参照できますが、ここでは明示的に名前を付けています。
 ただし、モデルで2つ以上の`ForeignKey`モデルフィールドが同じモデルを参照するとき、`<model_name>_set`が重複するため、明示的に`related_name`で異なる名前を付ける必要があります。
 次の通り、`related_name`により、書籍分類モデルインスタンスから、書籍分類詳細モデルインスタンスを得られます。
 
 ```python
 classification = Classification.objects.get(code="000")
-for classification_details in classification.classification_details.all():
-    # 書籍分類詳細を操作
+for classification_detail in classification.classification_details.all():
+    print(classification_detail)
 ```
+
+> 上記コードは、同じ書籍分類を持つ書籍分類詳細を、`classification_details`によって書籍分類から逆参照しています。
 
 書籍分類詳細モデルを実装後、マイグレーションを実行します。
 
@@ -295,7 +309,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-書籍分類詳細モデルのマイグレーションに成功したら、次の通り変更をリポジトリにコミットします。
+書籍分類詳細モデルをマイグレーションしたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/
@@ -309,16 +323,20 @@ git commit -m '書籍分類詳細モデルを実装'
 #### プライマリーキーが指定されていないモデル
 
 Djangoは、プライマリーキーが指定されていないモデル（`primary_key = True`を指定したモデルフィールドがないモデル）に対して、プライマリーキーとなる[AutoField](https://docs.djangoproject.com/en/4.2/ref/models/fields/#autofield)または[BigAutoField](https://docs.djangoproject.com/en/4.2/ref/models/fields/#autofield)型の`id`モデルフィールドを自動的に追加します。
-`AutoField`及び`BigAutoField`型のモデルフィールドは、名前の通りモデルインスタンスが登録されるときに自動的に整数を採番します。
-DBMSに`PostgreSQL`を使用している場合、採番には`シーケンス`を使用しています。
+`AutoField`及び`BigAutoField`型のモデルフィールドの値は、名前の通りモデルインスタンスが登録されるときに自動的に整数で採番されます。
+DBMSに`PostgreSQL`を使用している場合、採番には`シーケンス`が利用されます。
 
 モデルのプライマリーキーの型が整数型の場合、部署詳細ページのURLのように決め打ちでページにアクセスできるようになるなど、セキュリティー上の問題が発生する可能性があります。
+整数型のプライマリーキーの採用は、アプリケーションまたはモデルに必要とされる要件から判断してください。
 
-> ログイン済みユーザーのみアクセス可能なページにするなどの対策をすれば別です。
+> **Python3の整数型**
+>
+> C、C++、Rustなど、普通のプログラミング言語では、整数型が扱える範囲に制限があります。
+> しかし、Pythonにおいてメモリに空きがある限り（おそらく連続したメモリ領域を確保できる限り）上限または下限なく整数を扱えます。
 
 #### UUIDとULID
 
-ランダムな識別子として[UUID](https://ja.wikipedia.org/wiki/UUID)と`ULID`があります。
+ランダムな識別子として[UUID](https://ja.wikipedia.org/wiki/UUID)と[ULID](https://github.com/ulid/spec)があります。
 これらの特徴を次に示します。
 
 - 分散システムで生成したときに、重複や偶然の一致が発生しないように設計されています。
@@ -341,7 +359,7 @@ Djangoは、`UUID`を記録する[UUIDField](https://docs.djangoproject.com/en/4
 
 そこで、`python-ulid`パッケージをインストールして、`ULID`を記録する`ULIDField`を`./core/models.py`に次の通り実装します。
 
-> [How to create custom model fields](https://docs.djangoproject.com/en/4.2/ref/models/fields/#charfield)
+Djangoで独自のモデルフィールドを実装する場合は、[独自のモデルフィールドを作成する方法](https://docs.djangoproject.com/en/4.2/ref/models/fields/#charfield)を参照してください。
 
 ```bash
 pip install python-ulid
@@ -360,7 +378,7 @@ pip install python-ulid
 +         return "char(26)"
 ```
 
-`ULIDField`は、[CharField](https://docs.djangoproject.com/en/4.2/ref/models/fields/#charfield)から派生しており、文字列の最大長さを`ULID`の16進数法表現の文字数である26文字に制限しています。
+`ULIDField`は、[CharField](https://docs.djangoproject.com/en/4.2/ref/models/fields/#charfield)を継承しており、文字列の最大長さを`ULID`の16進数法表現の文字数である26文字に制限しています。
 
 `ULIDField`の実装を次の通りリポジトリにコミットします。
 
@@ -375,7 +393,7 @@ git commit -m 'ULIDFieldを実装'
 
 ### 書籍モデルの定義
 
-書籍モデル（`Book`）装を次の通り実装します。
+書籍モデル（`Book`）を次の通り実装します。
 書籍モデルは、書籍分類詳細モデルを外部参照するため、書籍分類詳細モデルと同様に、書作分類詳細モデルより下の行に実装する必要があります。
 
 ```python
@@ -412,7 +430,7 @@ git commit -m 'ULIDFieldを実装'
 +     publisher = models.CharField("出版社", max_length=80, null=True, blank=True)
 +     # 発行日
 +     published_at = models.DateField("発行日", null=True, blank=True)
-+     # 管理部署コード
++     # 管理部署
 +     division = models.ForeignKey(
 +         "divisions.Division",
 +         db_column="division_code",
@@ -551,6 +569,9 @@ mkdir ./books/fixtures
 ```
 
 書籍分類、書籍分類詳細、書籍の順番でフィクスチャーをデータベースに登録します。
+
+> 上記と異なる順番でフィクスチャーをデータベースに登録することを試みると、外部キーエラーが発生します。
+
 フィクスチャーをデータベースに登録後、次の通り変更をリポジトリにコミットします。
 
 ```bash
@@ -563,7 +584,7 @@ git commit -m '書籍分類及び書籍分類詳細フィクスチャーを作�
 
 > 4aba444 (tag: 034-add-books-fixtures)
 
-## 書籍アプリモデルを管理サイトに登録
+## 書籍アプリモデルを管理サイトに追加
 
 書籍アプリモデルを管理サイトに登録するために、`./books/admin.py`を次で置き換えます。
 
@@ -633,7 +654,7 @@ admin.site.register(Book, BookAdmin)
 
 書籍モデルアドミン（`BookAdmin`）も書籍分類詳細モデルアドミンと同様な設定をしており、管理サイトの書籍一覧ページ（`http://localhost:8000/admin/books/book/`）で書籍分類または管理部署でフィルタして書籍を表示できます。
 
-また、管理サイトの書籍一覧ページでは、そのページの`検索ボックス`に入力された文字列を、`search_fields`に指定したモデルフィールドの値に含んでいる書籍モデルインスタンスを検索できます。
+また、管理サイトの書籍一覧ページは、`検索ボックス`に入力した文字列を、`search_fields`に指定したモデルフィールドの値に含む書籍モデルインスタンスを検索できます。
 
 次に、`search_field`に指定した項目と、検索対象を示します。
 
@@ -643,10 +664,17 @@ admin.site.register(Book, BookAdmin)
 - authors: 著者または訳者
 - division__name: 管理部署の名前
 
-> `list_filter`や`search_field`などでは、属性などは`.（ドット）`ではなく`__（アンダーバー2つ）`で指定します。
+> `list_filter`や`search_field`などでは、属性などを`.（ドット）`ではなく`__（アンダーバー2つ）`で指定します。
+> これは、クエリAPIでも同賞です。
+>
+> ```python
+> classification_details = ClassificationDetail.objects.filter(classification__code="000")
+> classification_details
+> # <QuerySet [<ClassificationDetail: 総記>, <ClassificationDetail: 図書館、図書館情報学>, <ClassificationDetail: 図書、書誌学>, <ClassificationDetail: 百科事典、用語索引>, <ClassificationDetail: 一般論文集、一般講演集、雑著>, <ClassificationDetail: 逐次刊行物、一般年鑑>, <ClassificationDetail: 団体、博物館>, <ClassificationDetail: ジャーナリズム、新聞>, <ClassificationDetail: 書、全集、選集>, <ClassificationDetail: 貴重書、郷土資料、その他の特別コレクション>]>
+> ```
 
-開発サーバーを起動して、書籍アプリのモデルが表示されるか確認してください。
-書籍アプリのモデルが正常に表示さていることを確認できたら、次の通り変更をリポジトリにコミットします。
+開発サーバーを起動して、書籍アプリのモデルが管理サイトに表示されているか確認してください。
+書籍アプリのモデルが管理サイトに表示されていることを確認できたら、次の通り変更をリポジトリにコミットします。
 
 ```bash
 git add ./books/admin.py
@@ -657,6 +685,6 @@ git commit -m '書籍アプリのモデルを管理サイトに登録'
 
 ## まとめ
 
-本章では、書籍アプリのモデルを定義して、それらを管理サイトに登録しました。
+本章では、書籍アプリのモデルを定義して、それらを管理サイトに追加しました。
 
 次の章では、書籍アプリページを実装します。

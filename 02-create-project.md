@@ -296,6 +296,7 @@ Changes to be committed:
         new file:   book_management/urls.py
         new file:   book_management/wsgi.py
         new file:   manage.py
+        new file:   Makefile
         new file:   pyproject.toml
 ```
 
@@ -392,7 +393,7 @@ git diff
 #  USE_I18N = True
 
 # book_management/settings.pyをステージングエリアに移動
-git ./add book_management/settings.py
+git add ./book_management/settings.py
 
 # リポジトリの現在の状態を簡易表示（次のように表示されるはず）
 git status -s

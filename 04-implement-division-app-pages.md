@@ -348,7 +348,7 @@ except Division.DoesNotExist:
 開発サーバーを起動していない場合は開発サーバーを起動します。
 そして、ブラウザで`http://localhost:8000/divisions/58/`にアクセスすると、ICT開発室が表示されるはずです。
 
-![最初の部署詳細ページ](./images/1st-division-list-page.png)
+![最初の部署詳細ページ](./images/1st-division-detail-page.png)
 
 部署詳細ページが正常に表示された場合は、次の通り変更をリポジトリにコミットします。
 
@@ -614,7 +614,7 @@ form.as_table()
 
   (...省略...)
 
-+ def create(request: HttpResponse) -> HttpResponse:
++ def create(request: HttpRequest) -> HttpResponse:
 +     """部署登録関数ビュー"""
 +
 +     if request.method == "POST":

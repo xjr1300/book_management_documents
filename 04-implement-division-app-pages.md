@@ -313,6 +313,11 @@ except Division.DoesNotExist:
 
 部署詳細テンプレートを次の通り実装します。
 
+```bash
+# 部署詳細テンプレートの作成
+code ./divisions/templates/divisions/division_detail.html
+```
+
 ```html
 <!-- ./divisions/templates/divisions/division_detail.html -->
 <!DOCTYPE html>
@@ -461,7 +466,7 @@ HTMLの`head`要素の`title`要素のコンテンツを、`title`コンテキ�
 部署詳細テンプレートを次で置き換えます。
 
 ```html
-<!-- ./divisions/templates/divisions/division_list.html -->
+<!-- ./divisions/templates/divisions/division_detail.html -->
 {% extends 'base.html' %}
 
 {% block inner_body %}

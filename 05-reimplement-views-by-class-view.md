@@ -19,7 +19,7 @@
   - [Pythonにおける多重継承のメソッド解決順序（Method Resolution Order: MRO）](#pythonにおける多重継承のメソッド解決順序method-resolution-order-mro)
     - [メソッド解決順序](#メソッド解決順序)
     - [実際のメソッドの呼び出し](#実際のメソッドの呼び出し)
-    - [\`CreateDivisionViewのMROとメソッド呼び出し](#createdivisionviewのmroとメソッド呼び出し)
+    - [CreateDivisionViewのMROとメソッド呼び出し](#createdivisionviewのmroとメソッド呼び出し)
   - [まとめ](#まとめ)
 
 前の章で部署アプリのビューを関数ビューで実装しました。
@@ -1023,7 +1023,7 @@ B's foo was called.
 Base's foo was called.
 ```
 
-### `CreateDivisionViewのMROとメソッド呼び出し
+### CreateDivisionViewのMROとメソッド呼び出し
 
 `CreateDivisionView`は、`django.generic.base.ContextMixin`から派生した`PageTitleMixin`と`FormActionMixin`を継承しています。
 つまり、前の説明と同様に`CreateDivisionView`は、`PageTitleMixin`と`FormActionMixin`を介して`django.generic.base.ContextMixin`を菱形継承しています。

@@ -343,6 +343,19 @@ Djangoが出力するメッセージなどを日本語化する、または本�
 
 ```python
 # ./book_management/settings.py
+  from pathlib import Path
++ from typing import List
+
+(...省略...)
+
+  # SECURITY WARNING: don't run with debug turned on in production!
+  DEBUG = True
+
+- ALLOWED_HOSTS = []
++ ALLOWED_HOSTS: List[str] = []
+
+(...省略...)
+
 - LANGUAGE_CODE = "en-us"
 + LANGUAGE_CODE = "ja"
 
@@ -355,6 +368,7 @@ Djangoが出力するメッセージなどを日本語化する、または本�
 ```
 
 > プロジェクトを日本に地域化しても、Djangoが出力するメッセージの多くは英語のままです。
+> また、`ALLOWED_HOSTS`は`mypy`から型に関する警告されないように修正しています。
 
 上記を実施した後、ブラウザで再描画すると、ウェルカムページが日本語で表示されます。
 

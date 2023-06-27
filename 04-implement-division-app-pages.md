@@ -271,7 +271,7 @@ git commit -m '部署一覧ページを実装'
 
 ```python
 # ./divisions/views.py
-  from django.http.request import HttpRequest, HttpResponse
+  from django.http import HttpRequest, HttpResponse
 - from django.shortcuts import render
 + from django.shortcuts import get_object_or_404, render
 

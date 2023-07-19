@@ -382,7 +382,8 @@ git commit -m '部署更新関数ビューを部署更新クラスビューで�
 - from django.http.request import HttpRequest
 - from django.http.response import HttpResponse
 - from django.shortcuts import get_object_or_404, redirect, render
-  from django.urls import reverse, reverse_lazy
+- from django.urls import reverse
++ from django.urls import reverse, reverse_lazy
   from django.views import generic
 
   (...省略...)

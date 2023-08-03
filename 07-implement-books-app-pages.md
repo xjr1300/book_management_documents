@@ -6,9 +6,9 @@
   - [書籍分類詳細ページの実装](#書籍分類詳細ページの実装)
     - [書籍分類詳細一覧ビューの実装](#書籍分類詳細一覧ビューの実装)
     - [ClassificationDetailSingleObjectMixinの実装](#classificationdetailsingleobjectmixinの実装)
-    - [書籍分類詳細ビューの実装](#書籍分類詳細ビューの実装)
+    - [書籍分類詳細削除ビューの実装](#書籍分類詳細削除ビューの実装)
     - [ClassificationDetailFormMixinの実装](#classificationdetailformmixinの実装)
-    - [書籍分類詳細登録、更新及び削除ビューの実装](#書籍分類詳細登録更新及び削除ビューの実装)
+    - [書籍分類詳細登録及び更新ビューの実装](#書籍分類詳細登録及び更新ビューの実装)
     - [変更のコミット](#変更のコミット)
   - [書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ](#書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ)
   - [書籍ページの実装](#書籍ページの実装)
@@ -143,7 +143,8 @@ app_name = "books"
 
 ## 書籍分類詳細ページの実装
 
-書籍分類詳細ページを書籍分類ページと同様に実装してください。
+書籍分類詳細ページを書籍分類ページと同様に実装します。
+ただし、書籍分類ページと異なる実装は、本節で説明します。
 
 ![書籍分類詳細一覧ページ](./images/classification-detail-list-page.png)
 
@@ -162,8 +163,6 @@ app_name = "books"
 - 書籍分類詳細登録ページ: `/books/classification-details/create/`
 - 書籍分類詳細更新ページ: `/books/classification-details/update/<code>`
 - 書籍分類詳細削除ページ: `/books/classification-details/delete/<code>`
-
-書籍分類ページと異なる実装は、本節で説明します。
 
 ### 書籍分類詳細一覧ビューの実装
 
@@ -203,9 +202,9 @@ class ClassificationDetailSingleObjectMixin:
 `context_object_name`で特定の書籍分類詳細モデルインスタンスを表示するビューが取得する書籍分類詳細モデルインスタンスのコンテキスト名を指定しています。
 `context_object_name`を指定しない場合、そのコンテキスト名は`classificationdetail`になります。
 
-### 書籍分類詳細ビューの実装
+### 書籍分類詳細削除ビューの実装
 
-書籍分類詳細詳細ビュー（`ClassificationDetailDeleteView`）を次の通り実装します。
+書籍分類詳細削除ビュー（`ClassificationDetailDeleteView`）を次の通り実装します。
 
 ```python
 class ClassificationDetailDeleteView(
@@ -242,9 +241,9 @@ class ClassificationDetailFormMixin(generic.edit.ModelFormMixin):
 上記の通り`get_form`をオーバーライドしない場合、書籍分類詳細フォームの書籍分類ドロップダウンで書籍分類を選択していないことを示す`---------`を選択できます。
 書籍分類詳細モデルインスタンスは、書籍分類を必ず入力する必要があるため、`---------`を選択候補から除くために`get_form`をオーバーライドしています（`form.fields["classification"].empty_label = None`）。
 
-### 書籍分類詳細登録、更新及び削除ビューの実装
+### 書籍分類詳細登録及び更新ビューの実装
 
-書籍分類詳細登録（`ClassificationDetailCreateView`）、更新（`ClassificationDetailUpdateView`）及び削除（`ClassificationDetailDeleteView`）は、書籍分類のそれぞれに対応するビューを参考に実装してください。
+書籍分類詳細登録（`ClassificationDetailCreateView`）及び更新（`ClassificationDetailUpdateView`）ビューは、書籍分類のそれぞれに対応するビューを参考に実装してください。
 なお、それぞれのビューでは、テンプレート名を適切に指定してください。
 
 ### 変更のコミット
@@ -262,7 +261,7 @@ git commit -m '書籍分類詳細ページを実装
 
 ## 書籍分類詳細一覧ページで書籍分類詳細を書籍分類でフィルタ
 
-書籍分類詳細一覧ページで、管理サイトと同様に、書籍分類詳細の一覧を書籍分類でフィルタできるようにするために、次のようなリクエストURLを処理できるようにします。
+書籍分類詳細一覧ページで、管理サイトと同様に、書籍分類詳細の一覧を書籍分類でフィルタできるようにするために、次のようなリクエストを処理できるようにします。
 
 ```url
 http://localhost:8000/books/classification_details/?classification_code=<code>
@@ -272,7 +271,7 @@ http://localhost:8000/books/classification_details/?classification_code=<code>
 なお、GETパラメーターは、`&`で繋げて複数設定できます。
 
 上記URLにおいて、本Webアプリケーションは、`classification_code=<code>`の`<code>`を書籍分類コードとして扱います。
-書籍分類詳細一覧ページでは、GETパラメーターで指定された書籍分類コードに一致する書籍分類コードを持つ書籍分類詳細のみを表示します。
+書籍分類詳細一覧ページでは、GETパラメーターで指定された書籍分類コードに一致する書籍分類を持つ書籍分類詳細のみを表示します。
 なお、書籍分類コードが指定されていないとき、または書籍分類コードがどの書籍分類にも一致しない場合は、すべての書籍分類詳細を表示します。
 
 `./books/views.py`のインポート文を次の通り変更します。

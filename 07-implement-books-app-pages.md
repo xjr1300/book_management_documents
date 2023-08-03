@@ -349,7 +349,7 @@ class ClassificationDetailListView(
         """
         # コンテキストを取得
         ctx = super().get_context_data(**kwargs)
-        # コンテキストにすべての書籍分類詳細モデルインスタンスを登録
+        # コンテキストにすべての書籍分類モデルインスタンスを登録
         ctx["classification_list"] = Classification.objects.all()
         # コンテキストに書籍分類詳細をフィルタする書籍分類モデルインスタンスを登録
         ctx["current_classification"] = self.classification

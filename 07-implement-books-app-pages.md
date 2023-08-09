@@ -2,6 +2,7 @@
 
 - [書籍アプリページの実装](#書籍アプリページの実装)
   - [ミックスインの整理](#ミックスインの整理)
+  - [書籍アプリURLパターンのインクルード](#書籍アプリurlパターンのインクルード)
   - [書籍分類ページの実装](#書籍分類ページの実装)
   - [書籍分類詳細ページの実装](#書籍分類詳細ページの実装)
     - [書籍分類詳細一覧ビューの実装](#書籍分類詳細一覧ビューの実装)
@@ -107,6 +108,24 @@ git commit -m 'ミックスインを整理'
 ```
 
 > b11d94c (tag: 036-organize-mixins)
+
+## 書籍アプリURLパターンのインクルード
+
+書籍アプリのページを実装する前に、書籍アプリのURLConfファイルを作成して、ルートURLConfにインクルードしてください。
+
+```bash
+touch ./books/urls.py
+```
+
+```python
+# ./book_management/urls.py
+  urlpatterns = [
+      path("accounts/", include("accounts.urls")),
+      path("divisions/", include("divisions.urls")),
++     path("books/", include("books.urls")),
+      path("admin/", admin.site.urls),
+  ]
+```
 
 ## 書籍分類ページの実装
 

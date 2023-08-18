@@ -110,7 +110,7 @@ Bootstrap用のベーステンプレートは、`django_bootstrap5/bootstrap5.ht
 </head>
 <body>
   <!-- 継承したテレンプレートで、ページのヘッダを実装するブロック-->
-  {% block bootstrap6_before_content %}{% endblock %}
+  {% block bootstrap5_before_content %}{% endblock %}
   <!-- 継承したテレンプレートで、ページのメインコンテンツを実装するブロック-->
   {% block bootstrap5_content %} CONTENT {% endblock %}
   <!-- 継承したテレンプレートで、ページのフッターを実装するブロック-->
